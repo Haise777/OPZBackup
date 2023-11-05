@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using App.Modules;
+using Discord;
 using Discord.Net;
 using Discord.WebSocket;
 
@@ -6,6 +7,8 @@ namespace App
 {
     internal class Program
     {
+        BackupChannel _backupChannel = new BackupChannel();
+
         public static ulong testGuild = ulong.Parse(File.ReadAllText(@"E:\archives\token\guild.txt"));
         private DiscordSocketClient _client;
         static Task Main(string[] args) => new Program().MainAsync();
@@ -36,6 +39,13 @@ namespace App
         private async Task SlashCommandHandler(SocketSlashCommand command)
         {
 
+            switch (command.Data.Name)
+            {
+                case "backup":
+                    await _backupChannel.BackupOptions(command);
+                    break;
+            }
+
         }
 
         private Task Log(LogMessage msg) //TODO Assign slash commands / Make it to not over declare already existing commands
@@ -47,24 +57,6 @@ namespace App
         public async Task Client_Ready()
         {
             var guild = _client.GetGuild(testGuild);
-
-            //var guildCommand = new SlashCommandBuilder()
-            //    .WithName("backup")
-            //    .WithDescription("gerenciar backups de mensagens")
-            //       .AddOption(new SlashCommandOptionBuilder()
-            //           .WithName("fazer")
-            //           .WithDescription("fazer backup das mensagens deste canal")
-            //           .WithType(ApplicationCommandOptionType.SubCommandGroup)
-            //           .AddOption(new SlashCommandOptionBuilder()
-            //               .WithName("opção")
-            //               .WithRequired(true)
-            //               .AddChoice("Tudo", 99999999)
-            //               .AddChoice("Até ultimo backup", 9999)
-            //               .AddChoice("Especifique", 9999)))
-            //       .AddOption(new SlashCommandOptionBuilder()
-            //           .WithName("info")
-            //           .WithDescription("todas as informações relacionadas ao backup")
-            //           .WithType(ApplicationCommandOptionType.SubCommandGroup));
 
 
             var guildCommand = new SlashCommandBuilder()
@@ -103,7 +95,7 @@ namespace App
             }
             catch (HttpException ex)
             {
-                Console.WriteLine(ex.Errors);
+                Console.WriteLine(ex.ToString());
             }
 
         }

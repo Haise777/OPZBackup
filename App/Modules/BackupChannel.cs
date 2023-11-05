@@ -5,9 +5,36 @@ namespace App.Modules
 {
     internal class BackupChannel
     {
+        public async Task BackupOptions(SocketSlashCommand command)
+        {
+            int inputValue = 0;
+
+            var firstCommandOption = command.Data.Options.First();
+            var fazerCommandOptions = command.Data.Options.First().Options.First();
+
+            switch (firstCommandOption.Name)
+            {
+                case "fazer":
+                    if (fazerCommandOptions.Name == "valor")
+                    {
+                        inputValue = (int)fazerCommandOptions.Options.First().Value;
+                    }
+                    else if (fazerCommandOptions.Name == "tudo")
+                    {
+
+                    }
+                    else if (fazerCommandOptions.Name == "")
+                    {
+
+                    }
+                    break;
+            }
+        }
 
 
-        public async Task Backup(SocketSlashCommand command)
+
+
+        private async Task Backup(SocketSlashCommand command)
         {
             ulong theLastMessage = 1170601414171570186; //TODO Warning: Delete when possible
             var curChannel = command.Channel;
