@@ -12,7 +12,13 @@ namespace App
 
         public async Task MainAsync()
         {
-            _client = new DiscordSocketClient();
+            var config = new DiscordSocketConfig()
+            {
+                GatewayIntents = GatewayIntents.All
+            };
+
+
+            _client = new DiscordSocketClient(config);
             _client.Log += Log;
             _client.Ready += Client_Ready;
             _client.SlashCommandExecuted += SlashCommandHandler;
@@ -29,10 +35,10 @@ namespace App
 
         private async Task SlashCommandHandler(SocketSlashCommand command)
         {
-            await command.RespondAsync($"You executed {command.Data}");
+
         }
 
-        private Task Log(LogMessage msg)
+        private Task Log(LogMessage msg) //TODO Assign slash commands / Make it to not over declare already existing commands
         {
             Console.WriteLine(msg.ToString());
             return Task.CompletedTask;
@@ -42,10 +48,54 @@ namespace App
         {
             var guild = _client.GetGuild(testGuild);
 
-            var guildCommand = new SlashCommandBuilder();
+            //var guildCommand = new SlashCommandBuilder()
+            //    .WithName("backup")
+            //    .WithDescription("gerenciar backups de mensagens")
+            //       .AddOption(new SlashCommandOptionBuilder()
+            //           .WithName("fazer")
+            //           .WithDescription("fazer backup das mensagens deste canal")
+            //           .WithType(ApplicationCommandOptionType.SubCommandGroup)
+            //           .AddOption(new SlashCommandOptionBuilder()
+            //               .WithName("opção")
+            //               .WithRequired(true)
+            //               .AddChoice("Tudo", 99999999)
+            //               .AddChoice("Até ultimo backup", 9999)
+            //               .AddChoice("Especifique", 9999)))
+            //       .AddOption(new SlashCommandOptionBuilder()
+            //           .WithName("info")
+            //           .WithDescription("todas as informações relacionadas ao backup")
+            //           .WithType(ApplicationCommandOptionType.SubCommandGroup));
 
-            guildCommand.WithName("ping");
-            guildCommand.WithDescription("gets the bot's response latency");
+
+            var guildCommand = new SlashCommandBuilder()
+                   .WithName("backup")
+                   .WithDescription("gerenciar backups de mensagens")
+                   .AddOption(new SlashCommandOptionBuilder()
+                       .WithName("fazer")
+                       .WithDescription("Gets or sets the field A")
+                       .WithType(ApplicationCommandOptionType.SubCommandGroup)
+                       .AddOption(new SlashCommandOptionBuilder()
+                           .WithName("valor")
+                           .WithDescription("Sets the field A")
+                           .WithType(ApplicationCommandOptionType.SubCommand)
+                           .AddOption("value", ApplicationCommandOptionType.String, "the value to set the field", isRequired: true))
+                       .AddOption(new SlashCommandOptionBuilder()
+                           .WithName("tudo")
+                           .WithDescription("Gets the value of field A.")
+                           .WithType(ApplicationCommandOptionType.SubCommand))
+                       .AddOption(new SlashCommandOptionBuilder()
+                           .WithName("ultimo-backup")
+                           .WithDescription("balblalba")
+                           .WithType(ApplicationCommandOptionType.SubCommand))
+                       );
+
+
+
+
+
+
+
+
 
             try
             {
