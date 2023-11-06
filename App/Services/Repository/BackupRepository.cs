@@ -1,6 +1,7 @@
 ﻿using App.Services.Context;
+using App.Services.Models;
 
-namespace App.Services.Models
+namespace App.Services.Repository
 {
     internal class BackupBuilder
     {

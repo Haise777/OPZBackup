@@ -1,6 +1,9 @@
-﻿namespace App.Services.Models;
+﻿using System;
+using System.Collections.Generic;
 
-public partial class User //TODO Change table name to Authors
+namespace App.Services.Models;
+
+public partial class Author
 {
     public ulong Id { get; set; }
 

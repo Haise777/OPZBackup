@@ -1,35 +1,31 @@
 ﻿using App.Services.Context;
 using App.Services.Models;
+using Discord;
 
 namespace App.Services.Repository
 {
-    internal class AuthorBuilder
+    internal class AuthorRepository
     {
-        private ulong _id;
-        private string _username;
+        private List<Author> _authors = new List<Author>();
 
-        public AuthorBuilder(ulong id, string username)
+
+        public static bool IsRegistered(ulong id)
         {
-            _id = id;
-            _username = username;
+            var context = new MessageBackupContext();
+
+            return context.Authors.Any(u => u.Id == id);
         }
 
-        public void RegisterOnDatabase()
+        public void AddAuthor(IUser author)
         {
-            using var context = new MessageBackupContext();
-
-            if (context.Users.Any(u => u.Id == _id))
-            {
-                return;
-            }
-
-            var newAuthor = new User()
-            {
-                Id = _id,
-                Username = _username,
-            };
-            context.Users.Add(newAuthor);
-            context.SaveChanges();
+            _authors.Add(
+                new Author
+                {
+                    Id = author.Id,
+                    Username = author.Username
+                });
         }
+
+
     }
 }

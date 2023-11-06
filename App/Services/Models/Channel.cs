@@ -9,7 +9,7 @@ public partial class Channel
 
     public string Name { get; set; } = null!;
 
-    public string? Category { get; set; }
+    public virtual ICollection<Backup> Backups { get; set; } = new List<Backup>();
 
     public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
 }

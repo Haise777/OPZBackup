@@ -13,5 +13,9 @@ public partial class Backup
 
     public ulong OldestMessage { get; set; }
 
-    public virtual User AuthorNavigation { get; set; } = null!;
+    public ulong Channel { get; set; }
+
+    public virtual Author AuthorNavigation { get; set; } = null!;
+
+    public virtual Channel ChannelNavigation { get; set; } = null!;
 }

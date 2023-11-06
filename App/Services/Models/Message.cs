@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace App.Services.Models;
+﻿namespace App.Services.Models;
 
 public partial class Message
 {
@@ -17,7 +14,7 @@ public partial class Message
 
     public ulong ChannelId { get; set; }
 
-    public virtual User AuthorNavigation { get; set; } = null!;
+    public virtual Author AuthorNavigation { get; set; } = null!;
 
     public virtual Channel Channel { get; set; } = null!;
 }

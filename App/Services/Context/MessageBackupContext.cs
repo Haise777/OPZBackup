@@ -14,13 +14,13 @@ public partial class MessageBackupContext : DbContext
     {
     }
 
+    public virtual DbSet<Author> Authors { get; set; }
+
     public virtual DbSet<Backup> Backups { get; set; }
 
     public virtual DbSet<Channel> Channels { get; set; }
 
     public virtual DbSet<Message> Messages { get; set; }
-
-    public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -31,12 +31,25 @@ public partial class MessageBackupContext : DbContext
             .EnableDetailedErrors();
     }
 
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
             .UseCollation("utf8mb4_0900_ai_ci")
             .HasCharSet("utf8mb4");
+
+        modelBuilder.Entity<Author>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("authors");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedNever()
+                .HasColumnName("id");
+            entity.Property(e => e.Username)
+                .HasMaxLength(30)
+                .HasColumnName("username");
+        });
 
         modelBuilder.Entity<Backup>(entity =>
         {
@@ -46,10 +59,13 @@ public partial class MessageBackupContext : DbContext
 
             entity.HasIndex(e => e.Author, "author");
 
+            entity.HasIndex(e => e.Channel, "channel");
+
             entity.Property(e => e.Date)
                 .HasColumnType("datetime")
                 .HasColumnName("date");
             entity.Property(e => e.Author).HasColumnName("author");
+            entity.Property(e => e.Channel).HasColumnName("channel");
             entity.Property(e => e.OldestMessage).HasColumnName("oldest_message");
             entity.Property(e => e.YoungestMessage).HasColumnName("youngest_message");
 
@@ -57,6 +73,11 @@ public partial class MessageBackupContext : DbContext
                 .HasForeignKey(d => d.Author)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("backups_ibfk_1");
+
+            entity.HasOne(d => d.ChannelNavigation).WithMany(p => p.Backups)
+                .HasForeignKey(d => d.Channel)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("backups_ibfk_2");
         });
 
         modelBuilder.Entity<Channel>(entity =>
@@ -68,9 +89,6 @@ public partial class MessageBackupContext : DbContext
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
                 .HasColumnName("id");
-            entity.Property(e => e.Category)
-                .HasMaxLength(30)
-                .HasColumnName("category");
             entity.Property(e => e.Name)
                 .HasMaxLength(30)
                 .HasColumnName("name");
@@ -109,20 +127,6 @@ public partial class MessageBackupContext : DbContext
             entity.HasOne(d => d.Channel).WithMany(p => p.Messages)
                 .HasForeignKey(d => d.ChannelId)
                 .HasConstraintName("messages_ibfk_1");
-        });
-
-        modelBuilder.Entity<User>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("users");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedNever()
-                .HasColumnName("id");
-            entity.Property(e => e.Username)
-                .HasMaxLength(30)
-                .HasColumnName("username");
         });
 
         OnModelCreatingPartial(modelBuilder);

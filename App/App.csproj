@@ -21,7 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Modules\" />
     <Folder Include="ScaffoldContext\" />
     <Folder Include="ScaffoldModels\" />
   </ItemGroup>
