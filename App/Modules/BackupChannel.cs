@@ -17,11 +17,7 @@ namespace App.Modules
                 case "fazer":
                     if (fazerCommandOptions.Name == "total")
                     {
-
-
-                    }
-                    else if (fazerCommandOptions.Name == "tudo")
-                    {
+                        await Backup(command);
 
                     }
                     else if (fazerCommandOptions.Name == "")
@@ -49,28 +45,40 @@ namespace App.Modules
 
         private async Task Backup(SocketSlashCommand command)
         {
-            ulong theLastMessage = 1170601414171570186; //TODO Warning: Delete when possible
-            var curChannel = command.Channel;
-            string responseMessage = "";
-            var messages = await curChannel.GetMessagesAsync(10).FlattenAsync();
+            //TODO IMPORTANT: Make a way to validate if backup should be made
 
-            foreach (var message in messages)
+
+            while (true)
             {
-                if (message != null)
-                {
-                    if (message.Id != (ulong)theLastMessage)
-                    {
-                        responseMessage += $"{message.Content} -\n";
+                var messageBatch = await MakeBackup(command.Channel);
 
-                    }
-                    else
-                    {
-                        break;
-                    }
+                foreach (var message in messageBatch)
+                {
+                    if (message == null) break;
+
+                    //if (CheckIfMessageExistOnDb) { }
+
+
+
+
+
                 }
+
+
+
+
             }
 
-            await command.RespondAsync(responseMessage);
+
+            await command.RespondAsync("oi"); //TODO IMPORTANT: Implement proper response
+        }
+
+
+        private async Task<IEnumerable<IMessage>> MakeBackup(ISocketMessageChannel channel) //Batch maker
+        {
+            var messages = await channel.GetMessagesAsync(50).FlattenAsync();
+
+            return messages;
         }
     }
 }
