@@ -9,12 +9,14 @@ namespace App.Services.Repository
         private ulong _authorId;
         private ulong _startMessageId;
         private ulong _endMessageId;
+        private ulong _channelId;
 
-        public BackupBuilder(DateTime startDate, ulong authorId, ulong startMessageId)
+        public BackupBuilder(DateTime startDate, ulong authorId, ulong startMessageId, ulong channelId)
         {
             _startDate = startDate;
             _authorId = authorId;
             _startMessageId = startMessageId;
+            _channelId = channelId;
         }
 
         public void SaveOnDatabase(ulong endMessageId)
@@ -29,11 +31,12 @@ namespace App.Services.Repository
                     Date = _startDate,
                     Author = _authorId,
                     YoungestMessage = _startMessageId,
+                    Channel = _channelId,
                 };
                 context.Backups.Add(currentBackup);
             }
-
             currentBackup.OldestMessage = _endMessageId;
+
             try
             {
                 context.SaveChanges();
