@@ -15,9 +15,9 @@ namespace App.Modules
             switch (firstCommandOption.Name)
             {
                 case "fazer":
-                    if (fazerCommandOptions.Name == "valor")
+                    if (fazerCommandOptions.Name == "total")
                     {
-                        inputValue = (int)fazerCommandOptions.Options.First().Value;
+
 
                     }
                     else if (fazerCommandOptions.Name == "tudo")
@@ -29,6 +29,18 @@ namespace App.Modules
 
                     }
                     break;
+
+                case "deletar":
+
+                    if (fazerCommandOptions.Name == "proprio")
+                    {
+
+                    }
+                    break;
+
+                default:
+                    throw new ArgumentException("Erro grave no BackupOptions SwitchCase");
+
             }
         }
 
