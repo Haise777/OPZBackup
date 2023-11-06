@@ -1,10 +1,13 @@
-﻿namespace App.Services.Models;
+﻿using System;
+using System.Collections.Generic;
+
+namespace App.Services.Models;
 
 public partial class Message
 {
     public ulong Id { get; set; }
 
-    public string Author { get; set; } = null!;
+    public ulong Author { get; set; }
 
     public DateTime Date { get; set; }
 
@@ -13,6 +16,8 @@ public partial class Message
     public string Content { get; set; } = null!;
 
     public ulong ChannelId { get; set; }
+
+    public virtual User AuthorNavigation { get; set; } = null!;
 
     public virtual Channel Channel { get; set; } = null!;
 }
