@@ -18,6 +18,7 @@ namespace App.Modules
                     if (fazerCommandOptions.Name == "valor")
                     {
                         inputValue = (int)fazerCommandOptions.Options.First().Value;
+
                     }
                     else if (fazerCommandOptions.Name == "tudo")
                     {

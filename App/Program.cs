@@ -9,7 +9,7 @@ namespace App
     {
         BackupChannel _backupChannel = new BackupChannel();
 
-        public static ulong testGuild = ulong.Parse(File.ReadAllText(@"E:\archives\token\guild.txt"));
+        public static ulong testGuild = ulong.Parse(File.ReadAllText(@"E:\archives\privateapplocals\guild.txt"));
         private DiscordSocketClient _client;
         static Task Main(string[] args) => new Program().MainAsync();
 
@@ -27,8 +27,7 @@ namespace App
             _client.SlashCommandExecuted += SlashCommandHandler;
 
 
-
-            var token = File.ReadAllText(@"E:\archives\token\token.txt");
+            var token = File.ReadAllText(@"E:\archives\privateapplocals\token.txt");
             await _client.LoginAsync(TokenType.Bot, token);
 
             await _client.StartAsync();
@@ -50,7 +49,9 @@ namespace App
 
         private Task Log(LogMessage msg) //TODO Assign slash commands / Make it to not over declare already existing commands
         {
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
             Console.WriteLine(msg.ToString());
+            Console.ForegroundColor = ConsoleColor.Gray;
             return Task.CompletedTask;
         }
 
@@ -62,24 +63,38 @@ namespace App
             var guildCommand = new SlashCommandBuilder()
                    .WithName("backup")
                    .WithDescription("gerenciar backups de mensagens")
-                   .AddOption(new SlashCommandOptionBuilder()
+                   .AddOption
+                   (
+                        new SlashCommandOptionBuilder()
                        .WithName("fazer")
                        .WithDescription("Gets or sets the field A")
                        .WithType(ApplicationCommandOptionType.SubCommandGroup)
-                       .AddOption(new SlashCommandOptionBuilder()
-                           .WithName("valor")
-                           .WithDescription("Sets the field A")
-                           .WithType(ApplicationCommandOptionType.SubCommand)
-                           .AddOption("value", ApplicationCommandOptionType.String, "the value to set the field", isRequired: true))
-                       .AddOption(new SlashCommandOptionBuilder()
+                       .AddOption
+                       (
+                            new SlashCommandOptionBuilder()
                            .WithName("tudo")
                            .WithDescription("Gets the value of field A.")
-                           .WithType(ApplicationCommandOptionType.SubCommand))
-                       .AddOption(new SlashCommandOptionBuilder()
-                           .WithName("ultimo-backup")
-                           .WithDescription("balblalba")
-                           .WithType(ApplicationCommandOptionType.SubCommand))
-                       );
+                           .WithType(ApplicationCommandOptionType.SubCommand)
+                       )
+                   )
+                   .AddOption
+                   (
+                        new SlashCommandOptionBuilder()
+                        .WithName("deletar")
+                        .WithDescription("delet")
+                        .WithType(ApplicationCommandOptionType.SubCommandGroup)
+                        .AddOption
+                        (
+                            new SlashCommandOptionBuilder()
+                            .WithName("proprio")
+                            .WithDescription("deletar proprias mensagens do backup")
+                            .WithType(ApplicationCommandOptionType.SubCommand)
+                            .AddOption("confirmar", ApplicationCommandOptionType.Boolean, "confirmar", isRequired: true)
+                        )
+                   );
+
+
+
 
 
 
