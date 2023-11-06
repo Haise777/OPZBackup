@@ -62,18 +62,18 @@ namespace App
 
             var guildCommand = new SlashCommandBuilder()
                    .WithName("backup")
-                   .WithDescription("gerenciar backups de mensagens")
+                   .WithDescription("Backup de mensagens")
                    .AddOption
                    (
                         new SlashCommandOptionBuilder()
                        .WithName("fazer")
-                       .WithDescription("Gets or sets the field A")
+                       .WithDescription("Efetua o backup do canal")
                        .WithType(ApplicationCommandOptionType.SubCommandGroup)
                        .AddOption
                        (
                             new SlashCommandOptionBuilder()
-                           .WithName("tudo")
-                           .WithDescription("Gets the value of field A.")
+                           .WithName("total")
+                           .WithDescription("Faz o backup total do canal")
                            .WithType(ApplicationCommandOptionType.SubCommand)
                        )
                    )
@@ -81,13 +81,13 @@ namespace App
                    (
                         new SlashCommandOptionBuilder()
                         .WithName("deletar")
-                        .WithDescription("delet")
+                        .WithDescription("Deleta entradas no backup")
                         .WithType(ApplicationCommandOptionType.SubCommandGroup)
                         .AddOption
                         (
                             new SlashCommandOptionBuilder()
                             .WithName("proprio")
-                            .WithDescription("deletar proprias mensagens do backup")
+                            .WithDescription("Deletar as proprias mensagens do backup") //TODO Make a more meaningful warning message
                             .WithType(ApplicationCommandOptionType.SubCommand)
                             .AddOption("confirmar", ApplicationCommandOptionType.Boolean, "confirmar", isRequired: true)
                         )
