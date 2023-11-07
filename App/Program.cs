@@ -49,9 +49,7 @@ namespace App
 
         private Task Log(LogMessage msg) //TODO Assign slash commands / Make it to not over declare already existing commands
         {
-            Console.ForegroundColor = ConsoleColor.DarkCyan;
-            Console.WriteLine(msg.ToString());
-            Console.ForegroundColor = ConsoleColor.Gray;
+            ConsoleLogger.DiscordBot(msg.ToString());
             return Task.CompletedTask;
         }
 

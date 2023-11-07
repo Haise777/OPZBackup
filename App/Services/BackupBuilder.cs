@@ -11,6 +11,7 @@ namespace App.Services
         private AuthorRepository _authorRepository;
         private BackupRepository _backupRepository;
         private List<IMessage> _messageBatch;
+        private bool firstBuild = true;
 
         public BackupBuilder(ISocketMessageChannel channel, IUser commandAuthor)
         {
@@ -24,6 +25,30 @@ namespace App.Services
         {
             _messageBatch.Add(message);
         }
+
+        public void Build()
+        {
+            if (firstBuild)
+            {
+                FirstBuild();
+                firstBuild = false;
+            }
+
+            SaveBuild();
+        }
+
+        private void SaveBuild()
+        {
+
+        }
+
+        private void FirstBuild()
+        {
+            _authorRepository.SaveOnDatabase();
+            _backupRepository.
+        }
+
+
 
 
     }

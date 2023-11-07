@@ -67,8 +67,9 @@ namespace App.Modules
                     backup.AddMessage(message);
 
                 }
-
                 //add message to db
+                backup.Build();
+
 
             }
             await command.RespondAsync("oi"); //TODO IMPORTANT: Implement proper response
