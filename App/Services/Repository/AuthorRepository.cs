@@ -9,14 +9,33 @@ namespace App.Services.Repository
         private List<Author> _authors = new List<Author>();
 
 
-        public static bool IsRegistered(ulong id)
+        public void RegisterIfNotExists(IUser author)
         {
-            var context = new MessageBackupContext();
+            if (_authors.Any(a => a.Id == author.Id))
+                return;
 
-            return context.Authors.Any(u => u.Id == id);
+            using var context = new MessageBackupContext();
+
+            if (context.Authors.Any(a => a.Id == author.Id))
+                return;
+
+            AddAuthor(author);
         }
 
-        public void AddAuthor(IUser author)
+
+        public void SaveOnDatabase()
+        {
+            if (_authors.Count == 0) return;
+
+            using var context = new MessageBackupContext();
+
+            context.Authors.AddRange(_authors);
+            context.SaveChanges();
+            _authors.Clear();
+        }
+
+
+        private void AddAuthor(IUser author)
         {
             _authors.Add(
                 new Author

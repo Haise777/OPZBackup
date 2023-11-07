@@ -8,23 +8,29 @@ namespace App.Services.Repository
     {
 
 
-        public static void RegisterIfNotExists(ISocketMessageChannel channel)
+        public static Channel RegisterIfNotExists(ISocketMessageChannel channel)
         {
             var context = new MessageBackupContext();
-            if (context.Channels.Any(c => c.Id == channel.Id))
+            var theChannel = context.Channels.SingleOrDefault(c => c.Id == channel.Id);
+            if (theChannel is not null)
             {
-                return;
+                return theChannel;
             }
 
-            context.Add(
-                new Channel()
-                {
-                    Id = channel.Id,
-                    Name = channel.Name,
-                });
+            var newChannel = new Channel()
+            {
+                Id = channel.Id,
+                Name = channel.Name,
+            };
 
+            context.Channels.Add(newChannel);
             context.SaveChanges();
+            return newChannel;
         }
 
+        public void SaveOnDatabase()
+        {
+
+        }
     }
 }

@@ -3,50 +3,40 @@ using App.Services.Models;
 
 namespace App.Services.Repository
 {
-    internal class BackupBuilder
+    internal class BackupRepository
     {
         private DateTime _startDate;
         private ulong _authorId;
         private ulong _startMessageId;
-        private ulong _endMessageId;
         private ulong _channelId;
+        private BackupRegister? backup;
 
-        public BackupBuilder(DateTime startDate, ulong authorId, ulong startMessageId, ulong channelId)
+        public BackupRepository(DateTime startDate, ulong authorId, ulong channelId)
         {
             _startDate = startDate;
             _authorId = authorId;
-            _startMessageId = startMessageId;
             _channelId = channelId;
         }
 
-        public void SaveOnDatabase(ulong endMessageId)
+
+        public void UpdateOnDatabase(ulong lastMessageId) //update inserting first and new last message
         {
             using var context = new MessageBackupContext();
-            var currentBackup = context.Backups.SingleOrDefault(b => b.Date == _startDate);
 
-            if (currentBackup == null)
-            {
-                currentBackup = new Backup()
-                {
-                    Date = _startDate,
-                    Author = _authorId,
-                    YoungestMessage = _startMessageId,
-                    Channel = _channelId,
-                };
-                context.Backups.Add(currentBackup);
-            }
-            currentBackup.OldestMessage = _endMessageId;
+            backup = context.BackupRegisters.SingleOrDefault(b => b.Date == _startDate);
+            if (backup == null)
+                throw new InvalidOperationException("Backup not found on database");
 
-            try
-            {
-                context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("toImplementErrorLog :: Error trying to save to DB, on BackupBuilder");
-                throw;
-            }
+            backup.YoungestMessage = _startMessageId;
+            backup.OldestMessage = lastMessageId;
+            context.SaveChanges();
+        }
+
+        public void InsertStartMessage(ulong startMessageId)
+        {
+            if (_startMessageId == 0)
+                _startMessageId = startMessageId;
         }
     }
 }
+

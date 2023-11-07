@@ -14,7 +14,15 @@ public partial class Message
 
     public ulong ChannelId { get; set; }
 
+    public DateTime BackupDate { get; set; }
+
     public virtual Author AuthorNavigation { get; set; } = null!;
+
+    public virtual BackupRegister BackupDateNavigation { get; set; } = null!;
+
+    public virtual ICollection<BackupRegister> BackupRegisterOldestMessageNavigations { get; set; } = new List<BackupRegister>();
+
+    public virtual ICollection<BackupRegister> BackupRegisterYoungestMessageNavigations { get; set; } = new List<BackupRegister>();
 
     public virtual Channel Channel { get; set; } = null!;
 }

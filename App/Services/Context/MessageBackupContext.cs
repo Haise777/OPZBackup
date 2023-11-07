@@ -16,7 +16,7 @@ public partial class MessageBackupContext : DbContext
 
     public virtual DbSet<Author> Authors { get; set; }
 
-    public virtual DbSet<Backup> Backups { get; set; }
+    public virtual DbSet<BackupRegister> BackupRegisters { get; set; }
 
     public virtual DbSet<Channel> Channels { get; set; }
 
@@ -51,33 +51,45 @@ public partial class MessageBackupContext : DbContext
                 .HasColumnName("username");
         });
 
-        modelBuilder.Entity<Backup>(entity =>
+        modelBuilder.Entity<BackupRegister>(entity =>
         {
             entity.HasKey(e => e.Date).HasName("PRIMARY");
 
-            entity.ToTable("backups");
+            entity.ToTable("backup_registers");
 
             entity.HasIndex(e => e.Author, "author");
 
-            entity.HasIndex(e => e.Channel, "channel");
+            entity.HasIndex(e => e.ChannelId, "channel");
+
+            entity.HasIndex(e => e.OldestMessage, "oldest_message");
+
+            entity.HasIndex(e => e.YoungestMessage, "youngest_message");
 
             entity.Property(e => e.Date)
                 .HasColumnType("datetime")
                 .HasColumnName("date");
             entity.Property(e => e.Author).HasColumnName("author");
-            entity.Property(e => e.Channel).HasColumnName("channel");
+            entity.Property(e => e.ChannelId).HasColumnName("channel_id");
             entity.Property(e => e.OldestMessage).HasColumnName("oldest_message");
             entity.Property(e => e.YoungestMessage).HasColumnName("youngest_message");
 
-            entity.HasOne(d => d.AuthorNavigation).WithMany(p => p.Backups)
+            entity.HasOne(d => d.AuthorNavigation).WithMany(p => p.BackupRegisters)
                 .HasForeignKey(d => d.Author)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("backups_ibfk_1");
+                .HasConstraintName("backup_registers_ibfk_1");
 
-            entity.HasOne(d => d.ChannelNavigation).WithMany(p => p.Backups)
-                .HasForeignKey(d => d.Channel)
+            entity.HasOne(d => d.Channel).WithMany(p => p.BackupRegisters)
+                .HasForeignKey(d => d.ChannelId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("backups_ibfk_2");
+                .HasConstraintName("backup_registers_ibfk_2");
+
+            entity.HasOne(d => d.OldestMessageNavigation).WithMany(p => p.BackupRegisterOldestMessageNavigations)
+                .HasForeignKey(d => d.OldestMessage)
+                .HasConstraintName("backup_registers_ibfk_4");
+
+            entity.HasOne(d => d.YoungestMessageNavigation).WithMany(p => p.BackupRegisterYoungestMessageNavigations)
+                .HasForeignKey(d => d.YoungestMessage)
+                .HasConstraintName("backup_registers_ibfk_3");
         });
 
         modelBuilder.Entity<Channel>(entity =>
@@ -102,12 +114,17 @@ public partial class MessageBackupContext : DbContext
 
             entity.HasIndex(e => e.Author, "author");
 
+            entity.HasIndex(e => e.BackupDate, "backup_date");
+
             entity.HasIndex(e => e.ChannelId, "channel_id");
 
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
                 .HasColumnName("id");
             entity.Property(e => e.Author).HasColumnName("author");
+            entity.Property(e => e.BackupDate)
+                .HasColumnType("datetime")
+                .HasColumnName("backup_date");
             entity.Property(e => e.ChannelId).HasColumnName("channel_id");
             entity.Property(e => e.Content)
                 .HasMaxLength(2000)
@@ -123,6 +140,11 @@ public partial class MessageBackupContext : DbContext
                 .HasForeignKey(d => d.Author)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("messages_ibfk_2");
+
+            entity.HasOne(d => d.BackupDateNavigation).WithMany(p => p.Messages)
+                .HasForeignKey(d => d.BackupDate)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("messages_ibfk_3");
 
             entity.HasOne(d => d.Channel).WithMany(p => p.Messages)
                 .HasForeignKey(d => d.ChannelId)

@@ -1,4 +1,5 @@
-﻿using App.Services.Repository;
+﻿using App.Services;
+using App.Services.Repository;
 using Discord;
 using Discord.WebSocket;
 
@@ -47,14 +48,11 @@ namespace App.Modules
         private async Task Backup(SocketSlashCommand command)
         {
             //TODO IMPORTANT: Make a way to validate if backup should be made
-            var userRepository = new AuthorRepository();
 
-            ChannelRepository.RegisterIfNotExists(command.Channel);
-
+            var backup = new BackupBuilder(command.Channel, command.User);
 
             while (true)
             {
-                var validBatch = new List<IMessage>();
                 var messageBatch = await MakeBackup(command.Channel);
 
                 foreach (var message in messageBatch)
@@ -63,24 +61,16 @@ namespace App.Modules
 
                     if (MessageRepository.CheckIfExists(message.Id))
                     {
-                        //Do something about it
+                        break;
                     }
 
-                    if (!AuthorRepository.IsRegistered(message.Author.Id))
-                    {
-                        userRepository.AddAuthor(message.Author);
-                    }
+                    backup.AddMessage(message);
 
-
-                    validBatch.Add(message);
                 }
 
                 //add message to db
 
-
-
             }
-
             await command.RespondAsync("oi"); //TODO IMPORTANT: Implement proper response
         }
 
