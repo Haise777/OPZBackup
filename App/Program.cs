@@ -37,6 +37,8 @@ namespace App
 
         private async Task SlashCommandHandler(SocketSlashCommand command)
         {
+            ConsoleLogger.GenericBotActions($"{nameof(Program)}-{nameof(SlashCommandHandler)}",
+                $"user:{command.User.Username} channel:{command.Channel.Name} command:{command.CommandName}");
 
             switch (command.Data.Name)
             {
@@ -66,14 +68,8 @@ namespace App
                         new SlashCommandOptionBuilder()
                        .WithName("fazer")
                        .WithDescription("Efetua o backup do canal")
-                       .WithType(ApplicationCommandOptionType.SubCommandGroup)
-                       .AddOption
-                       (
-                            new SlashCommandOptionBuilder()
-                           .WithName("total")
-                           .WithDescription("Faz o backup total do canal")
-                           .WithType(ApplicationCommandOptionType.SubCommand)
-                       )
+                       .WithType(ApplicationCommandOptionType.SubCommand)
+                       .AddOption("confirmar", ApplicationCommandOptionType.Boolean, "confirmar", isRequired: true)
                    )
                    .AddOption
                    (

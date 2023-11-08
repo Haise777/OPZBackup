@@ -19,14 +19,15 @@ namespace App.Modules
             switch (firstCommandOption.Name)
             {
                 case "fazer":
-                    if (fazerCommandOptions.Name == "total")
+                    if (((bool)fazerCommandOptions.Value))
                     {
+                        _log.BotActions(firstCommandOption.Name);
                         await Backup(command);
 
                     }
-                    else if (fazerCommandOptions.Name == "")
+                    else
                     {
-
+                        await command.RespondAsync();
                     }
                     break;
 
@@ -52,8 +53,8 @@ namespace App.Modules
             //TODO IMPORTANT: Make a way to validate if backup should be made
 
             var backup = new Backup(command.Channel, command.User);
-            ulong startFrom = 1;
             bool EndOfChannel = false;
+            ulong startFrom = 1;
 
             while (!EndOfChannel)
             {
@@ -61,14 +62,20 @@ namespace App.Modules
 
                 foreach (var message in messageBatch)
                 {
+                    //Check if it reached end of the channel
                     if (message == null)
                     {
+                        _log.BackupAction("Null message value found, considering end of channel");
                         EndOfChannel = true;
                         break;
                     }
 
+                    //If message already exists on database,
+                    //jumps to the last saved message from that backup
                     if (MessageRepository.CheckIfExists(message.Id))
                     {
+                        _log.BackupAction($"Already saved message found: {message.Content}\n" +
+                            $"jumping to last backuped message");
                         startFrom = BackupRegisterRepository.GetOldestMessageId(message.Id);
                         break;
                     }
@@ -94,13 +101,19 @@ namespace App.Modules
 
         private async Task<IEnumerable<IMessage>> GetMessages(ISocketMessageChannel channel, ulong startFrom) //Batch maker
         {
+            _log.BackupAction($"Getting messages from {channel.Name}");
             IEnumerable<IMessage> messages;
 
             if (startFrom != 1)
-                messages = await channel.GetMessagesAsync().FlattenAsync();
+            {
+                _log.BackupAction("Starting from beginning");
+                messages = await channel.GetMessagesAsync(8).FlattenAsync();
+            }
             else
-                messages = await channel.GetMessagesAsync(startFrom, Direction.Before).FlattenAsync();
-
+            {
+                _log.BackupAction("Starting from older message");
+                messages = await channel.GetMessagesAsync(startFrom, Direction.Before, 8).FlattenAsync();
+            }
             return messages;
         }
     }

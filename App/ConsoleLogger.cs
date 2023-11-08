@@ -66,7 +66,7 @@
         public void BotActions(string message)
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine($" {DateTime.Now.ToLongTimeString()} - {_location}: {message}");
+            Console.WriteLine($"BOT: {DateTime.Now.ToLongTimeString()} - {_location}: {message}");
             Console.ForegroundColor = ConsoleColor.Gray;
         }
 
@@ -74,7 +74,7 @@
         public void BackupAction(string message)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($" {DateTime.Now.ToLongTimeString()} - {_location}: {message}");
+            Console.WriteLine($"Backup: {DateTime.Now.ToLongTimeString()} - {_location}: {message}");
             Console.ForegroundColor = ConsoleColor.Gray;
         }
     }
