@@ -52,22 +52,28 @@ namespace App.Modules
             //TODO IMPORTANT: Make a way to validate if backup should be made
 
             var backup = new Backup(command.Channel, command.User);
+            ulong startFrom = 1;
+            bool EndOfChannel = false;
 
-            while (true)
+            while (!EndOfChannel)
             {
-                var messageBatch = await MakeBackup(command.Channel);
+                var messageBatch = await GetMessages(command.Channel, startFrom);
 
                 foreach (var message in messageBatch)
                 {
-                    if (message == null) break;
+                    if (message == null)
+                    {
+                        EndOfChannel = true;
+                        break;
+                    }
 
                     if (MessageRepository.CheckIfExists(message.Id))
                     {
-                        break; //TODO Implement: A way to skip to the oldest message not back upped
+                        startFrom = BackupRegisterRepository.GetOldestMessageId(message.Id);
+                        break;
                     }
 
                     backup.AddMessage(message);
-
                 }
 
                 //add message to db
@@ -86,9 +92,14 @@ namespace App.Modules
 
 
 
-        private async Task<IEnumerable<IMessage>> MakeBackup(ISocketMessageChannel channel) //Batch maker
+        private async Task<IEnumerable<IMessage>> GetMessages(ISocketMessageChannel channel, ulong startFrom) //Batch maker
         {
-            var messages = await channel.GetMessagesAsync(50).FlattenAsync();
+            IEnumerable<IMessage> messages;
+
+            if (startFrom != 1)
+                messages = await channel.GetMessagesAsync().FlattenAsync();
+            else
+                messages = await channel.GetMessagesAsync(startFrom, Direction.Before).FlattenAsync();
 
             return messages;
         }

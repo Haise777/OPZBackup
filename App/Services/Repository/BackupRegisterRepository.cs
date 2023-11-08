@@ -64,9 +64,7 @@ internal class BackupRegisterRepository
             ConsoleLogger.GenericException($"{nameof(BackupRegisterRepository)}-{nameof(CreateOnDatabase)}", ex);
             throw;
         }
-
     }
-
 
     public void InsertStartMessage(ulong startMessageId)
     {
@@ -76,5 +74,14 @@ internal class BackupRegisterRepository
             throw new InvalidOperationException("The start message is already defined");
 
         _backupRegister.YoungestMessage = startMessageId;
+    }
+
+    public static ulong GetOldestMessageId(ulong currentMessageId)
+    {
+        using var context = new MessageBackupContext();
+
+        var existingBackup = context.BackupRegisters.First(b => b.YoungestMessage == currentMessageId);
+
+        return existingBackup.OldestMessage ?? throw new InvalidOperationException("Invalid older backup found");
     }
 }
