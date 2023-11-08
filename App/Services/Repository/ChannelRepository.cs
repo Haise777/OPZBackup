@@ -3,10 +3,8 @@ using App.Services.Models;
 
 namespace App.Services.Repository
 {
-    internal class ChannelRepository
+    internal static class ChannelRepository
     {
-
-
         public static Channel RegisterIfNotExists(Channel channel)
         {
             var context = new MessageBackupContext();

@@ -49,7 +49,7 @@ namespace App
 
         private Task Log(LogMessage msg) //TODO Assign slash commands / Make it to not over declare already existing commands
         {
-            ConsoleLogger.DiscordBot(msg.ToString());
+            ConsoleLogger.BotLogger(msg.ToString());
             return Task.CompletedTask;
         }
 
@@ -90,15 +90,6 @@ namespace App
                             .AddOption("confirmar", ApplicationCommandOptionType.Boolean, "confirmar", isRequired: true)
                         )
                    );
-
-
-
-
-
-
-
-
-
 
 
 

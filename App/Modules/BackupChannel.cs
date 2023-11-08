@@ -7,6 +7,8 @@ namespace App.Modules
 {
     internal class BackupChannel
     {
+        private ConsoleLogger _log = new ConsoleLogger(nameof(BackupChannel));
+
         public async Task BackupOptions(SocketSlashCommand command)
         {
             int inputValue = 0;
@@ -68,8 +70,15 @@ namespace App.Modules
 
                 }
                 //add message to db
-                backup.Save();
 
+                try
+                {
+                    backup.Save();
+                }
+                catch (Exception ex)
+                {
+                    _log.Exception("Failed to save current backup batch", ex);
+                }
 
             }
             await command.RespondAsync("oi"); //TODO IMPORTANT: Implement proper response

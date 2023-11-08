@@ -9,20 +9,19 @@ namespace App.Services
     {
         private Channel _selectedChannel;
         private BackupRegisterRepository _backupRegRepository;
-        private DateTime _backupStartDate;
-        private List<Author> _authors;
-        private List<Message> _messageBatch;
-        private bool firstBuild = true;
+        private readonly DateTime _backupStartDate;
+        private List<Author> _authors = new List<Author>();
+        private List<Message> _messageBatch = new List<Message>();
+        private ConsoleLogger _log = new ConsoleLogger(nameof(BackupBuilder));
+        private int _batchCounter;
 
         public BackupBuilder(ISocketMessageChannel channel, IUser commandAuthor)
         {
             _backupStartDate = DateTime.Now;
             _selectedChannel = new Channel() { Name = channel.Name, Id = channel.Id };
-            _backupRegRepository = new BackupRegisterRepository(_backupStartDate, commandAuthor.Id, _selectedChannel.Id);
-            _authors = new List<Author>()
-            {
-                new Author() { Id = commandAuthor.Id, Username = commandAuthor.Username }
-            };
+            _backupRegRepository =
+                new BackupRegisterRepository(_backupStartDate, commandAuthor.Id, _selectedChannel.Id);
+            _authors.Add(new Author() { Id = commandAuthor.Id, Username = commandAuthor.Username });
         }
 
 
@@ -52,22 +51,25 @@ namespace App.Services
                 });
         }
 
+        private bool _firstBuild = true;
+
         public void Save()
         {
-            if (firstBuild)
+            if (_firstBuild)
             {
                 SaveFirst();
-                firstBuild = false;
+                _firstBuild = false;
             }
 
             AuthorRepository.SaveOnDatabase(_authors);
             MessageRepository.SaveToDatabase(_messageBatch);
             _backupRegRepository.UpdateOnDatabase(_messageBatch.Last().Id);
 
+            _log.BackupAction($"Finished batch number {_batchCounter}");
+            _log.BackupAction("Clearing message batch");
             _messageBatch.Clear();
+            _batchCounter++;
         }
-
-
 
         private void SaveFirst()
         {
@@ -78,11 +80,10 @@ namespace App.Services
             _backupRegRepository.InsertStartMessage(_messageBatch.First().Id);
             _backupRegRepository.UpdateOnDatabase(_messageBatch.Last().Id);
 
+            _log.BackupAction("Finished first batch");
+            _log.BackupAction("Clearing message batch");
             _messageBatch.Clear();
+            _batchCounter++;
         }
-
-
-
-
     }
 }

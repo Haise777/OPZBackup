@@ -3,7 +3,7 @@ using App.Services.Models;
 
 namespace App.Services.Repository
 {
-    internal class MessageRepository
+    internal static class MessageRepository
     {
 
         public static bool CheckIfExists(ulong id)

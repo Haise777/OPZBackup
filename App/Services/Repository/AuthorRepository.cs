@@ -3,17 +3,8 @@ using App.Services.Models;
 
 namespace App.Services.Repository
 {
-    internal class AuthorRepository
+    internal static class AuthorRepository
     {
-        private static bool CheckIfExists(Author author)
-        {
-            using var context = new MessageBackupContext();
-
-
-
-            return false;
-        }
-
         public static void SaveOnDatabase(List<Author> authors)
         {
             if (authors.Count == 0) return;
