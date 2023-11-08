@@ -68,7 +68,7 @@ namespace App.Modules
 
                 }
                 //add message to db
-                backup.Build();
+                backup.Save();
 
 
             }

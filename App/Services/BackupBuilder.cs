@@ -52,23 +52,24 @@ namespace App.Services
                 });
         }
 
-        public void Build()
+        public void Save()
         {
             if (firstBuild)
             {
-                FirstBuild();
+                SaveFirst();
                 firstBuild = false;
             }
 
-            SaveBuild();
+            AuthorRepository.SaveOnDatabase(_authors);
+            MessageRepository.SaveToDatabase(_messageBatch);
+            _backupRegRepository.UpdateOnDatabase(_messageBatch.Last().Id);
+
+            _messageBatch.Clear();
         }
 
-        private void SaveBuild()
-        {
 
-        }
 
-        private void FirstBuild()
+        private void SaveFirst()
         {
             _selectedChannel = ChannelRepository.RegisterIfNotExists(_selectedChannel);
             AuthorRepository.SaveOnDatabase(_authors);
@@ -76,6 +77,8 @@ namespace App.Services
             MessageRepository.SaveToDatabase(_messageBatch);
             _backupRegRepository.InsertStartMessage(_messageBatch.First().Id);
             _backupRegRepository.UpdateOnDatabase(_messageBatch.Last().Id);
+
+            _messageBatch.Clear();
         }
 
 
