@@ -1,6 +1,5 @@
 ﻿using App.Services.Context;
 using App.Services.Models;
-using Discord.WebSocket;
 
 namespace App.Services.Repository
 {
@@ -8,7 +7,7 @@ namespace App.Services.Repository
     {
 
 
-        public static Channel RegisterIfNotExists(ISocketMessageChannel channel)
+        public static Channel RegisterIfNotExists(Channel channel)
         {
             var context = new MessageBackupContext();
             var theChannel = context.Channels.SingleOrDefault(c => c.Id == channel.Id);
@@ -17,20 +16,10 @@ namespace App.Services.Repository
                 return theChannel;
             }
 
-            var newChannel = new Channel()
-            {
-                Id = channel.Id,
-                Name = channel.Name,
-            };
 
-            context.Channels.Add(newChannel);
+            context.Channels.Add(channel);
             context.SaveChanges();
-            return newChannel;
-        }
-
-        public void SaveOnDatabase()
-        {
-
+            return channel;
         }
     }
 }

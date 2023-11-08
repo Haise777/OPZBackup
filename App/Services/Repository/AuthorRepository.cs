@@ -1,50 +1,36 @@
 ﻿using App.Services.Context;
 using App.Services.Models;
-using Discord;
 
 namespace App.Services.Repository
 {
     internal class AuthorRepository
     {
-        private List<Author> _authors = new List<Author>();
-
-
-        public void RegisterIfNotExists(IUser author)
+        private static bool CheckIfExists(Author author)
         {
-            if (_authors.Any(a => a.Id == author.Id))
-                return;
-
             using var context = new MessageBackupContext();
 
-            if (context.Authors.Any(a => a.Id == author.Id))
-                return;
 
-            AddAuthor(author);
+
+            return false;
         }
 
-
-        public void SaveOnDatabase()
+        public static void SaveOnDatabase(List<Author> authors)
         {
-            if (_authors.Count == 0) return;
+            if (authors.Count == 0) return;
+            var authorsToAdd = new List<Author>();
 
             using var context = new MessageBackupContext();
 
-            context.Authors.AddRange(_authors);
+            foreach (var author in authors)
+            {
+                if (!context.Authors.Any(a => a.Id == author.Id))
+                    authorsToAdd.Add(author);
+            }
+
+
+
+            context.Authors.AddRange(authorsToAdd);
             context.SaveChanges();
-            _authors.Clear();
         }
-
-
-        private void AddAuthor(IUser author)
-        {
-            _authors.Add(
-                new Author
-                {
-                    Id = author.Id,
-                    Username = author.Username
-                });
-        }
-
-
     }
 }
