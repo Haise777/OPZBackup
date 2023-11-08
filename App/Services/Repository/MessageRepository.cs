@@ -15,8 +15,16 @@ namespace App.Services.Repository
         {
             using var context = new MessageBackupContext();
 
-            context.Messages.AddRange(messagesToSave);
-            context.SaveChanges();
+            try
+            {
+                context.Messages.AddRange(messagesToSave);
+                context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                ConsoleLogger.GenericException($"{nameof(MessageRepository)}-{nameof(SaveToDatabase)}", ex);
+                throw;
+            }
         }
     }
 }

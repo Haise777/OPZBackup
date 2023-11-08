@@ -27,7 +27,15 @@ internal class BackupRegisterRepository
             throw new InvalidOperationException("Backup register not found on database");
 
         _backupRegister.OldestMessage = lastMessageId;
-        context.SaveChanges();
+        try
+        {
+            context.SaveChanges();
+        }
+        catch (Exception ex)
+        {
+            ConsoleLogger.GenericException($"{nameof(BackupRegisterRepository)}-{nameof(UpdateOnDatabase)}", ex);
+            throw;
+        }
     }
 
     public void CreateOnDatabase()
@@ -46,8 +54,17 @@ internal class BackupRegisterRepository
             OldestMessage = null
         };
 
-        context.BackupRegisters.Add(_backupRegister);
-        context.SaveChanges();
+        try
+        {
+            context.BackupRegisters.Add(_backupRegister);
+            context.SaveChanges();
+        }
+        catch (Exception ex)
+        {
+            ConsoleLogger.GenericException($"{nameof(BackupRegisterRepository)}-{nameof(CreateOnDatabase)}", ex);
+            throw;
+        }
+
     }
 
 

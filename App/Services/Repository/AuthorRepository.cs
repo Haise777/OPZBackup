@@ -5,7 +5,7 @@ namespace App.Services.Repository
 {
     internal static class AuthorRepository
     {
-        public static void SaveOnDatabase(List<Author> authors)
+        public static void SaveToDatabase(List<Author> authors)
         {
             if (authors.Count == 0) return;
             var authorsToAdd = new List<Author>();
@@ -18,10 +18,16 @@ namespace App.Services.Repository
                     authorsToAdd.Add(author);
             }
 
-
-
-            context.Authors.AddRange(authorsToAdd);
-            context.SaveChanges();
+            try
+            {
+                context.Authors.AddRange(authorsToAdd);
+                context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                ConsoleLogger.GenericException($"{nameof(AuthorRepository)}-{nameof(SaveToDatabase)}", ex);
+                throw;
+            }
         }
     }
 }

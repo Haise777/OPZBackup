@@ -14,9 +14,16 @@ namespace App.Services.Repository
                 return theChannel;
             }
 
-
-            context.Channels.Add(channel);
-            context.SaveChanges();
+            try
+            {
+                context.Channels.Add(channel);
+                context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                ConsoleLogger.GenericException($"{nameof(ChannelRepository)}-{nameof(RegisterIfNotExists)}", ex);
+                throw;
+            }
             return channel;
         }
     }

@@ -63,14 +63,14 @@ namespace App.Modules
 
                     if (MessageRepository.CheckIfExists(message.Id))
                     {
-                        break;
+                        break; //TODO Implement: A way to skip to the oldest message not back upped
                     }
 
                     backup.AddMessage(message);
 
                 }
-                //add message to db
 
+                //add message to db
                 try
                 {
                     backup.Save();

@@ -60,8 +60,8 @@ internal class Backup
             SaveFirst();
             _firstBuild = false;
         }
-        
-        AuthorRepository.SaveOnDatabase(_authors);
+
+        AuthorRepository.SaveToDatabase(_authors);
         MessageRepository.SaveToDatabase(_messageBatch);
         _backupRegRepository.UpdateOnDatabase(_messageBatch.Last().Id);
 
@@ -74,7 +74,7 @@ internal class Backup
     private void SaveFirst()
     {
         _selectedChannel = ChannelRepository.RegisterIfNotExists(_selectedChannel);
-        AuthorRepository.SaveOnDatabase(_authors);
+        AuthorRepository.SaveToDatabase(_authors);
         _backupRegRepository.CreateOnDatabase();
         MessageRepository.SaveToDatabase(_messageBatch);
         _backupRegRepository.InsertStartMessage(_messageBatch.First().Id);
