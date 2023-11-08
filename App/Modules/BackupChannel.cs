@@ -51,7 +51,7 @@ namespace App.Modules
         {
             //TODO IMPORTANT: Make a way to validate if backup should be made
 
-            var backup = new BackupBuilder(command.Channel, command.User);
+            var backup = new Backup(command.Channel, command.User);
 
             while (true)
             {

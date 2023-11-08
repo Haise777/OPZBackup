@@ -5,7 +5,6 @@ namespace App.Services.Repository
 {
     internal static class MessageRepository
     {
-
         public static bool CheckIfExists(ulong id)
         {
             using var context = new MessageBackupContext();
@@ -19,7 +18,5 @@ namespace App.Services.Repository
             context.Messages.AddRange(messagesToSave);
             context.SaveChanges();
         }
-
-
     }
 }
