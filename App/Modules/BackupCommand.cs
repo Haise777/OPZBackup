@@ -1,5 +1,6 @@
 ﻿using App.Services.Database;
 using App.Services.Database.Repository;
+using App.Utilities;
 using Discord;
 using Discord.WebSocket;
 

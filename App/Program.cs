@@ -1,4 +1,5 @@
 ﻿using App.Modules;
+using App.Utilities;
 using Discord;
 using Discord.Net;
 using Discord.WebSocket;
