@@ -7,21 +7,21 @@ public partial class BackupRegister
 {
     public DateTime Date { get; set; }
 
-    public ulong Author { get; set; }
+    public ulong? AuthorId { get; set; }
 
-    public ulong? YoungestMessage { get; set; }
+    public ulong? StartMessageId { get; set; }
 
-    public ulong? OldestMessage { get; set; }
+    public ulong? EndMessageId { get; set; }
 
     public ulong ChannelId { get; set; }
 
-    public virtual Author AuthorNavigation { get; set; } = null!;
+    public virtual Author? Author { get; set; }
 
     public virtual Channel Channel { get; set; } = null!;
 
+    public virtual Message? EndMessage { get; set; }
+
     public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
 
-    public virtual Message? OldestMessageNavigation { get; set; }
-
-    public virtual Message? YoungestMessageNavigation { get; set; }
+    public virtual Message? StartMessage { get; set; }
 }

@@ -32,7 +32,7 @@ internal class Backup
         _messageBatch.Add(new Message
         {
             Id = message.Id,
-            Author = message.Author.Id,
+            AuthorId = message.Author.Id,
             Date = message.Timestamp.DateTime,
             EditDate = message.EditedTimestamp.HasValue ? message.EditedTimestamp.Value.DateTime : null,
             Content = message.Content,

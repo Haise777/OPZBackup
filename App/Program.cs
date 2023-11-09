@@ -11,7 +11,7 @@ namespace App
 
         public static ulong testGuild = ulong.Parse(File.ReadAllText(@"E:\archives\privateapplocals\guild.txt"));
         private DiscordSocketClient _client;
-        static Task Main(string[] args) => new Program().MainAsync();
+        static Task Main(string[] args) => new Program().MainAsync(); //start
 
         public async Task MainAsync()
         {

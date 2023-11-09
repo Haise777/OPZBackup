@@ -42,10 +42,10 @@
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"{location}: " + ex.Message);
-            Console.WriteLine("===================================\n" + ex.StackTrace);
+            Console.WriteLine("=================================== Exception:\n" + ex.StackTrace);
 
             if (ex.InnerException != null)
-                Console.WriteLine("===================================\n" + ex.InnerException);
+                Console.WriteLine("=================================== Inner:\n" + ex.InnerException);
 
             Console.ForegroundColor = ConsoleColor.Gray;
         }
@@ -55,10 +55,10 @@
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(operation);
             Console.WriteLine($"{_location}: " + ex.Message);
-            Console.WriteLine("===================================\n" + ex.StackTrace);
+            Console.WriteLine("=================================== Exception:\n" + ex.StackTrace);
 
             if (ex.InnerException != null)
-                Console.WriteLine("===================================\n" + ex.InnerException);
+                Console.WriteLine("=================================== Inner:\n" + ex.InnerException);
 
             Console.ForegroundColor = ConsoleColor.Gray;
         }

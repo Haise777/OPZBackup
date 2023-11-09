@@ -11,8 +11,6 @@ namespace App.Modules
 
         public async Task BackupOptions(SocketSlashCommand command)
         {
-            int inputValue = 0;
-
             var firstCommandOption = command.Data.Options.First();
             var fazerCommandOptions = command.Data.Options.First().Options.First();
 
@@ -22,6 +20,7 @@ namespace App.Modules
                     if (((bool)fazerCommandOptions.Value))
                     {
                         _log.BotActions(firstCommandOption.Name);
+                        await command.RespondAsync("fazendo backup...");
                         await Backup(command);
 
                     }
@@ -94,7 +93,7 @@ namespace App.Modules
                 }
 
             }
-            await command.RespondAsync("oi"); //TODO IMPORTANT: Implement proper response
+
         }
 
 
@@ -104,7 +103,7 @@ namespace App.Modules
             _log.BackupAction($"Getting messages from {channel.Name}");
             IEnumerable<IMessage> messages;
 
-            if (startFrom != 1)
+            if (startFrom == 1)
             {
                 _log.BackupAction("Starting from beginning");
                 messages = await channel.GetMessagesAsync(8).FlattenAsync();
