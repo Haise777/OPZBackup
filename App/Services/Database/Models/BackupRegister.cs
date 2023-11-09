@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace App.Services.Models;
+namespace App.Services.Database.Models;
 
 public partial class BackupRegister
 {

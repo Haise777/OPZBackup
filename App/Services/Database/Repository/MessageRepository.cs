@@ -1,20 +1,19 @@
-﻿using App.Services.Context;
-using App.Services.Models;
+﻿using App.Services.Database.Models;
 
-namespace App.Services.Repository
+namespace App.Services.Database.Repository
 {
     internal static class MessageRepository
     {
         public static bool CheckIfExists(ulong id)
         {
-            using var context = new MessageBackupContext();
+            var context = DbConnection.GetConnection();
             return context.Messages.Any(m => m.Id == id);
         }
 
         public static void SaveToDatabase(List<Message> messagesToSave)
         {
             var log = new ConsoleLogger(nameof(MessageRepository));
-            using var context = new MessageBackupContext();
+            var context = DbConnection.GetConnection();
 
             try
             {

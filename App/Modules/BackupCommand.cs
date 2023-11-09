@@ -1,5 +1,5 @@
-﻿using App.Services;
-using App.Services.Repository;
+﻿using App.Services.Database;
+using App.Services.Database.Repository;
 using Discord;
 using Discord.WebSocket;
 
@@ -65,6 +65,7 @@ namespace App.Modules
                     _log.HappyAction("Reached end of channel, considering backup as finished");
                     break;
                 }
+                DbConnection.OpenConnection();
                 foreach (var message in messageBatch)
                 {
                     if (message == null)
@@ -75,33 +76,33 @@ namespace App.Modules
                     if (MessageRepository.CheckIfExists(message.Id))
                     {
                         _log.BackupAction($"Already saved message found: '{message.Content}'\n" +
-                            $"                 -> jumping to last backuped message");
+                            "                 -> jumping to last backuped message");
                         startFrom = BackupRegisterRepository.GetOldestMessageId(message.Id);
                         break;
                     }
 
+                    startFrom = message.Id;
                     backup.AddMessage(message);
                     skipSave = false;
                 }
 
-                if (skipSave)
-                    continue;
 
                 //add message to db
                 try
                 {
-                    backup.Save();
+                    if (!skipSave)
+                        backup.Save();
                 }
                 catch (Exception ex)
                 {
                     _log.Exception("Failed to save current backup batch", ex);
                 }
-
+                finally
+                {
+                    DbConnection.CloseConnection();
+                }
             }
-
         }
-
-
 
         private async Task<IEnumerable<IMessage>> GetMessages(ISocketMessageChannel channel, ulong startFrom) //Batch maker
         {

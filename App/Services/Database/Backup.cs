@@ -1,9 +1,9 @@
-﻿using App.Services.Models;
-using App.Services.Repository;
+﻿using App.Services.Database.Models;
+using App.Services.Database.Repository;
 using Discord;
 using Discord.WebSocket;
 
-namespace App.Services;
+namespace App.Services.Database;
 
 internal class Backup
 {
@@ -26,11 +26,10 @@ internal class Backup
             new BackupRegisterRepository(_backupStartDate, commandAuthor.Id, _selectedChannel.Id);
         _authors.Add(new Author { Id = commandAuthor.Id, Username = commandAuthor.Username });
     }
-    private DateTime CreateStartDate(DateTime dt)
+    private static DateTime CreateStartDate(DateTime dt)
     {
         return new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, dt.Minute, dt.Second, 0, dt.Kind);
     }
-
 
     public void AddMessage(IMessage message)
     {
@@ -76,7 +75,6 @@ internal class Backup
         _backupRegRepository.UpdateOnDatabase(_messageBatch.Last().Id);
 
         _log.BackupAction($"Finished batch 'number {_batchCounter}'");
-        _log.BackupAction("Clearing message batch");
         _messageBatch.Clear();
         _batchCounter++;
     }
@@ -89,11 +87,10 @@ internal class Backup
         AuthorRepository.SaveToDatabase(_authors);
         _backupRegRepository.CreateOnDatabase();
         MessageRepository.SaveToDatabase(_messageBatch);
-        _backupRegRepository.InsertStartMessage(_messageBatch.First().Id);
+        _backupRegRepository.InsertStartMessage(_messageBatch[0].Id);
         _backupRegRepository.UpdateOnDatabase(_messageBatch.Last().Id);
 
         _log.BackupAction("Finished first batch");
-        _log.BackupAction("Clearing message batch");
         _messageBatch.Clear();
         _batchCounter++;
     }

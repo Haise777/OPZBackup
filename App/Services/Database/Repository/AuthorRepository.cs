@@ -1,16 +1,15 @@
-﻿using App.Services.Context;
-using App.Services.Models;
+﻿using App.Services.Database.Models;
 
-namespace App.Services.Repository
+namespace App.Services.Database.Repository
 {
     internal static class AuthorRepository
     {
         public static void SaveToDatabase(List<Author> authors)
         {
-            var _log = new ConsoleLogger($"{nameof(AuthorRepository)}");
+            var _log = new ConsoleLogger(nameof(AuthorRepository));
 
             var authorsToAdd = new List<Author>();
-            using var context = new MessageBackupContext();
+            var context = DbConnection.GetConnection();
 
             foreach (var author in authors)
             {

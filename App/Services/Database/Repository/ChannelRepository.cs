@@ -1,16 +1,15 @@
-﻿using App.Services.Context;
-using App.Services.Models;
+﻿using App.Services.Database.Models;
 
-namespace App.Services.Repository
+namespace App.Services.Database.Repository
 {
     internal static class ChannelRepository
     {
         public static Channel RegisterIfNotExists(Channel channel)
         {
-            var _log = new ConsoleLogger($"{nameof(ChannelRepository)}");
-
-            var context = new MessageBackupContext();
+            var _log = new ConsoleLogger(nameof(ChannelRepository));
+            var context = DbConnection.GetConnection();
             var theChannel = context.Channels.SingleOrDefault(c => c.Id == channel.Id);
+
             if (theChannel is not null)
             {
                 _log.BackupAction($"Channel '{channel.Name}' already has been added");
@@ -19,7 +18,6 @@ namespace App.Services.Repository
 
             try
             {
-
                 context.Channels.Add(channel);
                 context.SaveChanges();
                 _log.BackupAction($"Added new channel: '{channel.Name}'");

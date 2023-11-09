@@ -1,4 +1,4 @@
-﻿namespace App.Services.Models;
+﻿namespace App.Services.Database.Models;
 
 public partial class Message
 {

@@ -2,7 +2,7 @@
 {
     internal class ConsoleLogger
     {
-        private string _location;
+        private readonly string _location;
         public ConsoleLogger(string location)
         {
             _location = location;
@@ -22,19 +22,25 @@
             Console.ForegroundColor = ConsoleColor.Gray;
         }
 
-
         // Actions
         public static void GenericBotActions(string? location, string message)
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine($" {DateTime.Now.ToLongTimeString()} - {location}: {message}");
+            Console.WriteLine($"{DateTime.Now.ToLongTimeString()} - {location}: {message}");
             Console.ForegroundColor = ConsoleColor.Gray;
         }
 
         public static void GenericBackupAction(string? location, string message)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($" {DateTime.Now.ToLongTimeString()} - {location}: {message}");
+            Console.WriteLine($"{DateTime.Now.ToLongTimeString()} - {location}: {message}");
+            Console.ForegroundColor = ConsoleColor.Gray;
+        }
+
+        public static void GenericError(string? location, string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"{DateTime.Now.ToLongTimeString()} - {location}: {message}");
             Console.ForegroundColor = ConsoleColor.Gray;
         }
 
@@ -69,7 +75,6 @@
             Console.WriteLine($"BOT: {DateTime.Now.ToLongTimeString()} - {_location}: {message}");
             Console.ForegroundColor = ConsoleColor.Gray;
         }
-
 
         public void BackupAction(string message)
         {

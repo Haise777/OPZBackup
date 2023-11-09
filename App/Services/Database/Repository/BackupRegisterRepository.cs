@@ -1,7 +1,6 @@
-﻿using App.Services.Context;
-using App.Services.Models;
+﻿using App.Services.Database.Models;
 
-namespace App.Services.Repository;
+namespace App.Services.Database.Repository;
 
 internal class BackupRegisterRepository
 {
@@ -11,7 +10,7 @@ internal class BackupRegisterRepository
     private ulong _startMessage;
     private BackupRegister? _backupRegister;
     private bool _firstUpdate = true;
-    private ConsoleLogger _log = new ConsoleLogger(nameof(BackupRegisterRepository));
+    private readonly ConsoleLogger _log = new(nameof(BackupRegisterRepository));
 
     public BackupRegisterRepository(DateTime startDate, ulong authorId, ulong channelId)
     {
@@ -20,10 +19,9 @@ internal class BackupRegisterRepository
         _channelId = channelId;
     }
 
-
     public void UpdateOnDatabase(ulong lastMessageId) //update inserting first and new last message
     {
-        using var context = new MessageBackupContext();
+        var context = DbConnection.GetConnection();
 
         var x = context.BackupRegisters.First().Date;
 
@@ -52,7 +50,7 @@ internal class BackupRegisterRepository
 
     public void CreateOnDatabase()
     {
-        using var context = new MessageBackupContext();
+        var context = DbConnection.GetConnection();
 
         if (context.BackupRegisters.Any(br => br.Date == _startDate))
             throw new InvalidOperationException("Backup register already created on database");
@@ -92,8 +90,7 @@ internal class BackupRegisterRepository
 
     public static ulong GetOldestMessageId(ulong currentMessageId)
     {
-        using var context = new MessageBackupContext();
-
+        var context = DbConnection.GetConnection();
 
         ConsoleLogger.GenericBackupAction("Getting end message id", $"current message id: {currentMessageId}");
         var currentMessageBackupDate = context.Messages.Single(m => m.Id == currentMessageId).BackupDate;
