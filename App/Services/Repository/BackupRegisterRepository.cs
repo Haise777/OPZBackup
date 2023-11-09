@@ -8,7 +8,10 @@ internal class BackupRegisterRepository
     private readonly ulong _authorId;
     private readonly ulong _channelId;
     private readonly DateTime _startDate;
+    private ulong _startMessage;
     private BackupRegister? _backupRegister;
+    private bool _firstUpdate = true;
+    private ConsoleLogger _log = new ConsoleLogger(nameof(BackupRegisterRepository));
 
     public BackupRegisterRepository(DateTime startDate, ulong authorId, ulong channelId)
     {
@@ -22,18 +25,27 @@ internal class BackupRegisterRepository
     {
         using var context = new MessageBackupContext();
 
+        var x = context.BackupRegisters.First().Date;
+
         _backupRegister = context.BackupRegisters.SingleOrDefault(b => b.Date == _startDate);
         if (_backupRegister == null)
             throw new InvalidOperationException("Backup register not found on database");
+
+        if (_firstUpdate)
+        {
+            _backupRegister.StartMessageId = _startMessage;
+            _firstUpdate = false;
+        }
 
         _backupRegister.EndMessageId = lastMessageId;
         try
         {
             context.SaveChanges();
+            _log.BackupAction($"Updated on database with signed end message id: '{lastMessageId}'");
         }
         catch (Exception ex)
         {
-            ConsoleLogger.GenericException($"{nameof(BackupRegisterRepository)}-{nameof(UpdateOnDatabase)}", ex);
+            _log.Exception("Failed to update on database", ex);
             throw;
         }
     }
@@ -58,10 +70,11 @@ internal class BackupRegisterRepository
         {
             context.BackupRegisters.Add(_backupRegister);
             context.SaveChanges();
+            _log.BackupAction("New Backup Register created on database");
         }
         catch (Exception ex)
         {
-            ConsoleLogger.GenericException($"{nameof(BackupRegisterRepository)}-{nameof(CreateOnDatabase)}", ex);
+            _log.Exception("Failed to create new entry on database", ex);
             throw;
         }
     }
@@ -73,14 +86,19 @@ internal class BackupRegisterRepository
         if (_backupRegister.StartMessageId is not null)
             throw new InvalidOperationException("The start message is already defined");
 
-        _backupRegister.StartMessageId = startMessageId;
+        _startMessage = startMessageId;
+        _log.BackupAction($"Start message id '{startMessageId}' inserted");
     }
 
     public static ulong GetOldestMessageId(ulong currentMessageId)
     {
         using var context = new MessageBackupContext();
 
-        var existingBackup = context.BackupRegisters.First(b => b.StartMessageId == currentMessageId);
+
+        ConsoleLogger.GenericBackupAction("Getting end message id", $"current message id: {currentMessageId}");
+        var currentMessageBackupDate = context.Messages.Single(m => m.Id == currentMessageId).BackupDate;
+
+        var existingBackup = context.BackupRegisters.Single(b => b.Date == currentMessageBackupDate);
 
         return existingBackup.EndMessageId ?? throw new InvalidOperationException("Invalid older backup found");
     }

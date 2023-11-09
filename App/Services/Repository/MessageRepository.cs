@@ -13,16 +13,18 @@ namespace App.Services.Repository
 
         public static void SaveToDatabase(List<Message> messagesToSave)
         {
+            var log = new ConsoleLogger(nameof(MessageRepository));
             using var context = new MessageBackupContext();
 
             try
             {
                 context.Messages.AddRange(messagesToSave);
                 context.SaveChanges();
+                log.BackupAction($"Saved {messagesToSave.Count} messages to database");
             }
             catch (Exception ex)
             {
-                ConsoleLogger.GenericException($"{nameof(MessageRepository)}-{nameof(SaveToDatabase)}", ex);
+                log.Exception("Failed to save message batch to database", ex);
                 throw;
             }
         }

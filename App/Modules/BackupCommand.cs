@@ -5,9 +5,9 @@ using Discord.WebSocket;
 
 namespace App.Modules
 {
-    internal class BackupChannel
+    internal class BackupCommand
     {
-        private ConsoleLogger _log = new ConsoleLogger(nameof(BackupChannel));
+        private readonly ConsoleLogger _log = new ConsoleLogger(nameof(BackupCommand));
 
         public async Task BackupOptions(SocketSlashCommand command)
         {
@@ -57,30 +57,35 @@ namespace App.Modules
 
             while (!EndOfChannel)
             {
+                bool skipSave = true;
                 var messageBatch = await GetMessages(command.Channel, startFrom);
 
+                if (!messageBatch.Any())
+                {
+                    _log.HappyAction("Reached end of channel, considering backup as finished");
+                    break;
+                }
                 foreach (var message in messageBatch)
                 {
-                    //Check if it reached end of the channel
                     if (message == null)
-                    {
-                        _log.BackupAction("Null message value found, considering end of channel");
-                        EndOfChannel = true;
-                        break;
-                    }
+                        throw new InvalidOperationException("Message object cannot be null");
 
                     //If message already exists on database,
                     //jumps to the last saved message from that backup
                     if (MessageRepository.CheckIfExists(message.Id))
                     {
-                        _log.BackupAction($"Already saved message found: {message.Content}\n" +
-                            $"jumping to last backuped message");
+                        _log.BackupAction($"Already saved message found: '{message.Content}'\n" +
+                            $"                 -> jumping to last backuped message");
                         startFrom = BackupRegisterRepository.GetOldestMessageId(message.Id);
                         break;
                     }
 
                     backup.AddMessage(message);
+                    skipSave = false;
                 }
+
+                if (skipSave)
+                    continue;
 
                 //add message to db
                 try

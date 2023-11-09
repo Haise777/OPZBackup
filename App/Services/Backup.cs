@@ -11,7 +11,7 @@ internal class Backup
     private readonly BackupRegisterRepository _backupRegRepository;
     private readonly DateTime _backupStartDate;
     private readonly List<Message> _messageBatch = new();
-    private int _batchCounter;
+    private int _batchCounter = 1;
 
     private bool _firstBuild = true;
     private readonly ConsoleLogger _log = new(nameof(Backup));
@@ -19,12 +19,19 @@ internal class Backup
 
     public Backup(ISocketMessageChannel channel, IUser commandAuthor)
     {
-        _backupStartDate = DateTime.Now;
+        _backupStartDate = CreateStartDate(DateTime.Now);
+        _backupStartDate = _backupStartDate.AddMilliseconds(-_backupStartDate.Millisecond);
         _selectedChannel = new Channel { Name = channel.Name, Id = channel.Id };
         _backupRegRepository =
             new BackupRegisterRepository(_backupStartDate, commandAuthor.Id, _selectedChannel.Id);
         _authors.Add(new Author { Id = commandAuthor.Id, Username = commandAuthor.Username });
     }
+    private DateTime CreateStartDate(DateTime dt)
+    {
+        return new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, dt.Minute, dt.Second, 0, dt.Kind);
+    }
+
+
     public void AddMessage(IMessage message)
     {
         AddAuthorIfNotExists(message.Author);
@@ -59,13 +66,16 @@ internal class Backup
         {
             SaveFirst();
             _firstBuild = false;
+            return;
         }
+
+        _log.BackupAction($"<!> Saving batch 'number {_batchCounter}'");
 
         AuthorRepository.SaveToDatabase(_authors);
         MessageRepository.SaveToDatabase(_messageBatch);
         _backupRegRepository.UpdateOnDatabase(_messageBatch.Last().Id);
 
-        _log.BackupAction($"Finished batch number {_batchCounter}");
+        _log.BackupAction($"Finished batch 'number {_batchCounter}'");
         _log.BackupAction("Clearing message batch");
         _messageBatch.Clear();
         _batchCounter++;
@@ -73,6 +83,8 @@ internal class Backup
 
     private void SaveFirst()
     {
+        _log.BackupAction("<!> Saving first batch");
+
         _selectedChannel = ChannelRepository.RegisterIfNotExists(_selectedChannel);
         AuthorRepository.SaveToDatabase(_authors);
         _backupRegRepository.CreateOnDatabase();

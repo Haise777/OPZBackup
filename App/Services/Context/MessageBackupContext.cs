@@ -25,10 +25,9 @@ public partial class MessageBackupContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseMySql(File.ReadAllText(@"E:\archives\privateapplocals\sc.txt"), ServerVersion.Parse("8.0.34-mysql"))
-            .LogTo(ConsoleLogger.DBContextLogger)
+            /*.LogTo(ConsoleLogger.DBContextLogger)
             //TODO WARNING: Remove sensitive logging when not in development testing
-            .EnableSensitiveDataLogging()
-            .EnableDetailedErrors();
+            .EnableDetailedErrors()*/;
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

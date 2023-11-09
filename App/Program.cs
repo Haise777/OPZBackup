@@ -7,7 +7,7 @@ namespace App
 {
     internal class Program
     {
-        BackupChannel _backupChannel = new BackupChannel();
+        BackupCommand _backupChannel = new BackupCommand();
 
         public static ulong testGuild = ulong.Parse(File.ReadAllText(@"E:\archives\privateapplocals\guild.txt"));
         private DiscordSocketClient _client;
