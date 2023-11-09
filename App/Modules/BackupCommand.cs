@@ -7,7 +7,7 @@ namespace App.Modules
 {
     internal class BackupCommand
     {
-        private readonly ConsoleLogger _log = new ConsoleLogger(nameof(BackupCommand));
+        private readonly ConsoleLogger _log = new(nameof(BackupCommand));
 
         public async Task BackupOptions(SocketSlashCommand command)
         {
@@ -22,7 +22,6 @@ namespace App.Modules
                         _log.BotActions(firstCommandOption.Name);
                         await command.RespondAsync("fazendo backup...");
                         await Backup(command);
-
                     }
                     else
                     {
@@ -52,10 +51,9 @@ namespace App.Modules
             //TODO IMPORTANT: Make a way to validate if backup should be made
 
             var backup = new Backup(command.Channel, command.User);
-            bool EndOfChannel = false;
             ulong startFrom = 1;
 
-            while (!EndOfChannel)
+            while (true)
             {
                 bool skipSave = true;
                 var messageBatch = await GetMessages(command.Channel, startFrom);
@@ -86,7 +84,6 @@ namespace App.Modules
                     skipSave = false;
                 }
 
-
                 //add message to db
                 try
                 {
@@ -107,19 +104,17 @@ namespace App.Modules
         private async Task<IEnumerable<IMessage>> GetMessages(ISocketMessageChannel channel, ulong startFrom) //Batch maker
         {
             _log.BackupAction($"Getting messages from {channel.Name}");
-            IEnumerable<IMessage> messages;
 
             if (startFrom == 1)
             {
                 _log.BackupAction("Starting from beginning");
-                messages = await channel.GetMessagesAsync(8).FlattenAsync();
+                return await channel.GetMessagesAsync(8).FlattenAsync();
             }
             else
             {
                 _log.BackupAction("Starting from older message");
-                messages = await channel.GetMessagesAsync(startFrom, Direction.Before, 8).FlattenAsync();
+                return await channel.GetMessagesAsync(startFrom, Direction.Before, 8).FlattenAsync();
             }
-            return messages;
         }
     }
 }

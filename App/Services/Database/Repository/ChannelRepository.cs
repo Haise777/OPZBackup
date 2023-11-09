@@ -4,16 +4,15 @@ namespace App.Services.Database.Repository
 {
     internal static class ChannelRepository
     {
-        public static Channel RegisterIfNotExists(Channel channel)
+        public static void RegisterIfNotExists(Channel channel)
         {
             var _log = new ConsoleLogger(nameof(ChannelRepository));
             var context = DbConnection.GetConnection();
-            var theChannel = context.Channels.SingleOrDefault(c => c.Id == channel.Id);
 
-            if (theChannel is not null)
+            if (context.Channels.Any(c => c.Id == channel.Id))
             {
                 _log.BackupAction($"Channel '{channel.Name}' already has been added");
-                return theChannel;
+                return;
             }
 
             try
@@ -27,7 +26,6 @@ namespace App.Services.Database.Repository
                 _log.Exception("Failed to save new channel entry", ex);
                 throw;
             }
-            return channel;
         }
     }
 }

@@ -23,8 +23,6 @@ internal class BackupRegisterRepository
     {
         var context = DbConnection.GetConnection();
 
-        var x = context.BackupRegisters.First().Date;
-
         _backupRegister = context.BackupRegisters.SingleOrDefault(b => b.Date == _startDate);
         if (_backupRegister == null)
             throw new InvalidOperationException("Backup register not found on database");
