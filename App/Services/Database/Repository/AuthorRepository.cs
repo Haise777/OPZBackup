@@ -4,12 +4,11 @@ namespace App.Services.Database.Repository
 {
     internal static class AuthorRepository
     {
-        public static void SaveToDatabase(List<Author> authors)
+        public static void SaveNewToDatabase(List<Author> authors)
         {
             var _log = new ConsoleLogger(nameof(AuthorRepository));
-
-            var authorsToAdd = new List<Author>();
             var context = DbConnection.GetConnection();
+            var authorsToAdd = new List<Author>();
 
             foreach (var author in authors)
             {
@@ -33,7 +32,7 @@ namespace App.Services.Database.Repository
             }
             catch (Exception ex)
             {
-                ConsoleLogger.GenericException($"{nameof(AuthorRepository)}-{nameof(SaveToDatabase)}", ex);
+                _log.Exception("Failed to save new authors to database", ex);
                 throw;
             }
         }

@@ -14,7 +14,6 @@ namespace App.Services.Database
                 return;
             }
             _currentConnection = new MessageBackupContext();
-            Console.WriteLine("DbConnection: Connection opened");
             ConsoleLogger.GenericBackupAction(nameof(DbConnection), "Connection opened");
         }
 

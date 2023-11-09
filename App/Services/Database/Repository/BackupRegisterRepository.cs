@@ -89,10 +89,7 @@ internal class BackupRegisterRepository
     public static ulong GetOldestMessageId(ulong currentMessageId)
     {
         var context = DbConnection.GetConnection();
-
-        ConsoleLogger.GenericBackupAction("Getting end message id", $"current message id: {currentMessageId}");
         var currentMessageBackupDate = context.Messages.Single(m => m.Id == currentMessageId).BackupDate;
-
         var existingBackup = context.BackupRegisters.Single(b => b.Date == currentMessageBackupDate);
 
         return existingBackup.EndMessageId ?? throw new InvalidOperationException("Invalid older backup found");

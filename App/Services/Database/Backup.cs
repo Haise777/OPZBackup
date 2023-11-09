@@ -52,7 +52,7 @@ internal class Backup
         }
 
         _log.BackupAction($"<!> Saving batch 'number {_batchCounter}'");
-        AuthorRepository.SaveToDatabase(_authors);
+        AuthorRepository.SaveNewToDatabase(_authors);
         MessageRepository.SaveToDatabase(_messageBatch);
         _backupRegRepository.UpdateOnDatabase(_messageBatch[^1].Id);
         _log.BackupAction($"Finished batch 'number {_batchCounter}'");
@@ -65,7 +65,7 @@ internal class Backup
     {
         _log.BackupAction("<!> Saving first batch");
         ChannelRepository.RegisterIfNotExists(_selectedChannel);
-        AuthorRepository.SaveToDatabase(_authors);
+        AuthorRepository.SaveNewToDatabase(_authors);
         _backupRegRepository.CreateOnDatabase();
         MessageRepository.SaveToDatabase(_messageBatch);
         _backupRegRepository.InsertStartMessage(_messageBatch[0].Id);

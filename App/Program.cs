@@ -11,6 +11,8 @@ namespace App
 
         public static ulong testGuild = ulong.Parse(File.ReadAllText(@"E:\archives\privateapplocals\guild.txt"));
         private DiscordSocketClient _client;
+        private readonly ConsoleLogger _logger = new("Program");
+
         static Task Main() => new Program().MainAsync(); //start
 
         public async Task MainAsync()
@@ -37,8 +39,7 @@ namespace App
 
         private async Task SlashCommandHandler(SocketSlashCommand command)
         {
-            ConsoleLogger.GenericBotActions($"{nameof(Program)}-{nameof(SlashCommandHandler)}",
-                $"user:{command.User.Username} channel:{command.Channel.Name} command:{command.CommandName}");
+            _logger.BotActions($"{command.User.Username}: {command.CommandName}");
 
             switch (command.Data.Name)
             {
@@ -58,7 +59,6 @@ namespace App
         public async Task Client_Ready()
         {
             var guild = _client.GetGuild(testGuild);
-
 
             var guildCommand = new SlashCommandBuilder()
                    .WithName("backup")
