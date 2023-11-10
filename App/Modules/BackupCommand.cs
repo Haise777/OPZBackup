@@ -76,7 +76,7 @@ namespace App.Modules
                     {
                         _log.BackupAction($"Already saved message found: '{message.Content}'\n" +
                             "                 -> jumping to last backuped message");
-                        startFrom = BackupRegisterRepository.GetOldestMessageId(message.Id);
+                        startFrom = BackupRegisterRepository.GetEndMessageId(message.Id);
                         break;
                     }
 

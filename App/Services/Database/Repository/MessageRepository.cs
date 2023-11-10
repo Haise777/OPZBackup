@@ -5,6 +5,8 @@ namespace App.Services.Database.Repository
 {
     internal static class MessageRepository
     {
+        private readonly static ConsoleLogger _log = new(nameof(MessageRepository));
+
         public static bool CheckIfExists(ulong id)
         {
             var context = DbConnection.GetConnection();
@@ -13,18 +15,18 @@ namespace App.Services.Database.Repository
 
         public static void SaveToDatabase(List<Message> messagesToSave)
         {
-            var log = new ConsoleLogger(nameof(MessageRepository));
+
             var context = DbConnection.GetConnection();
 
             try
             {
                 context.Messages.AddRange(messagesToSave);
                 context.SaveChanges();
-                log.BackupAction($"Saved {messagesToSave.Count} messages to database");
+                _log.BackupAction($"Saved {messagesToSave.Count} messages to database");
             }
             catch (Exception ex)
             {
-                log.Exception("Failed to save message batch to database", ex);
+                _log.Exception("Failed to save message batch to database", ex);
                 throw;
             }
         }

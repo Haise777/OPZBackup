@@ -3,91 +3,49 @@ using App.Utilities;
 
 namespace App.Services.Database.Repository;
 
-internal class BackupRegisterRepository
+internal static class BackupRegisterRepository
 {
-    private readonly ulong _authorId;
-    private readonly ulong _channelId;
-    private readonly DateTime _startDate;
-    private ulong _startMessage;
-    private BackupRegister? _backupRegister;
-    private bool _firstUpdate = true;
-    private readonly ConsoleLogger _log = new(nameof(BackupRegisterRepository));
+    private readonly static ConsoleLogger _log = new(nameof(BackupRegisterRepository));
 
-    public BackupRegisterRepository(DateTime startDate, ulong authorId, ulong channelId)
-    {
-        _startDate = startDate;
-        _authorId = authorId;
-        _channelId = channelId;
-    }
-
-    public void UpdateOnDatabase(ulong lastMessageId) //update inserting first and new last message
+    public static void UpdateOnDatabase(BackupRegister backupRegisterToAdd) //update inserting first and new last message
     {
         var context = DbConnection.GetConnection();
+        var backupRegister = context.BackupRegisters.SingleOrDefault(b => b.Date == backupRegisterToAdd.Date)
+            ?? throw new InvalidOperationException("Backup register not found on database");
 
-        _backupRegister = context.BackupRegisters.SingleOrDefault(b => b.Date == _startDate);
-        if (_backupRegister == null)
-            throw new InvalidOperationException("Backup register not found on database");
+        backupRegister.EndMessageId = backupRegisterToAdd.EndMessageId; //TODO: Is this really needed?
 
-        if (_firstUpdate)
-        {
-            _backupRegister.StartMessageId = _startMessage;
-            _firstUpdate = false;
-        }
-
-        _backupRegister.EndMessageId = lastMessageId;
         try
         {
             context.SaveChanges();
-            _log.BackupAction($"Updated on database with signed end message id: '{lastMessageId}'");
+            _log.BackupAction($"Updated on database with signed end message id: '{backupRegister.EndMessageId}'");
         }
         catch (Exception ex)
         {
             _log.Exception("Failed to update on database", ex);
-            throw;
         }
     }
 
-    public void CreateOnDatabase()
+    public static void CreateOnDatabase(BackupRegister backupRegister)
     {
         var context = DbConnection.GetConnection();
 
-        if (context.BackupRegisters.Any(br => br.Date == _startDate))
+        if (context.BackupRegisters.Any(br => br.Date == backupRegister.Date))
             throw new InvalidOperationException("Backup register already created on database");
-
-        _backupRegister = new BackupRegister
-        {
-            Date = _startDate,
-            AuthorId = _authorId,
-            ChannelId = _channelId,
-            StartMessageId = null,
-            EndMessageId = null
-        };
 
         try
         {
-            context.BackupRegisters.Add(_backupRegister);
+            context.BackupRegisters.Add(backupRegister);
             context.SaveChanges();
             _log.BackupAction("New Backup Register created on database");
         }
         catch (Exception ex)
         {
             _log.Exception("Failed to create new entry on database", ex);
-            throw;
         }
     }
 
-    public void InsertStartMessage(ulong startMessageId)
-    {
-        if (_backupRegister is null)
-            throw new InvalidOperationException("The backup register has not been created yet");
-        if (_backupRegister.StartMessageId is not null)
-            throw new InvalidOperationException("The start message is already defined");
-
-        _startMessage = startMessageId;
-        _log.BackupAction($"Start message id '{startMessageId}' inserted");
-    }
-
-    public static ulong GetOldestMessageId(ulong currentMessageId)
+    public static ulong GetEndMessageId(ulong currentMessageId)
     {
         var context = DbConnection.GetConnection();
         var currentMessageBackupDate = context.Messages.Single(m => m.Id == currentMessageId).BackupDate;

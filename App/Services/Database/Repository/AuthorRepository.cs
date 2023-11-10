@@ -5,9 +5,10 @@ namespace App.Services.Database.Repository
 {
     internal static class AuthorRepository
     {
+        private readonly static ConsoleLogger _log = new(nameof(AuthorRepository));
+
         public static void SaveNewToDatabase(List<Author> authors)
         {
-            var _log = new ConsoleLogger(nameof(AuthorRepository));
             var context = DbConnection.GetConnection();
             var authorsToAdd = new List<Author>();
 

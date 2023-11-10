@@ -62,7 +62,7 @@
         public void Exception(string operation, Exception ex)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(operation);
+            Console.WriteLine($"<!!> {operation}");
             Console.WriteLine($"{_location}: " + ex.Message);
             Console.WriteLine("=================================== Exception:\n" + ex.StackTrace);
 

@@ -5,9 +5,10 @@ namespace App.Services.Database.Repository
 {
     internal static class ChannelRepository
     {
+        private readonly static ConsoleLogger _log = new(nameof(ChannelRepository));
+
         public static void RegisterIfNotExists(Channel channel)
         {
-            var _log = new ConsoleLogger(nameof(ChannelRepository));
             var context = DbConnection.GetConnection();
 
             if (context.Channels.Any(c => c.Id == channel.Id))
