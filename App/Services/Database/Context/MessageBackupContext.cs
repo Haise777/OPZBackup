@@ -1,5 +1,4 @@
 ﻿using App.Services.Database.Models;
-using App.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace App.Services.Database.Context;
@@ -26,8 +25,9 @@ public partial class MessageBackupContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseMySql(File.ReadAllText(@"E:\archives\privateapplocals\sc.txt"), ServerVersion.Parse("8.0.34-mysql"))
-            .LogTo(ConsoleLogger.DBContextLogger)
-            .EnableSensitiveDataLogging();
+            //.LogTo(ConsoleLogger.DBContextLogger)
+            //.EnableSensitiveDataLogging()
+            ;
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

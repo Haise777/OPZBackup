@@ -16,9 +16,9 @@ namespace App.Modules
             var fazerCommandOptions = command.Data.Options.First().Options.First();
 
             switch (firstCommandOption.Name)
-            {
+            { //TODO: A way to block another backup command call when one is currently in execution
                 case "fazer":
-                    if (((bool)fazerCommandOptions.Value))
+                    if ((bool)fazerCommandOptions.Value)
                     {
                         _log.BotActions(firstCommandOption.Name);
                         await command.RespondAsync("fazendo backup...");
@@ -32,9 +32,9 @@ namespace App.Modules
 
                 case "deletar":
 
-                    if (fazerCommandOptions.Name == "proprio")
+                    if (fazerCommandOptions.Name == "proprio" && (bool)fazerCommandOptions.Options.First().Value)
                     {
-
+                        await DeleteUserRecord(command.User);
                     }
                     break;
 
@@ -44,7 +44,12 @@ namespace App.Modules
             }
         }
 
-
+        private async Task DeleteUserRecord(IUser author)
+        {
+            DbConnection.OpenConnection();
+            AuthorRepository.DeleteAuthor(author); //TODO: To make awaitable
+            DbConnection.CloseConnection();
+        }
 
 
         private async Task Backup(SocketSlashCommand command)

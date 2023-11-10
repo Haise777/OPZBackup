@@ -1,5 +1,6 @@
 ﻿using App.Services.Database.Models;
 using App.Utilities;
+using Discord;
 
 namespace App.Services.Database.Repository
 {
@@ -37,6 +38,20 @@ namespace App.Services.Database.Repository
                 _log.Exception("Failed to save new authors to database", ex);
                 throw;
             }
+        }
+
+        public static void DeleteAuthor(IUser author)
+        {
+            var context = DbConnection.GetConnection();
+
+            var authorToDelete = context.Authors.SingleOrDefault(a => a.Id == author.Id);
+            if (authorToDelete is null)
+                throw new InvalidOperationException("Author to delete not found on database");
+
+            context.Authors.Remove(authorToDelete);
+            context.SaveChanges();
+
+            _log.BackupAction($"All messages and user record deleted: {author.Username}");
         }
     }
 }

@@ -70,7 +70,7 @@ namespace App
                        .WithName("fazer")
                        .WithDescription("Efetua o backup do canal")
                        .WithType(ApplicationCommandOptionType.SubCommand)
-                       .AddOption("confirmar", ApplicationCommandOptionType.Boolean, "confirmar", isRequired: true)
+                       .AddOption("confirmar", ApplicationCommandOptionType.Boolean, "Warning message", isRequired: true)
                    )
                    .AddOption
                    (
@@ -84,7 +84,7 @@ namespace App
                             .WithName("proprio")
                             .WithDescription("Deletar as proprias mensagens do backup") //TODO Make a more meaningful warning message
                             .WithType(ApplicationCommandOptionType.SubCommand)
-                            .AddOption("confirmar", ApplicationCommandOptionType.Boolean, "confirmar", isRequired: true)
+                            .AddOption("confirmar", ApplicationCommandOptionType.Boolean, "Warning message", isRequired: true)
                         )
                    );
 
