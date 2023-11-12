@@ -5,7 +5,7 @@ namespace Bot.Services.Database
 {
     internal static class DbConnection
     {
-        private static MessageBackupContext? _currentConnection = null;
+        private static MessageBackupContext? _currentConnection;
 
         public static void OpenConnection()
         {

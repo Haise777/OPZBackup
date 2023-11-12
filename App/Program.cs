@@ -77,7 +77,6 @@ namespace Bot
                             .WithName("tudo")
                             .WithDescription("Efetua backup total do canal")
                             .WithType(ApplicationCommandOptionType.SubCommand)
-                            .AddOption("confirmar", ApplicationCommandOptionType.Boolean, "Warning message", isRequired: true)
                        )
                        .AddOption
                        (
@@ -85,7 +84,6 @@ namespace Bot
                             .WithName("ate-ultimo")
                             .WithDescription("Efetua backup até o ultimo backup realizado")
                             .WithType(ApplicationCommandOptionType.SubCommand)
-                            .AddOption("confirmar", ApplicationCommandOptionType.Boolean, "Warning message", isRequired: true)
                         )
                    )
                    .AddOption
@@ -100,7 +98,6 @@ namespace Bot
                             .WithName("proprio")
                             .WithDescription("Deletar as proprias mensagens do backup") //TODO Make a more meaningful warning message
                             .WithType(ApplicationCommandOptionType.SubCommand)
-                            .AddOption("confirmar", ApplicationCommandOptionType.Boolean, "Warning message", isRequired: true)
                         )
                    );
 

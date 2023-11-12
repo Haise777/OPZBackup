@@ -9,10 +9,9 @@ namespace Bot.Services.Database;
 internal class Backup
 {
     private readonly ConsoleLogger _log = new(nameof(Backup));
-    private readonly DateTime _backupStartDate;
+    private readonly Channel _selectedChannel;
     private readonly List<Author> _authors = new();
     private readonly List<Message> _messageBatch = new();
-    private readonly Channel _selectedChannel;
 
     private int _batchCounter = 1;
     private bool _firstSave = true;
@@ -21,13 +20,12 @@ internal class Backup
 
     public Backup(ISocketMessageChannel channel, IUser commandAuthor)
     {
-        _backupStartDate = DateTime.Now.WithoutMilliseconds();
         _selectedChannel = new Channel { Name = channel.Name, Id = channel.Id };
         _authors.Add(new Author { Id = commandAuthor.Id, Username = commandAuthor.Username });
 
         BackupRegister = new BackupRegister()
         {
-            Date = _backupStartDate,
+            Date = DateTime.Now.WithoutMilliseconds(),
             AuthorId = commandAuthor.Id,
             ChannelId = channel.Id,
             StartMessageId = null,
@@ -35,20 +33,22 @@ internal class Backup
         };
     }
 
-    public void AddMessage(IMessage message)
+    public void AddMessages(List<IMessage> messages)
     {
-        AddAuthorIfNotExists(message.Author);
-
-        _messageBatch.Add(new Message
+        foreach (var message in messages)
         {
-            Id = message.Id,
-            AuthorId = message.Author.Id,
-            Date = message.Timestamp.DateTime,
-            EditDate = message.EditedTimestamp.HasValue ? message.EditedTimestamp.Value.DateTime : null,
-            Content = message.Content,
-            ChannelId = message.Channel.Id,
-            BackupDate = _backupStartDate
-        });
+            AddAuthorIfNotExists(message.Author);
+            _messageBatch.Add(new Message
+            {
+                Id = message.Id,
+                AuthorId = message.Author.Id,
+                Date = message.Timestamp.DateTime,
+                EditDate = message.EditedTimestamp.HasValue ? message.EditedTimestamp.Value.DateTime : null,
+                Content = message.Content,
+                ChannelId = message.Channel.Id,
+                BackupDate = BackupRegister.Date
+            });
+        }
     }
 
     public void Save()

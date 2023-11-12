@@ -20,7 +20,7 @@ namespace Bot.Modules
 
         public async Task SendBackupCompletedMessage(BackupRegister backupRegister, ulong otherBackupStartId = 1)
         {
-            var backupCompletedEmbed = await BackupCompletedMessage(backupRegister, otherBackupStartId);
+            var backupCompletedEmbed = await BackupCompletedMessage(backupRegister);
 
             await _command.ModifyOriginalResponseAsync(msg =>
                 {
@@ -32,16 +32,11 @@ namespace Bot.Modules
             await _command.Channel.DeleteMessageAsync(completionPing.Id);
         }
 
-        private async Task<Embed> BackupCompletedMessage(BackupRegister backupRegister, ulong otherBackupLastMessageId)
+        private async Task<Embed> BackupCompletedMessage(BackupRegister backupRegister)
         {
             var author = Program.testGuild.GetUser(backupRegister.AuthorId.Value);
             var startMessage = await _command.Channel.GetMessageAsync(backupRegister.StartMessageId.Value);
-            IMessage lastMessage;
-
-            if (otherBackupLastMessageId != 1)
-                lastMessage = await _command.Channel.GetMessageAsync(otherBackupLastMessageId);
-            else
-                lastMessage = await _command.Channel.GetMessageAsync(backupRegister.EndMessageId.Value);
+            IMessage lastMessage = lastMessage = await _command.Channel.GetMessageAsync(backupRegister.EndMessageId.Value);
 
             var startMessageDate = $"{startMessage.Timestamp.DateTime.ToShortDateString()} {startMessage.Timestamp.DateTime.ToShortTimeString()}";
             var lastMessageDate = $"{lastMessage.Timestamp.DateTime.ToShortDateString()} {lastMessage.Timestamp.DateTime.ToShortTimeString()}";
@@ -78,9 +73,6 @@ namespace Bot.Modules
                 .AddField(startMessageField)
                 .AddField(endMessageField)
                 .WithFooter(madeBy);
-
-            if (otherBackupLastMessageId != 1)
-                embed.WithDescription("ate o ultimo backup LINK {GetMessageById(otherBackupLastMessageId)}");
 
             return embed.Build();
         }

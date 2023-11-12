@@ -52,7 +52,7 @@
             Console.ForegroundColor = ConsoleColor.Gray;
         }
 
-        internal void HappyAction(string message)
+        internal void ActionSucceed(string message)
         {
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"Backup: {DateTime.Now.ToLongTimeString()} - {_location}: {message}");
