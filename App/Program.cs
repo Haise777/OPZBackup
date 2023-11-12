@@ -1,16 +1,18 @@
-﻿using App.Modules;
-using App.Utilities;
+﻿using Bot.Modules;
+using Bot.Utilities;
 using Discord;
 using Discord.Net;
 using Discord.WebSocket;
 
-namespace App
+namespace Bot
 {
     internal class Program
     {
         public ulong testGuildId = ulong.Parse(File.ReadAllText(@"E:\archives\privateapplocals\guild.txt"));
 
         public static SocketGuild testGuild; //TODO: Only for testing
+
+
         private DiscordSocketClient _client;
         private readonly ConsoleLogger _logger = new("Program");
 
@@ -23,13 +25,10 @@ namespace App
                 GatewayIntents = GatewayIntents.All
             };
 
-
             _client = new DiscordSocketClient(config);
             _client.Log += Log;
             _client.Ready += Client_Ready;
             _client.SlashCommandExecuted += SlashCommandHandler;
-
-            testGuild = _client.GetGuild(testGuildId);
 
             var token = File.ReadAllText(@"E:\archives\privateapplocals\token.txt");
             await _client.LoginAsync(TokenType.Bot, token);
@@ -61,7 +60,7 @@ namespace App
 
         public async Task Client_Ready()
         {
-            var guild = testGuild;
+            testGuild = _client.GetGuild(testGuildId);
 
             var guildCommand = new SlashCommandBuilder()
                    .WithName("backup")
@@ -71,8 +70,23 @@ namespace App
                         new SlashCommandOptionBuilder()
                        .WithName("fazer")
                        .WithDescription("Efetua o backup do canal")
-                       .WithType(ApplicationCommandOptionType.SubCommand)
-                       .AddOption("confirmar", ApplicationCommandOptionType.Boolean, "Warning message", isRequired: true)
+                       .WithType(ApplicationCommandOptionType.SubCommandGroup)
+                       .AddOption
+                       (
+                            new SlashCommandOptionBuilder()
+                            .WithName("tudo")
+                            .WithDescription("Efetua backup total do canal")
+                            .WithType(ApplicationCommandOptionType.SubCommand)
+                            .AddOption("confirmar", ApplicationCommandOptionType.Boolean, "Warning message", isRequired: true)
+                       )
+                       .AddOption
+                       (
+                            new SlashCommandOptionBuilder()
+                            .WithName("ate-ultimo")
+                            .WithDescription("Efetua backup até o ultimo backup realizado")
+                            .WithType(ApplicationCommandOptionType.SubCommand)
+                            .AddOption("confirmar", ApplicationCommandOptionType.Boolean, "Warning message", isRequired: true)
+                        )
                    )
                    .AddOption
                    (
@@ -94,7 +108,7 @@ namespace App
 
             try
             {
-                await guild.CreateApplicationCommandAsync(guildCommand.Build());
+                await testGuild.CreateApplicationCommandAsync(guildCommand.Build());
             }
             catch (HttpException ex)
             {

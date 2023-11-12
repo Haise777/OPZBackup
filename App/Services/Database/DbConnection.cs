@@ -1,7 +1,7 @@
-﻿using App.Services.Database.Context;
-using App.Utilities;
+﻿using Bot.Services.Database.Context;
+using Bot.Utilities;
 
-namespace App.Services.Database
+namespace Bot.Services.Database
 {
     internal static class DbConnection
     {

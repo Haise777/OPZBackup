@@ -1,8 +1,8 @@
-﻿using App.Services.Database.Models;
-using App.Utilities;
+﻿using Bot.Services.Database.Models;
+using Bot.Utilities;
 using Discord;
 
-namespace App.Services.Database.Repository
+namespace Bot.Services.Database.Repository
 {
     internal static class AuthorRepository
     {

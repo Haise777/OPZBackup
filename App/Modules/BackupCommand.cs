@@ -1,10 +1,10 @@
-﻿using App.Services.Database;
-using App.Services.Database.Repository;
-using App.Utilities;
+﻿using Bot.Services.Database;
+using Bot.Services.Database.Repository;
+using Bot.Utilities;
 using Discord;
 using Discord.WebSocket;
 
-namespace App.Modules
+namespace Bot.Modules
 {
     internal class BackupCommand
     {
@@ -74,9 +74,11 @@ namespace App.Modules
             var backupRegister = backup.BackupRegister;
             var shouldContinue = true;
 
+
             ulong startFrom = 1;
             while (shouldContinue)
             {
+                var shouldSave = false;
                 var messageBatch = await GetMessages(_command.Channel, startFrom);
 
                 if (!messageBatch.Any())
@@ -91,6 +93,7 @@ namespace App.Modules
                     if (message == null)
                         throw new InvalidOperationException("Message object cannot be null");
 
+                    startFrom = message.Id;
                     //Checks if message already exists on database
                     if (MessageRepository.CheckIfExists(message.Id))
                     {
@@ -105,14 +108,17 @@ namespace App.Modules
                         continue;
                     }
 
-                    startFrom = message.Id;
                     backup.AddMessage(message);
+                    shouldSave = true;
                 }
 
                 //add message to db
                 try
                 {
-                    backup.Save();
+                    if (shouldSave)
+                        backup.Save();
+                    else
+                        _log.BackupAction("Empty batch, skipping to another batch");
                 }
                 catch (Exception ex)
                 {

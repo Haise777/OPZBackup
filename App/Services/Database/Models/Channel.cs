@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace App.Services.Database.Models;
+namespace Bot.Services.Database.Models;
 
 public partial class Channel
 {

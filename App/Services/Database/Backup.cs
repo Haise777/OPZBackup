@@ -1,10 +1,10 @@
-﻿using App.Services.Database.Models;
-using App.Services.Database.Repository;
-using App.Utilities;
+﻿using Bot.Services.Database.Models;
+using Bot.Services.Database.Repository;
+using Bot.Utilities;
 using Discord;
 using Discord.WebSocket;
 
-namespace App.Services.Database;
+namespace Bot.Services.Database;
 
 internal class Backup
 {

@@ -1,4 +1,4 @@
-﻿namespace App.Services.Database.Models;
+﻿namespace Bot.Services.Database.Models;
 
 public partial class Message
 {

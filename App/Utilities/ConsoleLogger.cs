@@ -1,4 +1,4 @@
-﻿namespace App.Utilities
+﻿namespace Bot.Utilities
 {
     internal class ConsoleLogger
     {

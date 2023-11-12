@@ -1,8 +1,8 @@
-﻿using App.Services.Database.Models;
+﻿using Bot.Services.Database.Models;
 using Discord;
 using Discord.WebSocket;
 
-namespace App.Modules
+namespace Bot.Modules
 {
     internal class BotNotifications
     {
@@ -24,51 +24,59 @@ namespace App.Modules
 
             await _command.ModifyOriginalResponseAsync(msg =>
                 {
-                    msg.Content = "blank";
+                    msg.Content = "";
                     msg.Embed = backupCompletedEmbed;
                 }
             );
+            var completionPing = await _command.Channel.SendMessageAsync($"<@{_command.User.Id}>");
+            await _command.Channel.DeleteMessageAsync(completionPing.Id);
         }
 
         private async Task<Embed> BackupCompletedMessage(BackupRegister backupRegister, ulong otherBackupLastMessageId)
         {
             var author = Program.testGuild.GetUser(backupRegister.AuthorId.Value);
-            var startMessage = await _command.Channel.GetMessageAsync(backupRegister.EndMessageId.Value);
-            var lastMessage = await _command.Channel.GetMessageAsync(backupRegister.EndMessageId.Value);
-            var startDate = backupRegister.Date;
-            var endDate = DateTime.UtcNow;
+            var startMessage = await _command.Channel.GetMessageAsync(backupRegister.StartMessageId.Value);
+            IMessage lastMessage;
+
+            if (otherBackupLastMessageId != 1)
+                lastMessage = await _command.Channel.GetMessageAsync(otherBackupLastMessageId);
+            else
+                lastMessage = await _command.Channel.GetMessageAsync(backupRegister.EndMessageId.Value);
+
+            var startMessageDate = $"{startMessage.Timestamp.DateTime.ToShortDateString()} {startMessage.Timestamp.DateTime.ToShortTimeString()}";
+            var lastMessageDate = $"{lastMessage.Timestamp.DateTime.ToShortDateString()} {lastMessage.Timestamp.DateTime.ToShortTimeString()}";
+
+            var startTime = new EmbedFieldBuilder()
+                .WithName("Iniciado:")
+                .WithValue(backupRegister.Date.ToLongTimeString())
+                .WithIsInline(true);
+            var endTime = new EmbedFieldBuilder()
+                .WithName("Terminado:")
+                .WithValue(DateTime.Now.ToLongTimeString())
+                .WithIsInline(true);
 
             var startMessageField = new EmbedFieldBuilder()
                 .WithName("De:")
-                .WithValue($"{startMessage.Author.GlobalName} {startMessage.Timestamp}\n" +
+                .WithValue($"{startMessage.Author.Username} {startMessageDate}\n" +
                 $"{startMessage.Content}")
                 .WithIsInline(false);
             var endMessageField = new EmbedFieldBuilder()
                 .WithName("Até:")
-                .WithValue($"{lastMessage.Author.GlobalName} {lastMessage.Timestamp}\n" +
+                .WithValue($"{lastMessage.Author.Username} {lastMessageDate}\n" +
                 $"{lastMessage.Content}")
                 .WithIsInline(false);
 
-            var startTime = new EmbedFieldBuilder()
-                .WithName("Iniciado:")
-                .WithValue($"{backupRegister.Date}")
-                .WithIsInline(true);
-            var endTime = new EmbedFieldBuilder()
-                .WithName("Terminado:")
-                .WithValue($"{DateTime.Now}")
-                .WithIsInline(true);
-
             var madeBy = new EmbedFooterBuilder()
-                .WithText($"Feito por: {author.GlobalName}")
-                .WithIconUrl($"{author.GetAvatarUrl}");
+                .WithText($"Realizado por: {author.Username}")
+                .WithIconUrl($"{author.GetAvatarUrl()}");
 
             var embed = new EmbedBuilder()
-                .WithTitle("Backup realizado com sucesso!")
+                .WithTitle("Backup realizado!")
                 .WithColor(Color.Green)
-                .AddField(startMessageField)
-                .AddField(endMessageField)
                 .AddField(startTime)
                 .AddField(endTime)
+                .AddField(startMessageField)
+                .AddField(endMessageField)
                 .WithFooter(madeBy);
 
             if (otherBackupLastMessageId != 1)

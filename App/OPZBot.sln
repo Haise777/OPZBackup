@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App", "App.csproj", "{70C88AE7-34A9-4CB6-8ACE-9062FBC5273F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bot", "Bot.csproj", "{70C88AE7-34A9-4CB6-8ACE-9062FBC5273F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{52CC6751-F0B2-4D55-BFC4-1562D36B5568}"
 	ProjectSection(SolutionItems) = preProject

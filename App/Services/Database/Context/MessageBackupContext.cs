@@ -1,7 +1,7 @@
-﻿using App.Services.Database.Models;
+﻿using Bot.Services.Database.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace App.Services.Database.Context;
+namespace Bot.Services.Database.Context;
 
 public partial class MessageBackupContext : DbContext
 {
