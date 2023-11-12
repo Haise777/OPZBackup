@@ -81,11 +81,15 @@ namespace Bot.Modules
                 DbConnection.OpenConnection();
 
                 var messagesToSave = FilterMessagesToSave(messageBatch, untilLastBackup, out shouldContinue);
-                if (!messagesToSave.Any()) continue;
-
-                backup.AddMessages(messagesToSave);
 
                 startFromMessageId = messageBatch.Last().Id;
+                if (!messagesToSave.Any())
+                {
+                    DbConnection.CloseConnection();
+                    continue;
+                }
+
+                backup.AddMessages(messagesToSave);
                 SaveBatch(backup);
             }
 

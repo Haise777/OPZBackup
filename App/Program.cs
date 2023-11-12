@@ -46,7 +46,7 @@ namespace Bot
             {
                 case "backup":
                     BackupCommand backupChannel = new BackupCommand(command);
-                    await backupChannel.BackupOptions();
+                    backupChannel.BackupOptions();
                     break;
             }
 

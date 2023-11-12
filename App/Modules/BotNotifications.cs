@@ -32,19 +32,15 @@ namespace Bot.Modules
             await _command.Channel.DeleteMessageAsync(completionPing.Id);
         }
 
-        private async Task<(IMessage startMessage, IMessage endMessage, string sMsgDate, string eMsgDate)>
-            FormatToEmbedData(BackupRegister backupRegister)
+        internal async Task AlreadyExecutingBackup()
         {
-            var startMessage = await _command.Channel.GetMessageAsync(backupRegister.StartMessageId.Value);
-            var endMessage = await _command.Channel.GetMessageAsync(backupRegister.EndMessageId.Value);
-            var sMsgDate =
-                $"{startMessage.Timestamp.DateTime.ToShortDateString()} " +
-                $"{startMessage.Timestamp.DateTime.ToShortTimeString()}";
-            var eMsgDate =
-                $"{endMessage.Timestamp.DateTime.ToShortDateString()} " +
-                $"{endMessage.Timestamp.DateTime.ToShortTimeString()}";
 
-            return (startMessage, endMessage, sMsgDate, eMsgDate);
+            var component = new ComponentBuilder().WithButton(label: "foda-se", style: ButtonStyle.Secondary, customId: "bola");
+
+            await _command.RespondAsync(
+                "Há um backup sendo feito no momento, tente novamente mais tarde...", components: component.Build());
+            await Task.Delay(6500);
+            await _command.DeleteOriginalResponseAsync();
         }
 
         //TODO: Fix message timestamp timezone being +3:00 ahead
@@ -76,7 +72,7 @@ namespace Bot.Modules
                 .WithIsInline(true);
 
             var madeBy = new EmbedFooterBuilder()
-                .WithText($"Realizado por: {backupAuthor.Username}")
+                .WithText(backupAuthor.Username)
                 .WithIconUrl($"{backupAuthor.GetAvatarUrl()}");
 
             var embed = new EmbedBuilder()
@@ -91,15 +87,19 @@ namespace Bot.Modules
             return embed.Build();
         }
 
-        internal async Task AlreadyExecutingBackup()
+        private async Task<(IMessage startMessage, IMessage endMessage, string sMsgDate, string eMsgDate)>
+            FormatToEmbedData(BackupRegister backupRegister)
         {
+            var startMessage = await _command.Channel.GetMessageAsync(backupRegister.StartMessageId.Value);
+            var endMessage = await _command.Channel.GetMessageAsync(backupRegister.EndMessageId.Value);
+            var sMsgDate =
+                $"{startMessage.Timestamp.DateTime.ToShortDateString()} " +
+                $"{startMessage.Timestamp.DateTime.ToShortTimeString()}";
+            var eMsgDate =
+                $"{endMessage.Timestamp.DateTime.ToShortDateString()} " +
+                $"{endMessage.Timestamp.DateTime.ToShortTimeString()}";
 
-            var component = new ComponentBuilder().WithButton(label: "foda-se", style: ButtonStyle.Secondary, customId: "bola");
-
-            await _command.RespondAsync(
-                "Há um backup sendo feito no momento, tente novamente mais tarde...", components: component.Build());
-            await Task.Delay(5000);
-            await _command.DeleteOriginalResponseAsync();
+            return (startMessage, endMessage, sMsgDate, eMsgDate);
         }
     }
 }
