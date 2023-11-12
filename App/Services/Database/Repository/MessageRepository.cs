@@ -3,9 +3,9 @@ using Bot.Utilities;
 
 namespace Bot.Services.Database.Repository
 {
-    internal static class MessageRepository
+    internal class MessageRepository
     {
-        private readonly static ConsoleLogger _log = new(nameof(MessageRepository));
+        private readonly ConsoleLogger _log = new(nameof(MessageRepository));
 
         public static bool CheckIfExists(ulong id)
         {
@@ -13,7 +13,7 @@ namespace Bot.Services.Database.Repository
             return context.Messages.Any(m => m.Id == id);
         }
 
-        public static void SaveToDatabase(List<Message> messagesToSave)
+        public void SaveToDatabase(List<Message> messagesToSave)
         {
 
             var context = DbConnection.GetConnection();

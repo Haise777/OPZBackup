@@ -3,11 +3,11 @@ using Bot.Utilities;
 
 namespace Bot.Services.Database.Repository;
 
-internal static class BackupRegisterRepository
+internal class BackupRegisterRepository
 {
-    private readonly static ConsoleLogger _log = new(nameof(BackupRegisterRepository));
+    private readonly ConsoleLogger _log = new(nameof(BackupRegisterRepository));
 
-    public static void UpdateOnDatabase(BackupRegister backupRegisterToAdd) //update inserting first and new last message
+    public void UpdateOnDatabase(BackupRegister backupRegisterToAdd) //update inserting first and new last message
     {
         var context = DbConnection.GetConnection();
         var backupRegister = context.BackupRegisters.SingleOrDefault(b => b.Date == backupRegisterToAdd.Date)
@@ -26,7 +26,7 @@ internal static class BackupRegisterRepository
         }
     }
 
-    public static void CreateOnDatabase(BackupRegister backupRegister)
+    public void CreateOnDatabase(BackupRegister backupRegister)
     {
         var context = DbConnection.GetConnection();
 

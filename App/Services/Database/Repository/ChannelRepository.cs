@@ -3,11 +3,11 @@ using Bot.Utilities;
 
 namespace Bot.Services.Database.Repository
 {
-    internal static class ChannelRepository
+    internal class ChannelRepository
     {
-        private readonly static ConsoleLogger _log = new(nameof(ChannelRepository));
+        private readonly ConsoleLogger _log = new(nameof(ChannelRepository));
 
-        public static void RegisterIfNotExists(Channel channel)
+        public void RegisterIfNotExists(Channel channel)
         {
             var context = DbConnection.GetConnection();
 

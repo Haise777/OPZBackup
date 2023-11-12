@@ -4,11 +4,11 @@ using Discord;
 
 namespace Bot.Services.Database.Repository
 {
-    internal static class AuthorRepository
+    internal class AuthorRepository
     {
-        private readonly static ConsoleLogger _log = new(nameof(AuthorRepository));
+        private readonly ConsoleLogger _log = new(nameof(AuthorRepository));
 
-        public static void SaveNewToDatabase(List<Author> authors)
+        public void SaveNewToDatabase(List<Author> authors)
         {
             var context = DbConnection.GetConnection();
             var authorsToAdd = new List<Author>();
@@ -40,7 +40,7 @@ namespace Bot.Services.Database.Repository
             }
         }
 
-        public static void DeleteAuthor(IUser author)
+        public void DeleteAuthor(IUser author)
         {
             var context = DbConnection.GetConnection();
 
