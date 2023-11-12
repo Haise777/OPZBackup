@@ -8,9 +8,8 @@ namespace App
 {
     internal class Program
     {
-        BackupCommand _backupChannel = new BackupCommand();
-
         public ulong testGuildId = ulong.Parse(File.ReadAllText(@"E:\archives\privateapplocals\guild.txt"));
+
         public static SocketGuild testGuild; //TODO: Only for testing
         private DiscordSocketClient _client;
         private readonly ConsoleLogger _logger = new("Program");
@@ -47,7 +46,8 @@ namespace App
             switch (command.Data.Name)
             {
                 case "backup":
-                    await _backupChannel.BackupOptions(command);
+                    BackupCommand backupChannel = new BackupCommand(command);
+                    await backupChannel.BackupOptions();
                     break;
             }
 
@@ -61,7 +61,7 @@ namespace App
 
         public async Task Client_Ready()
         {
-            var guild = _client.GetGuild(testGuild);
+            var guild = testGuild;
 
             var guildCommand = new SlashCommandBuilder()
                    .WithName("backup")

@@ -9,8 +9,8 @@ namespace App.Modules
     internal class BackupCommand
     {
         private readonly ConsoleLogger _log = new(nameof(BackupCommand));
-        private readonly SocketSlashCommand _command;
         private readonly BotNotifications _notifications;
+        private readonly SocketSlashCommand _command;
 
         public BackupCommand(SocketSlashCommand command)
         {
@@ -72,10 +72,10 @@ namespace App.Modules
 
             var backup = new Backup(_command.Channel, _command.User);
             var backupRegister = backup.BackupRegister;
+            var shouldContinue = true;
 
             ulong startFrom = 1;
-
-            while (true)
+            while (shouldContinue)
             {
                 var messageBatch = await GetMessages(_command.Channel, startFrom);
 
@@ -91,8 +91,7 @@ namespace App.Modules
                     if (message == null)
                         throw new InvalidOperationException("Message object cannot be null");
 
-                    //If message already exists on database,
-                    //jumps to the last saved message from that backup
+                    //Checks if message already exists on database
                     if (MessageRepository.CheckIfExists(message.Id))
                     {
                         _log.BackupAction($"Already saved message found: '{message.Content}'");
@@ -100,6 +99,7 @@ namespace App.Modules
                         {
                             await _notifications.SendBackupCompletedMessage(backupRegister, message.Id);
                             _log.HappyAction("Reached already saved message, considering backup as finished");
+                            shouldContinue = false;
                             break;
                         }
                         continue;

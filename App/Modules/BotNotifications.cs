@@ -18,37 +18,35 @@ namespace App.Modules
             await _command.RespondAsync("a...");
         }
 
-        public async Task SendBackupCompletedMessage(BackupRegister backupRegister, ulong otherBackupStartId = 0)
+        public async Task SendBackupCompletedMessage(BackupRegister backupRegister, ulong otherBackupStartId = 1)
         {
             var backupCompletedEmbed = await BackupCompletedMessage(backupRegister, otherBackupStartId);
 
             await _command.ModifyOriginalResponseAsync(msg =>
                 {
-                    msg.Content = "1";
+                    msg.Content = "blank";
                     msg.Embed = backupCompletedEmbed;
                 }
             );
         }
 
-
-
         private async Task<Embed> BackupCompletedMessage(BackupRegister backupRegister, ulong otherBackupLastMessageId)
         {
-            var author = Program.testGuild.GetUser(backupRegister.AuthorId ?? throw new Exception());
+            var author = Program.testGuild.GetUser(backupRegister.AuthorId.Value);
+            var startMessage = await _command.Channel.GetMessageAsync(backupRegister.EndMessageId.Value);
+            var lastMessage = await _command.Channel.GetMessageAsync(backupRegister.EndMessageId.Value);
             var startDate = backupRegister.Date;
             var endDate = DateTime.UtcNow;
-            var lastMessagedsa = await _command.Channel.GetMessageAsync(backupRegister.EndMessageId ?? throw new Exception());
-            var startMessagedsa = await _command.Channel.GetMessageAsync(backupRegister.EndMessageId ?? throw new Exception());
 
-            var startMessage = new EmbedFieldBuilder()
+            var startMessageField = new EmbedFieldBuilder()
                 .WithName("De:")
-                .WithValue($"{startMessagedsa.Author.GlobalName} {startMessagedsa.Timestamp}\n" +
-                $"{startMessagedsa.Content}")
+                .WithValue($"{startMessage.Author.GlobalName} {startMessage.Timestamp}\n" +
+                $"{startMessage.Content}")
                 .WithIsInline(false);
-            var endMessage = new EmbedFieldBuilder()
+            var endMessageField = new EmbedFieldBuilder()
                 .WithName("Até:")
-                .WithValue($"{lastMessagedsa.Author.GlobalName} {lastMessagedsa.Timestamp}\n" +
-                $"{lastMessagedsa.Content}")
+                .WithValue($"{lastMessage.Author.GlobalName} {lastMessage.Timestamp}\n" +
+                $"{lastMessage.Content}")
                 .WithIsInline(false);
 
             var startTime = new EmbedFieldBuilder()
@@ -67,13 +65,13 @@ namespace App.Modules
             var embed = new EmbedBuilder()
                 .WithTitle("Backup realizado com sucesso!")
                 .WithColor(Color.Green)
-                .AddField(startMessage)
-                .AddField(endMessage)
+                .AddField(startMessageField)
+                .AddField(endMessageField)
                 .AddField(startTime)
                 .AddField(endTime)
                 .WithFooter(madeBy);
 
-            if (otherBackupLastMessageId != 0)
+            if (otherBackupLastMessageId != 1)
                 embed.WithDescription("ate o ultimo backup LINK {GetMessageById(otherBackupLastMessageId)}");
 
             return embed.Build();

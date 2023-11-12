@@ -1,5 +1,4 @@
-﻿using App.Modules;
-using App.Services.Database.Models;
+﻿using App.Services.Database.Models;
 using App.Services.Database.Repository;
 using App.Utilities;
 using Discord;
@@ -7,7 +6,7 @@ using Discord.WebSocket;
 
 namespace App.Services.Database;
 
-internal class Backup : BackupCommand
+internal class Backup
 {
     private readonly ConsoleLogger _log = new(nameof(Backup));
     private readonly DateTime _backupStartDate;
