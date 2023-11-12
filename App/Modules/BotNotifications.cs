@@ -76,5 +76,16 @@ namespace Bot.Modules
 
             return embed.Build();
         }
+
+        internal async Task AlreadyExecutingBackup()
+        {
+
+            var component = new ComponentBuilder().WithButton(label: "foda-se", style: ButtonStyle.Secondary, customId: "bola");
+
+            await _command.RespondAsync(
+                "Há um backup sendo feito no momento, tente novamente mais tarde...", components: component.Build());
+            await Task.Delay(5000);
+            await _command.DeleteOriginalResponseAsync();
+        }
     }
 }

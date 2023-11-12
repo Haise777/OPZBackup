@@ -11,7 +11,7 @@ namespace Bot.Modules
         private readonly ConsoleLogger _log;
         private readonly BotNotifications _notifications;
         private readonly SocketSlashCommand _command;
-        private bool _alreadyInExecution;
+        private static bool _alreadyInExecution;
 
         public BackupCommand(SocketSlashCommand command)
         {
@@ -26,17 +26,17 @@ namespace Bot.Modules
             var commandChoice = _command.Data.Options.First().Options.First();
             _log.BotActions($"{commandAction.Name} {commandChoice.Name}");
 
-            if (_alreadyInExecution)
-            {
-                _notifications.AlreadyExecutingBackup();
-                _log.BotActions("<!> Blocked backup attempt while another backup is already running");
-                return;
-            }
-
-            _alreadyInExecution = true;
             switch (commandAction.Name)
             {
                 case "fazer":
+                    if (_alreadyInExecution)
+                    {
+                        _log.BotActions("<!> Blocked backup attempt while another backup is already running");
+                        await _notifications.AlreadyExecutingBackup();
+                        return;
+                    }
+
+                    _alreadyInExecution = true;
                     await _notifications.SendMakingBackupMessage();
                     if (commandChoice.Name == "tudo")
                         await MakeBackup(false);
@@ -85,6 +85,7 @@ namespace Bot.Modules
 
                 backup.AddMessages(messagesToSave);
 
+                startFromMessageId = messageBatch.Last().Id;
                 SaveBatch(backup);
             }
 
