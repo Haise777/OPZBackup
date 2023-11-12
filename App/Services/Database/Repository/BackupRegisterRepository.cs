@@ -44,13 +44,4 @@ internal static class BackupRegisterRepository
             _log.Exception("Failed to create new entry on database", ex);
         }
     }
-
-    public static ulong GetEndMessageId(ulong currentMessageId)
-    {
-        var context = DbConnection.GetConnection();
-        var currentMessageBackupDate = context.Messages.Single(m => m.Id == currentMessageId).BackupDate;
-        var existingBackup = context.BackupRegisters.Single(b => b.Date == currentMessageBackupDate);
-
-        return existingBackup.EndMessageId ?? throw new InvalidOperationException("Invalid older backup found");
-    }
 }

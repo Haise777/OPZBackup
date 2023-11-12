@@ -9,24 +9,40 @@ namespace App.Modules
     internal class BackupCommand
     {
         private readonly ConsoleLogger _log = new(nameof(BackupCommand));
+        private readonly SocketSlashCommand _command;
+        private readonly BotNotifications _notifications;
 
-        public async Task BackupOptions(SocketSlashCommand command)
+        public BackupCommand(SocketSlashCommand command)
         {
-            var firstCommandOption = command.Data.Options.First();
-            var fazerCommandOptions = command.Data.Options.First().Options.First();
+            _command = command;
+            _notifications = new BotNotifications(command);
+        }
+
+        public async Task BackupOptions()
+        {
+            var firstCommandOption = _command.Data.Options.First();
+            var fazerCommandOptions = _command.Data.Options.First().Options.First();
 
             switch (firstCommandOption.Name)
-            { //TODO: A way to block another backup command call when one is currently in execution
+            {
+                //TODO: A way to block another backup command call when one is currently in execution
+
                 case "fazer":
-                    if ((bool)fazerCommandOptions.Value)
+                    if (fazerCommandOptions.Name == "tudo" && (bool)fazerCommandOptions.Options.First().Value)
                     {
                         _log.BotActions(firstCommandOption.Name);
-                        await command.RespondAsync("fazendo backup...");
-                        await Backup(command);
+                        await _notifications.SendMakingBackupMessage();
+                        await MakeBackup(false);
+                    }
+                    else if (fazerCommandOptions.Name == "ate-ultimo" && (bool)fazerCommandOptions.Options.First().Value)
+                    {
+                        _log.BotActions(firstCommandOption.Name);
+                        await _notifications.SendMakingBackupMessage();
+                        await MakeBackup(true);
                     }
                     else
                     {
-                        await command.RespondAsync();
+                        throw new Exception("Invalid backup command option");
                     }
                     break;
 
@@ -34,13 +50,12 @@ namespace App.Modules
 
                     if (fazerCommandOptions.Name == "proprio" && (bool)fazerCommandOptions.Options.First().Value)
                     {
-                        await DeleteUserRecord(command.User);
+                        await DeleteUserRecord(_command.User);
                     }
                     break;
 
                 default:
                     throw new ArgumentException("Erro grave no BackupOptions SwitchCase");
-
             }
         }
 
@@ -51,21 +66,22 @@ namespace App.Modules
             DbConnection.CloseConnection();
         }
 
-
-        private async Task Backup(SocketSlashCommand command)
+        private async Task MakeBackup(bool untilLastBackup)
         {
             //TODO IMPORTANT: Make a way to validate if backup should be made
 
-            var backup = new Backup(command.Channel, command.User);
+            var backup = new Backup(_command.Channel, _command.User);
+            var backupRegister = backup.BackupRegister;
+
             ulong startFrom = 1;
 
             while (true)
             {
-                bool skipSave = true;
-                var messageBatch = await GetMessages(command.Channel, startFrom);
+                var messageBatch = await GetMessages(_command.Channel, startFrom);
 
                 if (!messageBatch.Any())
                 {
+                    await _notifications.SendBackupCompletedMessage(backupRegister);
                     _log.HappyAction("Reached end of channel, considering backup as finished");
                     break;
                 }
@@ -79,22 +95,24 @@ namespace App.Modules
                     //jumps to the last saved message from that backup
                     if (MessageRepository.CheckIfExists(message.Id))
                     {
-                        _log.BackupAction($"Already saved message found: '{message.Content}'\n" +
-                            "                 -> jumping to last backuped message");
-                        startFrom = BackupRegisterRepository.GetEndMessageId(message.Id);
-                        break;
+                        _log.BackupAction($"Already saved message found: '{message.Content}'");
+                        if (untilLastBackup)
+                        {
+                            await _notifications.SendBackupCompletedMessage(backupRegister, message.Id);
+                            _log.HappyAction("Reached already saved message, considering backup as finished");
+                            break;
+                        }
+                        continue;
                     }
 
                     startFrom = message.Id;
                     backup.AddMessage(message);
-                    skipSave = false;
                 }
 
                 //add message to db
                 try
                 {
-                    if (!skipSave)
-                        backup.Save();
+                    backup.Save();
                 }
                 catch (Exception ex)
                 {

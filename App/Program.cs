@@ -10,7 +10,8 @@ namespace App
     {
         BackupCommand _backupChannel = new BackupCommand();
 
-        public static ulong testGuild = ulong.Parse(File.ReadAllText(@"E:\archives\privateapplocals\guild.txt"));
+        public ulong testGuildId = ulong.Parse(File.ReadAllText(@"E:\archives\privateapplocals\guild.txt"));
+        public static SocketGuild testGuild; //TODO: Only for testing
         private DiscordSocketClient _client;
         private readonly ConsoleLogger _logger = new("Program");
 
@@ -29,6 +30,7 @@ namespace App
             _client.Ready += Client_Ready;
             _client.SlashCommandExecuted += SlashCommandHandler;
 
+            testGuild = _client.GetGuild(testGuildId);
 
             var token = File.ReadAllText(@"E:\archives\privateapplocals\token.txt");
             await _client.LoginAsync(TokenType.Bot, token);
