@@ -19,7 +19,6 @@ namespace Bot
         private readonly ConsoleLogger _logger = new("Program");
 
         static Task Main() => new Program().MainAsync(); //start
-
         public async Task MainAsync()
         {
             var config = new DiscordSocketConfig()
@@ -35,13 +34,9 @@ namespace Bot
             var token = File.ReadAllText(@"E:\archives\privateapplocals\token.txt");
             await _client.LoginAsync(TokenType.Bot, token);
 
-            ////////////
-
             var serviceCollection = new ServiceCollection();
             SetServices(serviceCollection);
             _serviceProvider = serviceCollection.BuildServiceProvider();
-
-            ////////////
 
             await _client.StartAsync();
 
