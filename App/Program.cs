@@ -1,17 +1,19 @@
-﻿using Bot.Modules;
+﻿using Bot.Modules.BackupMessage;
+using Bot.Services.Database;
+using Bot.Services.Database.Repository;
 using Bot.Utilities;
 using Discord;
 using Discord.Net;
 using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bot
 {
     internal class Program
     {
         public ulong testGuildId = ulong.Parse(File.ReadAllText(@"E:\archives\privateapplocals\guild.txt"));
-
         public static SocketGuild testGuild; //TODO: Only for testing
-
+        private IServiceProvider _serviceProvider;
 
         private DiscordSocketClient _client;
         private readonly ConsoleLogger _logger = new("Program");
@@ -33,9 +35,29 @@ namespace Bot
             var token = File.ReadAllText(@"E:\archives\privateapplocals\token.txt");
             await _client.LoginAsync(TokenType.Bot, token);
 
+            ////////////
+
+            var serviceCollection = new ServiceCollection();
+            SetServices(serviceCollection);
+            _serviceProvider = serviceCollection.BuildServiceProvider();
+
+            ////////////
+
             await _client.StartAsync();
 
             await Task.Delay(-1);
+        }
+
+        private void SetServices(IServiceCollection services)
+        {
+            services
+                .AddScoped<BackupCommand, BackupCommand>()
+                .AddScoped<BackupNotification, BackupNotification>()
+                .AddScoped<BackupService, BackupService>()
+                .AddScoped<AuthorRepository, AuthorRepository>()
+                .AddScoped<BackupRegisterRepository, BackupRegisterRepository>()
+                .AddScoped<ChannelRepository, ChannelRepository>()
+                .AddScoped<MessageRepository, MessageRepository>();
         }
 
         private async Task SlashCommandHandler(SocketSlashCommand command)
@@ -45,11 +67,15 @@ namespace Bot
             switch (command.Data.Name)
             {
                 case "backup":
-                    BackupCommand backupChannel = new BackupCommand(command);
-                    backupChannel.BackupOptions();
+                    using (var scope = _serviceProvider.CreateScope())
+                    {
+                        var bCommand = scope.ServiceProvider.GetService<BackupCommand>() ?? throw new ArgumentNullException();
+                        await bCommand.BackupOptions(command);
+                    }
+
+                    var bc = new BackupCommand(new BackupService(new AuthorRepository(), new MessageRepository(), new BackupRegisterRepository(), new ChannelRepository()), new BackupNotification());
                     break;
             }
-
         }
 
         private Task Log(LogMessage msg) //TODO Assign slash commands / Make it to not over declare already existing commands

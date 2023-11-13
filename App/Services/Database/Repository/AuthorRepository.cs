@@ -40,7 +40,7 @@ namespace Bot.Services.Database.Repository
             }
         }
 
-        public void DeleteAuthor(IUser author)
+        public void DeleteAuthor(IUser author) //TODO: Smallchagnes
         {
             var context = DbConnection.GetConnection();
 

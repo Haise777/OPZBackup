@@ -1,5 +1,4 @@
 ﻿using Bot.Services.Database.Models;
-using Bot.Services.Database.Repository;
 using Bot.Utilities;
 using Discord;
 using Discord.WebSocket;
@@ -9,6 +8,8 @@ namespace Bot.Services.Database;
 internal class Backup
 {
     private readonly ConsoleLogger _log = new(nameof(Backup));
+    private readonly BackupService _backupRepositoryAccess;
+
     private readonly Channel _selectedChannel;
     private readonly List<Author> _authors = new();
     private readonly List<Message> _messageBatch = new();
@@ -18,8 +19,9 @@ internal class Backup
 
     public readonly BackupRegister BackupRegister;
 
-    public Backup(ISocketMessageChannel channel, IUser commandAuthor)
+    public Backup(ISocketMessageChannel channel, IUser commandAuthor, BackupService backupRepositoryAccess)
     {
+        _backupRepositoryAccess = backupRepositoryAccess;
         _selectedChannel = new Channel { Name = channel.Name, Id = channel.Id };
         _authors.Add(new Author { Id = commandAuthor.Id, Username = commandAuthor.Username });
 
@@ -61,10 +63,9 @@ internal class Backup
         }
 
         _log.BackupAction($"<!> Saving batch 'number {_batchCounter}'");
-        AuthorRepository.SaveNewToDatabase(_authors);
-        MessageRepository.SaveToDatabase(_messageBatch);
+        _backupRepositoryAccess.StandardBackup(_authors, _messageBatch);
         BackupRegister.EndMessageId = _messageBatch[^1].Id;
-        BackupRegisterRepository.UpdateOnDatabase(BackupRegister);
+        _backupRepositoryAccess.UpdateRegisterOnDatabase(BackupRegister);
         _log.BackupAction($"Finished batch 'number {_batchCounter}'");
 
         _messageBatch.Clear();
@@ -74,15 +75,10 @@ internal class Backup
     private void FirstTimeSave()
     {
         _log.BackupAction("<!> Saving first batch");
-        ChannelRepository.RegisterIfNotExists(_selectedChannel);
-        AuthorRepository.SaveNewToDatabase(_authors);
-        BackupRegisterRepository.CreateOnDatabase(BackupRegister);
-        MessageRepository.SaveToDatabase(_messageBatch);
-
+        _backupRepositoryAccess.FirstTimeBackup(BackupRegister, _selectedChannel, _authors, _messageBatch);
         BackupRegister.StartMessageId = _messageBatch[0].Id;
         BackupRegister.EndMessageId = _messageBatch[^1].Id;
-
-        BackupRegisterRepository.UpdateOnDatabase(BackupRegister);
+        _backupRepositoryAccess.UpdateRegisterOnDatabase(BackupRegister);
         _log.BackupAction("Finished first batch");
 
         _messageBatch.Clear();
