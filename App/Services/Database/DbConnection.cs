@@ -6,29 +6,30 @@ namespace Bot.Services.Database
     internal class DbConnection
     {
         private MessageBackupContext? _currentConnection;
+        private ConsoleLogger _logger = new(nameof(DbConnection));
 
         public void OpenConnection()
         {
             if (_currentConnection is not null)
             {
-                ConsoleLogger.GenericError(nameof(DbConnection), "Connection is already open!");
+                _logger.BackupAction("Connection is already open!");
                 return;
             }
             _currentConnection = new MessageBackupContext();
-            ConsoleLogger.GenericBackupAction(nameof(DbConnection), "Connection opened");
+            _logger.BackupAction("Connection opened");
         }
 
         public void CloseConnection()
         {
             if (_currentConnection is null)
             {
-                ConsoleLogger.GenericError(nameof(DbConnection), "There is no connection to close!");
+                _logger.BackupAction("There is no connection to close!");
                 return;
             }
 
             _currentConnection.Dispose();
             _currentConnection = null;
-            ConsoleLogger.GenericBackupAction(nameof(DbConnection), "Connection closed");
+            _logger.BackupAction("Connection closed");
         }
 
         public MessageBackupContext GetConnection()

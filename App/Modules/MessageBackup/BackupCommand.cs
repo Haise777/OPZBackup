@@ -39,8 +39,11 @@ namespace Bot.Modules.BackupMessage
             {
                 case "fazer":
                     if (!AuthenticatorService.IsAuthorized(command.User))
-                        _notifications.NotAuthorized(command);
-
+                    {
+                        await _notifications.NotAuthorized(command);
+                        _log.BotActions($"{command.User.Username} dont have permission to use this command");
+                        return;
+                    }
                     if (_alreadyInExecution)
                     {
                         _log.BotActions("<!> Blocked backup attempt while another backup is already running");
@@ -49,21 +52,16 @@ namespace Bot.Modules.BackupMessage
                     }
                     _alreadyInExecution = true;
                     await _notifications.SendMakingBackupMessage(_command);
-
-                    if (commandChoice.Name == "tudo")
-                        await MakeBackup(false);
-                    else if (commandChoice.Name == "ate-ultimo")
-                        await MakeBackup(true);
+                    if (commandChoice.Name == "tudo") await MakeBackup(false);
+                    else if (commandChoice.Name == "ate-ultimo") await MakeBackup(true);
                     break;
 
                 case "deletar":
-
                     if (commandChoice.Name == "proprio")
                         await DeleteUserRecord(_command.User);
                     break;
 
-                default:
-                    throw new InvalidOperationException("Invalid backup command");
+                default: throw new InvalidOperationException("Invalid backup command");
             }
 
             _alreadyInExecution = false;
@@ -72,8 +70,17 @@ namespace Bot.Modules.BackupMessage
         private async Task DeleteUserRecord(IUser author)
         {
             _dbConnection.OpenConnection();
-            _backupRepositoryAccess.DeleteAuthor(author); //TODO: To make awaitable AND
+            await _notifications.SendDeletingUserNotif(_command);
+
+            if (!_backupRepositoryAccess.CheckIfAuthorExists(author))
+            {
+                await _notifications.UserDeletedNotif(_command, false);
+                _dbConnection.CloseConnection();
+                return;
+            }
+            _backupRepositoryAccess.DeleteAuthor(author);
             _dbConnection.CloseConnection();
+            await _notifications.UserDeletedNotif(_command);
         }
 
         private async Task MakeBackup(bool untilLastBackup)
@@ -91,7 +98,6 @@ namespace Bot.Modules.BackupMessage
                 if (!messageBatch.Any()) break;
 
                 _dbConnection.OpenConnection();
-
                 var messagesToSave = FilterMessagesToSave(messageBatch, untilLastBackup, out shouldContinue);
 
                 startFromMessageId = messageBatch.Last().Id;
@@ -104,7 +110,6 @@ namespace Bot.Modules.BackupMessage
                 backup.AddMessages(messagesToSave);
                 SaveBatch(backup);
             }
-
             await _notifications.SendBackupCompletedMessage(backupRegister);
             _log.ActionSucceed("Reached end of channel, considering backup as finished");
         }
@@ -112,31 +117,22 @@ namespace Bot.Modules.BackupMessage
         private async Task<IEnumerable<IMessage>> GetMessages(ISocketMessageChannel channel, ulong startFrom)
         {
             _log.BackupAction($"Getting messages from {channel.Name}");
-
             if (startFrom == 1)
-            {
-                _log.BackupAction("Starting from beginning");
                 return await channel.GetMessagesAsync(8).FlattenAsync();
-            }
             else
-            {
-                _log.BackupAction("Starting from older message");
                 return await channel.GetMessagesAsync(startFrom, Direction.Before, 8).FlattenAsync();
-            }
         }
-
+        //TODO: Make a way for backup to save already existing but edited messages
         private List<IMessage> FilterMessagesToSave(IEnumerable<IMessage> messages, bool onlyToLastBackup, out bool shouldContinue)
         {
             shouldContinue = true;
             var messagesToSave = new List<IMessage>();
             foreach (var message in messages)
             {
-                if (message == null)
-                    throw new InvalidOperationException("Message object cannot be null");
-
+                if (message == null) throw new InvalidOperationException("Message object cannot be null");
+                if (message.Author.Id == Program.BotUserId) continue;
                 if (_messageRepository.CheckIfExists(message.Id))
                 {
-                    _log.BackupAction($"Already saved message found: '{message.Content}'");
                     if (onlyToLastBackup)
                     {
                         shouldContinue = false;
@@ -144,10 +140,8 @@ namespace Bot.Modules.BackupMessage
                     }
                     continue;
                 }
-
                 messagesToSave.Add(message);
             }
-
             return messagesToSave;
         }
 
@@ -156,10 +150,6 @@ namespace Bot.Modules.BackupMessage
             try
             {
                 backup.Save();
-            }
-            catch (Exception ex)
-            {
-                _log.Exception("Failed to save current backup batch", ex);
             }
             finally
             {

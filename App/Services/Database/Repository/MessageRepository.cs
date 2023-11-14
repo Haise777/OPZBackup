@@ -1,5 +1,4 @@
-﻿using Bot.Services.Database.Context;
-using Bot.Services.Database.Models;
+﻿using Bot.Services.Database.Models;
 using Bot.Utilities;
 
 namespace Bot.Services.Database.Repository
@@ -7,30 +6,26 @@ namespace Bot.Services.Database.Repository
     internal class MessageRepository
     {
         private readonly ConsoleLogger _log = new(nameof(MessageRepository));
-        private readonly MessageBackupContext _backupContext;
+        private readonly DbConnection _connection;
 
-        public MessageRepository(DbConnection dbContext)
+        public MessageRepository(DbConnection dbConnection)
         {
-            _backupContext = dbContext.GetConnection();
+            _connection = dbConnection;
         }
 
         public bool CheckIfExists(ulong id)
-            => _backupContext.Messages.Any(m => m.Id == id);
-
+        {
+            var context = _connection.GetConnection();
+            return context.Messages.Any(m => m.Id == id);
+        }
 
         public void SaveToDatabase(List<Message> messagesToSave)
         {
-            try
-            {
-                _backupContext.Messages.AddRange(messagesToSave);
-                _backupContext.SaveChanges();
-                _log.BackupAction($"Saved {messagesToSave.Count} messages to database");
-            }
-            catch (Exception ex)
-            {
-                _log.Exception("Failed to save message batch to database", ex);
-                throw;
-            }
+            var context = _connection.GetConnection();
+
+            context.Messages.AddRange(messagesToSave);
+            context.SaveChanges();
+            _log.BackupAction($"Saved {messagesToSave.Count} messages to database");
         }
     }
 }

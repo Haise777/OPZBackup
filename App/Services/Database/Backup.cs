@@ -62,11 +62,10 @@ internal class Backup
             return;
         }
 
-        _log.BackupAction($"<!> Saving batch 'number {_batchCounter}'");
+        _log.BackupAction($"Saving batch 'number {_batchCounter}'");
         _backupRepositoryAccess.StandardBackup(_authors, _messageBatch);
         BackupRegister.EndMessageId = _messageBatch[^1].Id;
         _backupRepositoryAccess.UpdateRegisterOnDatabase(BackupRegister);
-        _log.BackupAction($"Finished batch 'number {_batchCounter}'");
 
         _messageBatch.Clear();
         _batchCounter++;
@@ -79,7 +78,6 @@ internal class Backup
         BackupRegister.StartMessageId = _messageBatch[0].Id;
         BackupRegister.EndMessageId = _messageBatch[^1].Id;
         _backupRepositoryAccess.UpdateRegisterOnDatabase(BackupRegister);
-        _log.BackupAction("Finished first batch");
 
         _messageBatch.Clear();
         _batchCounter++;

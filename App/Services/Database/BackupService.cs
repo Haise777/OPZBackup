@@ -38,5 +38,7 @@ namespace Bot.Services.Database
 
         public void DeleteAuthor(IUser author)
             => _authorRepository.DeleteAuthor(author);
+        public bool CheckIfAuthorExists(IUser author)
+            => _authorRepository.CheckIfExists(author);
     }
 }

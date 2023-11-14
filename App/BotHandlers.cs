@@ -23,21 +23,29 @@ namespace Bot
 
         public Task SlashCommandHandler(SocketSlashCommand command)
         {
-            _ = Task.Run(async () =>
+            _logger.BotActions($"{command.User.Username}: {command.CommandName}");
+            try
             {
-                _logger.BotActions($"{command.User.Username}: {command.CommandName}");
-                switch (command.Data.Name)
+                _ = Task.Run(async () =>
                 {
-                    case "backup":
-                        using (var scope = _scopeFactory.CreateScope())
-                        {
-                            var bCommand = scope.ServiceProvider.GetRequiredService<BackupCommand>();
-                            await bCommand.BackupOptions(command);
-                        }
-                        break;
-                }
-
-            }); return Task.CompletedTask;
+                    switch (command.Data.Name)
+                    {
+                        case "backup":
+                            using (var scope = _scopeFactory.CreateScope())
+                            {
+                                var bCommand = scope.ServiceProvider.GetRequiredService<BackupCommand>();
+                                await bCommand.BackupOptions(command);
+                            }
+                            break;
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.Exception(ex);
+                throw;
+            }
+            return Task.CompletedTask;
         }
     }
 }

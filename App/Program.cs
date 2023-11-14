@@ -1,6 +1,8 @@
 ﻿using Bot.Modules.BackupMessage;
+using Bot.Services;
 using Bot.Services.Database;
 using Bot.Services.Database.Repository;
+using Bot.Setup;
 using Bot.Utilities;
 using Discord;
 using Discord.WebSocket;
@@ -32,9 +34,11 @@ namespace Bot
         }
 
         private readonly IServiceProvider _serviceProvider;
-        private DiscordSocketClient _client;
+        private readonly DiscordSocketClient _client;
         private readonly ConsoleLogger _logger = new("Program");
-        public static SocketGuild Guild;
+        public static SocketGuild Guild { get; set; }
+        public static ulong BotUserId { get; private set; }
+        public static string DbConnectionString { get; private set; }
 
         public Program(IServiceProvider serviceProvider)
         {
@@ -55,26 +59,29 @@ namespace Bot
             }
             catch (Exception ex)
             {
-                _logger.Exception("Failed to read bot configuration file", ex);
+                _logger.Exception(ex);
                 Environment.Exit(-1);
             }
+            DbConnectionString = botValues.ConnectionString;
+            AuthenticatorService.SetStarRole(botValues.StarRoleId);
             var handlers = new BotHandlers(_serviceProvider.GetRequiredService<IServiceScopeFactory>(), _logger);
-            Guild = _client.GetGuild(botValues.GuildId);
-            var commands = new BotCommands(Guild);
+            var readySetup = new BotClientReady(_client, botValues.GuildId);
 
             _client.Log += BotLog;
-            _client.Ready += commands.Client_Ready;
+            _client.Ready += readySetup.Client_Ready;
             _client.SlashCommandExecuted += handlers.SlashCommandHandler;
             _client.ButtonExecuted += handlers.MyButtonHandler;
 
             await _client.LoginAsync(TokenType.Bot, botValues.Token);
+            BotUserId = (await _client.GetApplicationInfoAsync()).Id;
+
             await _client.StartAsync();
             await Task.Delay(-1);
         }
 
-        private Task BotLog(LogMessage msg) //TODO Assign slash commands / Make it to not over declare already existing commands
+        private Task BotLog(LogMessage msg)
         {
-            ConsoleLogger.BotLogger(msg.ToString());
+            ConsoleLogger.BotApiLogger(msg.ToString());
             return Task.CompletedTask;
         }
     }

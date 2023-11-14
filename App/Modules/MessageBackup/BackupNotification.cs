@@ -6,24 +6,27 @@ namespace Bot.Modules.BackupMessage
 {
     internal class BackupNotification
     {
+        private SocketSlashCommand _command;
+
         public async Task SendMakingBackupMessage(SocketSlashCommand command)
         {
+            _command = command;
             await command.RespondAsync("a...");
         }
 
-        public async Task SendBackupCompletedMessage(BackupRegister backupRegister, SocketSlashCommand command)
+        public async Task SendBackupCompletedMessage(BackupRegister backupRegister)
         {
-            var backupCompletedEmbed = await BackupCompletedMessage(command, backupRegister);
+            var backupCompletedEmbed = await BackupCompletedMessage(backupRegister);
 
-            await command.ModifyOriginalResponseAsync(msg =>
+            await _command.ModifyOriginalResponseAsync(msg =>
                 {
                     msg.Content = "";
                     msg.Embed = backupCompletedEmbed;
                 }
             );
-            var completionPing = await command.Channel.SendMessageAsync($"<@{command.User.Id}>");
+            var completionPing = await _command.Channel.SendMessageAsync($"<@{_command.User.Id}>");
             await Task.Delay(1000);
-            await command.Channel.DeleteMessageAsync(completionPing.Id);
+            await _command.Channel.DeleteMessageAsync(completionPing.Id);
         }
 
         internal async Task AlreadyExecutingBackup(SocketSlashCommand command)
@@ -37,11 +40,11 @@ namespace Bot.Modules.BackupMessage
         }
 
         //TODO: Fix message timestamp timezone being +3:00 ahead
-        private async Task<Embed> BackupCompletedMessage(SocketSlashCommand command, BackupRegister backupRegister)
+        private async Task<Embed> BackupCompletedMessage(BackupRegister backupRegister)
         {
             var backupAuthor = Program.Guild.GetUser(backupRegister.AuthorId.Value);
 
-            var messageData = await FormatToEmbedData(command, backupRegister);
+            var messageData = await FormatToEmbedData(backupRegister);
 
 
             var startMessageField = new EmbedFieldBuilder()
@@ -81,10 +84,10 @@ namespace Bot.Modules.BackupMessage
         }
 
         private async Task<(IMessage startMessage, IMessage endMessage, string sMsgDate, string eMsgDate)>
-            FormatToEmbedData(SocketSlashCommand command, BackupRegister backupRegister)
+            FormatToEmbedData(BackupRegister backupRegister)
         {
-            var startMessage = await command.Channel.GetMessageAsync(backupRegister.StartMessageId.Value);
-            var endMessage = await command.Channel.GetMessageAsync(backupRegister.EndMessageId.Value);
+            var startMessage = await _command.Channel.GetMessageAsync(backupRegister.StartMessageId.Value);
+            var endMessage = await _command.Channel.GetMessageAsync(backupRegister.EndMessageId.Value);
             var sMsgDate =
                 $"{startMessage.Timestamp.DateTime.ToShortDateString()} " +
                 $"{startMessage.Timestamp.DateTime.ToShortTimeString()}";
@@ -95,13 +98,31 @@ namespace Bot.Modules.BackupMessage
             return (startMessage, endMessage, sMsgDate, eMsgDate);
         }
 
-        internal async void NotAuthorized(SocketSlashCommand command)
+        internal async Task NotAuthorized(SocketSlashCommand command)
         {
             await command.RespondAsync("Não tem permissões necessárias para utilizar este comando");
 
             await Task.Delay(6000);
 
             await command.DeleteOriginalResponseAsync();
+        }
+
+        internal async Task SendDeletingUserNotif(SocketSlashCommand? command)
+        {
+            await command.RespondAsync("Deletando usuario de todos os backups");
+        }
+
+        internal async Task UserDeletedNotif(SocketSlashCommand? command, bool wasDeleted = true)
+        {
+            if (!wasDeleted)
+            {
+                await command.ModifyOriginalResponseAsync(m => m.Content =
+                $"Não há mensagens no backup pertencente à <@{command.User.Id}>");
+                return;
+            }
+
+            await command.ModifyOriginalResponseAsync(m => m.Content =
+            $"Todas as mensagens de <@{command.User.Id}> foram deletadas");
         }
     }
 }
