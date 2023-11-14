@@ -3,11 +3,11 @@ using Bot.Utilities;
 
 namespace Bot.Services.Database
 {
-    internal static class DbConnection
+    internal class DbConnection
     {
-        private static MessageBackupContext? _currentConnection;
+        private MessageBackupContext? _currentConnection;
 
-        public static void OpenConnection()
+        public void OpenConnection()
         {
             if (_currentConnection is not null)
             {
@@ -18,19 +18,20 @@ namespace Bot.Services.Database
             ConsoleLogger.GenericBackupAction(nameof(DbConnection), "Connection opened");
         }
 
-        public static void CloseConnection()
+        public void CloseConnection()
         {
             if (_currentConnection is null)
             {
                 ConsoleLogger.GenericError(nameof(DbConnection), "There is no connection to close!");
                 return;
             }
+
             _currentConnection.Dispose();
             _currentConnection = null;
             ConsoleLogger.GenericBackupAction(nameof(DbConnection), "Connection closed");
         }
 
-        public static MessageBackupContext GetConnection()
+        public MessageBackupContext GetConnection()
         {
             if (_currentConnection is null)
                 throw new InvalidOperationException("No available connection to get");

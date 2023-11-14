@@ -1,4 +1,5 @@
-﻿using Bot.Services.Database.Models;
+﻿using Bot.Services.Database.Context;
+using Bot.Services.Database.Models;
 using Bot.Utilities;
 using Discord;
 
@@ -7,15 +8,20 @@ namespace Bot.Services.Database.Repository
     internal class AuthorRepository
     {
         private readonly ConsoleLogger _log = new(nameof(AuthorRepository));
+        private readonly MessageBackupContext _backupContext;
+
+        public AuthorRepository(DbConnection dbConnection)
+        {
+            _backupContext = dbConnection.GetConnection();
+        }
 
         public void SaveNewToDatabase(List<Author> authors)
         {
-            var context = DbConnection.GetConnection();
             var authorsToAdd = new List<Author>();
 
             foreach (var author in authors)
             {
-                if (!context.Authors.Any(a => a.Id == author.Id))
+                if (!_backupContext.Authors.Any(a => a.Id == author.Id))
                 {
                     authorsToAdd.Add(author);
                     _log.BackupAction($"New author to add: '{author.Username}'");
@@ -29,8 +35,8 @@ namespace Bot.Services.Database.Repository
             }
             try
             {
-                context.Authors.AddRange(authorsToAdd);
-                context.SaveChanges();
+                _backupContext.Authors.AddRange(authorsToAdd);
+                _backupContext.SaveChanges();
                 _log.BackupAction("Saved new authors to the database");
             }
             catch (Exception ex)
@@ -42,14 +48,12 @@ namespace Bot.Services.Database.Repository
 
         public void DeleteAuthor(IUser author) //TODO: Smallchagnes
         {
-            var context = DbConnection.GetConnection();
-
-            var authorToDelete = context.Authors.SingleOrDefault(a => a.Id == author.Id);
+            var authorToDelete = _backupContext.Authors.SingleOrDefault(a => a.Id == author.Id);
             if (authorToDelete is null)
                 throw new InvalidOperationException("Author to delete not found on database");
 
-            context.Authors.Remove(authorToDelete);
-            context.SaveChanges();
+            _backupContext.Authors.Remove(authorToDelete);
+            _backupContext.SaveChanges();
 
             _log.BackupAction($"All messages and user record deleted: {author.Username}");
         }

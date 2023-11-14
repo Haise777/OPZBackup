@@ -6,45 +6,42 @@ namespace Bot.Modules.BackupMessage
 {
     internal class BackupNotification
     {
-        private SocketSlashCommand? _command;
-
         public async Task SendMakingBackupMessage(SocketSlashCommand command)
         {
-            _command = command;
-            await _command.RespondAsync("a...");
+            await command.RespondAsync("a...");
         }
 
-        public async Task SendBackupCompletedMessage(BackupRegister backupRegister, ulong otherBackupStartId = 1)
+        public async Task SendBackupCompletedMessage(BackupRegister backupRegister, SocketSlashCommand command)
         {
-            var backupCompletedEmbed = await BackupCompletedMessage(backupRegister);
+            var backupCompletedEmbed = await BackupCompletedMessage(command, backupRegister);
 
-            await _command.ModifyOriginalResponseAsync(msg =>
+            await command.ModifyOriginalResponseAsync(msg =>
                 {
                     msg.Content = "";
                     msg.Embed = backupCompletedEmbed;
                 }
             );
-            var completionPing = await _command.Channel.SendMessageAsync($"<@{_command.User.Id}>");
-            await _command.Channel.DeleteMessageAsync(completionPing.Id);
+            var completionPing = await command.Channel.SendMessageAsync($"<@{command.User.Id}>");
+            await Task.Delay(1000);
+            await command.Channel.DeleteMessageAsync(completionPing.Id);
         }
 
-        internal async Task AlreadyExecutingBackup()
+        internal async Task AlreadyExecutingBackup(SocketSlashCommand command)
         {
-
             var component = new ComponentBuilder().WithButton(label: "foda-se", style: ButtonStyle.Secondary, customId: "bola");
-
-            await _command.RespondAsync(
+            await command.RespondAsync(
                 "Há um backup sendo feito no momento, tente novamente mais tarde...", components: component.Build());
-            await Task.Delay(6500);
-            await _command.DeleteOriginalResponseAsync();
+
+            await Task.Delay(7500);
+            await command.DeleteOriginalResponseAsync();
         }
 
         //TODO: Fix message timestamp timezone being +3:00 ahead
-        private async Task<Embed> BackupCompletedMessage(BackupRegister backupRegister)
+        private async Task<Embed> BackupCompletedMessage(SocketSlashCommand command, BackupRegister backupRegister)
         {
-            var backupAuthor = Program.testGuild.GetUser(backupRegister.AuthorId.Value);
+            var backupAuthor = Program.Guild.GetUser(backupRegister.AuthorId.Value);
 
-            var messageData = await FormatToEmbedData(backupRegister);
+            var messageData = await FormatToEmbedData(command, backupRegister);
 
 
             var startMessageField = new EmbedFieldBuilder()
@@ -84,10 +81,10 @@ namespace Bot.Modules.BackupMessage
         }
 
         private async Task<(IMessage startMessage, IMessage endMessage, string sMsgDate, string eMsgDate)>
-            FormatToEmbedData(BackupRegister backupRegister)
+            FormatToEmbedData(SocketSlashCommand command, BackupRegister backupRegister)
         {
-            var startMessage = await _command.Channel.GetMessageAsync(backupRegister.StartMessageId.Value);
-            var endMessage = await _command.Channel.GetMessageAsync(backupRegister.EndMessageId.Value);
+            var startMessage = await command.Channel.GetMessageAsync(backupRegister.StartMessageId.Value);
+            var endMessage = await command.Channel.GetMessageAsync(backupRegister.EndMessageId.Value);
             var sMsgDate =
                 $"{startMessage.Timestamp.DateTime.ToShortDateString()} " +
                 $"{startMessage.Timestamp.DateTime.ToShortTimeString()}";
@@ -96,6 +93,15 @@ namespace Bot.Modules.BackupMessage
                 $"{endMessage.Timestamp.DateTime.ToShortTimeString()}";
 
             return (startMessage, endMessage, sMsgDate, eMsgDate);
+        }
+
+        internal async void NotAuthorized(SocketSlashCommand command)
+        {
+            await command.RespondAsync("Não tem permissões necessárias para utilizar este comando");
+
+            await Task.Delay(6000);
+
+            await command.DeleteOriginalResponseAsync();
         }
     }
 }

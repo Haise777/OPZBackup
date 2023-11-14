@@ -1,4 +1,5 @@
-﻿using Bot.Services.Database;
+﻿using Bot.Services;
+using Bot.Services.Database;
 using Bot.Services.Database.Repository;
 using Bot.Utilities;
 using Discord;
@@ -11,15 +12,20 @@ namespace Bot.Modules.BackupMessage
         private readonly ConsoleLogger _log;
         private readonly BackupService _backupRepositoryAccess;
         private readonly BackupNotification _notifications;
+        private readonly DbConnection _dbConnection;
+        private readonly MessageRepository _messageRepository;
 
         private static bool _alreadyInExecution;
         private SocketSlashCommand? _command;
 
-        public BackupCommand(BackupService backupService, BackupNotification backupNotification)
+        public BackupCommand(
+            BackupService bService, BackupNotification bNotif, DbConnection dbConnection, MessageRepository msgRepository)
         {
             _log = new ConsoleLogger(nameof(BackupCommand));
-            _backupRepositoryAccess = backupService;
-            _notifications = backupNotification;
+            _backupRepositoryAccess = bService;
+            _notifications = bNotif;
+            _dbConnection = dbConnection;
+            _messageRepository = msgRepository;
         }
 
         public async Task BackupOptions(SocketSlashCommand command)
@@ -32,10 +38,13 @@ namespace Bot.Modules.BackupMessage
             switch (commandAction.Name)
             {
                 case "fazer":
+                    if (!AuthenticatorService.IsAuthorized(command.User))
+                        _notifications.NotAuthorized(command);
+
                     if (_alreadyInExecution)
                     {
                         _log.BotActions("<!> Blocked backup attempt while another backup is already running");
-                        await _notifications.AlreadyExecutingBackup();
+                        await _notifications.AlreadyExecutingBackup(command);
                         return;
                     }
                     _alreadyInExecution = true;
@@ -62,9 +71,9 @@ namespace Bot.Modules.BackupMessage
 
         private async Task DeleteUserRecord(IUser author)
         {
-            DbConnection.OpenConnection();
+            _dbConnection.OpenConnection();
             _backupRepositoryAccess.DeleteAuthor(author); //TODO: To make awaitable AND
-            DbConnection.CloseConnection();
+            _dbConnection.CloseConnection();
         }
 
         private async Task MakeBackup(bool untilLastBackup)
@@ -81,14 +90,14 @@ namespace Bot.Modules.BackupMessage
                 var messageBatch = await GetMessages(_command.Channel, startFromMessageId);
                 if (!messageBatch.Any()) break;
 
-                DbConnection.OpenConnection();
+                _dbConnection.OpenConnection();
 
                 var messagesToSave = FilterMessagesToSave(messageBatch, untilLastBackup, out shouldContinue);
 
                 startFromMessageId = messageBatch.Last().Id;
                 if (!messagesToSave.Any())
                 {
-                    DbConnection.CloseConnection();
+                    _dbConnection.CloseConnection();
                     continue;
                 }
 
@@ -125,7 +134,7 @@ namespace Bot.Modules.BackupMessage
                 if (message == null)
                     throw new InvalidOperationException("Message object cannot be null");
 
-                if (MessageRepository.CheckIfExists(message.Id))
+                if (_messageRepository.CheckIfExists(message.Id))
                 {
                     _log.BackupAction($"Already saved message found: '{message.Content}'");
                     if (onlyToLastBackup)
@@ -154,7 +163,7 @@ namespace Bot.Modules.BackupMessage
             }
             finally
             {
-                DbConnection.CloseConnection();
+                _dbConnection.CloseConnection();
             }
         }
     }

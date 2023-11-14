@@ -1,4 +1,5 @@
-﻿using Bot.Services.Database.Models;
+﻿using Bot.Services.Database.Context;
+using Bot.Services.Database.Models;
 using Bot.Utilities;
 
 namespace Bot.Services.Database.Repository
@@ -6,22 +7,23 @@ namespace Bot.Services.Database.Repository
     internal class MessageRepository
     {
         private readonly ConsoleLogger _log = new(nameof(MessageRepository));
+        private readonly MessageBackupContext _backupContext;
 
-        public static bool CheckIfExists(ulong id)
+        public MessageRepository(DbConnection dbContext)
         {
-            var context = DbConnection.GetConnection();
-            return context.Messages.Any(m => m.Id == id);
+            _backupContext = dbContext.GetConnection();
         }
+
+        public bool CheckIfExists(ulong id)
+            => _backupContext.Messages.Any(m => m.Id == id);
+
 
         public void SaveToDatabase(List<Message> messagesToSave)
         {
-
-            var context = DbConnection.GetConnection();
-
             try
             {
-                context.Messages.AddRange(messagesToSave);
-                context.SaveChanges();
+                _backupContext.Messages.AddRange(messagesToSave);
+                _backupContext.SaveChanges();
                 _log.BackupAction($"Saved {messagesToSave.Count} messages to database");
             }
             catch (Exception ex)
