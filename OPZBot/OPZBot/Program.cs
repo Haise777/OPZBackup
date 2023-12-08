@@ -44,7 +44,8 @@ public class Program
                     DefaultRunMode = RunMode.Async
                 }))
             .AddSingleton<InteractionHandler>()
-            .AddSingleton(_ => new CommandService());
+            .AddSingleton(_ => new CommandService())
+            .AddScoped<BackupService>();
     }
     
     private async Task RunAsync(IHost host)
@@ -74,34 +75,3 @@ public class Program
         await Task.Delay(-1);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
