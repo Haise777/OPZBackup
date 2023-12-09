@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bot", "OPZBot\Bot.csproj", "{D9B364FD-EAAE-4A82-9F10-9EC7EE82C027}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OPZBot.Bot", "OPZBot\OPZBot.Bot.csproj", "{D9B364FD-EAAE-4A82-9F10-9EC7EE82C027}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data", "Data\Data.csproj", "{CF541EFA-7CCA-44EB-BDBA-356E9D17C827}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OPZBot.DataAccess", "Data\OPZBot.DataAccess.csproj", "{CF541EFA-7CCA-44EB-BDBA-356E9D17C827}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

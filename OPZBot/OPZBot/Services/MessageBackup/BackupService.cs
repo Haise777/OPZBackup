@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 
 namespace OPZBot;
 
@@ -36,6 +37,9 @@ public class BackupService
             Date = DateTime.Now
         };
 
+        var x = command.User;
+        x.
+        
         _backupId = register.Id;
         await _channelRepository.SaveIfNotExists(channel);
         await _backupRegisterRepository.Save(register);
@@ -72,10 +76,10 @@ public class BackupService
     }
 
 
-    private async Task SaveBatch(ProcessedBackup processedBackup)
+    private async Task SaveBatch(ProcessedMessage processedMessage)
     {
-        await _usersRepository.SaveIfNotExists(processedBackup.Users);
-        await _messageRepository.Save(processedBackup.Messages);
+        await _usersRepository.SaveIfNotExists(processedMessage.Users);
+        await _messageRepository.Save(processedMessage.Messages);
     }
 
     private void StopBackup()

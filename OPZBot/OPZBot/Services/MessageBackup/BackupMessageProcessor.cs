@@ -2,6 +2,7 @@
 
 namespace OPZBot;
 
+
 public class BackupMessageProcessor
 {
     private readonly AutoMapper _mapper;
@@ -15,9 +16,9 @@ public class BackupMessageProcessor
         _messageRepository = messageRepository;
     }
 
-    public Task<ProcessedBackup> ProcessMessages(IEnumerable<IMessage> messageBatch, uint backupId)
+    public Task<ProcessedMessage> ProcessMessages(IEnumerable<IMessage> messageBatch, uint backupId)
     {
-        var processedBackup = new ProcessedBackup();
+        var processedBackup = new ProcessedMessage();
         
         foreach (var message in messageBatch)
         {
@@ -39,6 +40,6 @@ public class BackupMessageProcessor
             processedBackup.Messages.Add(_mapper.Map(message));
         }
 
-        return Task.FromResult<ProcessedBackup>(processedBackup);
+        return Task.FromResult<ProcessedMessage>(processedBackup);
     }
 }

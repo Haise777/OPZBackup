@@ -1,7 +1,10 @@
-﻿using Discord;
+﻿using Data.Contracts;
+using Data.Contracts.Context;
+using Discord;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -21,10 +24,12 @@ public class Program
             .Build();
         
         using var host = Host.CreateDefaultBuilder()
+            .ConfigureServices((_,services) => services.AddDataAccess(config["connectionString"]))
             .ConfigureServices((_,services) => services.AddSingleton(config))
             .ConfigureServices(SetServices)
             
             .Build();
+
         
         await RunAsync(host);
     }
@@ -71,7 +76,8 @@ public class Program
 
         await client.LoginAsync(TokenType.Bot, config["token"]);
         await client.StartAsync();
-
+        
+        
         await Task.Delay(-1);
     }
 }
