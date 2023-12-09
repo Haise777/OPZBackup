@@ -2,14 +2,14 @@
 
 namespace OPZBot;
 
-public class BackupDataProcessor
+public class BackupMessageProcessor
 {
     private readonly AutoMapper _mapper;
     private readonly MessageRepository _messageRepository;
     public bool UntilLastBackup;
     public event Action FinishBackupProcess;
     
-    public BackupDataProcessor(AutoMapper mapper, MessageRepository messageRepository)
+    public BackupMessageProcessor(AutoMapper mapper, MessageRepository messageRepository)
     {
         _mapper = mapper;
         _messageRepository = messageRepository;

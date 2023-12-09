@@ -6,28 +6,29 @@ namespace OPZBot;
 public class BackupService
 {
     private readonly MessageFetcher _messageFetcher;
+    private readonly BackupMessageProcessor _messageProcessor;
     private readonly AutoMapper _mapper;
-    private BackupRegister _register;
-    private bool _untilLastBackup;
-    private List<User> _users;
     private SocketInteractionContext _command;
+    private uint _backupId;
 
-    public BackupService(MessageFetcher messageFetcher, AutoMapper mapper)
+    public BackupService(MessageFetcher messageFetcher, AutoMapper mapper, BackupMessageProcessor messageProcessor)
     {
         _messageFetcher = messageFetcher;
         _mapper = mapper;
+        _messageProcessor = messageProcessor;
+        _messageProcessor.FinishBackupProcess += StopBackup;
     }
 
     public async Task Start(SocketInteractionContext command, bool untilLastBackup)
     {
         _command = command;
-        _untilLastBackup = untilLastBackup;
+        _messageProcessor.UntilLastBackup = untilLastBackup;
 
         //Build Channel, Author, BackupRegister
         var channel = _mapper.Map(command.Channel);
         var author = _mapper.Map(command.User);
 
-        _register = new BackupRegister()
+        register = new BackupRegister()
         {
             Id = 0,
             AuthorId = author.Id,
@@ -35,17 +36,18 @@ public class BackupService
             Date = DateTime.Now
         };
 
+        _backupId = register.Id;
         await _channelRepository.SaveIfNotExists(channel);
-        await _backupRegisterRepository.Save(_register);
+        await _backupRegisterRepository.Save(register);
 
         _users = new List<User>() { author };
 
-        await MakeBackup();
+        await BackupMessages();
     }
 
     private bool _continueBackup = true;
 
-    private async Task MakeBackup()
+    private async Task BackupMessages()
     {
         ulong lastMessageId = 0;
         while (_continueBackup)
@@ -60,43 +62,22 @@ public class BackupService
             if (!fetchedMessages.Any()) break;
             lastMessageId = fetchedMessages.Last().Id;
 
-            var messageBatch = await ProcessMessages(fetchedMessages);
-            if (!messageBatch.Any()) continue;
+            var processedBackup = await _messageProcessor.ProcessMessages(fetchedMessages, _backupId);
+            if (!processedBackup.Messages.Any()) continue;
 
-            await SaveBatch(messageBatch);
+            await SaveBatch(processedBackup);
         }
 
         //Finalize backup process
     }
 
-    private Task<IEnumerable<Messages>> ProcessMessages(IEnumerable<IMessage> messageBatch)
+
+    private async Task SaveBatch(ProcessedBackup processedBackup)
     {
-        var filteredMessages = new List<Message>();
-        foreach (var message in messageBatch)
-        {
-            if (_blacklist.Has(message.Author.Id)) continue;
-            if (_messageRepository.Exists(message))
-            {
-                if (_untilLastBackup)
-                {
-                    _continueBackup = false;
-                    break;
-                }
-
-                continue;
-            }
-
-            if (!_users.Exists(x => x.Id == message.Author.Id)) _users.Add(_mapper.Map(message.Author));
-
-            filteredMessages.Add(_mapper.Map(message));
-        }
-
-        return Task.FromResult<IEnumerable<Messages>>(filteredMessages);
+        await _usersRepository.SaveIfNotExists(processedBackup.Users);
+        await _messageRepository.Save(processedBackup.Messages);
     }
 
-    private async Task SaveBatch(IEnumerable<Messages> messageBatch)
-    {
-        await _usersRepository.SaveIfNotExists(_users);
-        await _messageRepository.Save(messageBatch);
-    }
+    private void StopBackup()
+        => _continueBackup = false;
 }
