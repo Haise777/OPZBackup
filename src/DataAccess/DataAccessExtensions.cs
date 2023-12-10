@@ -1,8 +1,8 @@
-﻿using Data.Contracts.Context;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using OPZBot.DataAccess.Context;
 
-namespace Data.Contracts;
+namespace OPZBot.DataAccess;
 
 public static class DataAccessExtensions
 {

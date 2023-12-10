@@ -1,7 +1,7 @@
-﻿using Data.Contracts.Entities;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
+using OPZBot.Core.Entities;
 
-namespace OPZBot;
+namespace OPZBot.Bot.Services;
 
 public class AutoMapper
 {

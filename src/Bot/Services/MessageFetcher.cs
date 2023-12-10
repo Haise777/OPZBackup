@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 
-namespace OPZBot;
+namespace OPZBot.Bot.Services;
 
 public class MessageFetcher
 {

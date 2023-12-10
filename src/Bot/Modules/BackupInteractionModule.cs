@@ -1,6 +1,7 @@
 ﻿using Discord.Interactions;
+using OPZBot.Bot.Services.MessageBackup;
 
-namespace OPZBot;
+namespace OPZBot.Bot.Modules;
 
 [Group("backup","utilizar a função de backup")]
 public class BackupInteractionModule : InteractionModuleBase<SocketInteractionContext>

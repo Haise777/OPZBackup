@@ -16,4 +16,13 @@
       <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="7.0.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Remove="Repositories\BaseRepository.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Core\Core.csproj" />
+      <ProjectReference Include="..\OPZBot.Core\OPZBot.Core.csproj" />
+    </ItemGroup>
+
 </Project>

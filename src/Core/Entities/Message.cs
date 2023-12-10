@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Data.Contracts.Entities;
+﻿namespace OPZBot.Core.Entities;
 
 public partial class Message
 {

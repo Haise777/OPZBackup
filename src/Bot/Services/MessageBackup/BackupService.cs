@@ -1,22 +1,25 @@
 ﻿using Discord;
 using Discord.Interactions;
-using Discord.WebSocket;
+using OPZBot.Core.Entities;
+using OPZBot.DataAccess;
 
-namespace OPZBot;
+namespace OPZBot.Bot.Services.MessageBackup;
 
 public class BackupService
 {
     private readonly MessageFetcher _messageFetcher;
     private readonly BackupMessageProcessor _messageProcessor;
     private readonly AutoMapper _mapper;
+    private readonly BackupDataService _dataService;
     private SocketInteractionContext _command;
     private uint _backupId;
 
-    public BackupService(MessageFetcher messageFetcher, AutoMapper mapper, BackupMessageProcessor messageProcessor)
+    public BackupService(MessageFetcher messageFetcher, AutoMapper mapper, BackupMessageProcessor messageProcessor, BackupDataService dataService)
     {
         _messageFetcher = messageFetcher;
         _mapper = mapper;
         _messageProcessor = messageProcessor;
+        _dataService = dataService;
         _messageProcessor.FinishBackupProcess += StopBackup;
     }
 
@@ -29,29 +32,26 @@ public class BackupService
         var channel = _mapper.Map(command.Channel);
         var author = _mapper.Map(command.User);
 
-        register = new BackupRegister()
+        var registry = new BackupRegistry()
         {
             Id = 0,
             AuthorId = author.Id,
             ChannelId = channel.Id,
             Date = DateTime.Now
         };
-
-        var x = command.User;
-        x.
         
-        _backupId = register.Id;
-        await _channelRepository.SaveIfNotExists(channel);
-        await _backupRegisterRepository.Save(register);
-
-        _users = new List<User>() { author };
-
-        await BackupMessages();
+        
+        _backupId = registry.Id;
+        await _dataService.SaveIfNotExistsAsync(channel);
+        await _dataService.SaveAsync(registry);
+        await _dataService.SaveIfNotExistsAsync(author);
+        
+        await StartBackupMessages();
     }
 
     private bool _continueBackup = true;
 
-    private async Task BackupMessages()
+    private async Task StartBackupMessages()
     {
         ulong lastMessageId = 0;
         while (_continueBackup)
@@ -74,12 +74,11 @@ public class BackupService
 
         //Finalize backup process
     }
-
-
-    private async Task SaveBatch(ProcessedMessage processedMessage)
+    
+    private async Task SaveBatch(ProcessedMessageData processedMessageData)
     {
-        await _usersRepository.SaveIfNotExists(processedMessage.Users);
-        await _messageRepository.Save(processedMessage.Messages);
+        await _dataService.SaveIfNotExistsAsync(processedMessageData.Users);
+        await _dataService.SaveAsync(processedMessageData.Messages);
     }
 
     private void StopBackup()

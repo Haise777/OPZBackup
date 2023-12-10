@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Data.Contracts.Entities;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using OPZBot.Core.Entities;
 
-namespace Data.Contracts.Context;
+namespace OPZBot.DataAccess.Context;
 
 public partial class MyDbContext : DbContext
 {

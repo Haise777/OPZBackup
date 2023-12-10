@@ -1,16 +1,14 @@
-﻿using Data.Contracts;
-using Data.Contracts.Context;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OPZBot.DataAccess;
 using RunMode = Discord.Interactions.RunMode;
 
-namespace OPZBot;
+namespace OPZBot.Bot;
 
 public class Program
 {
@@ -34,6 +32,11 @@ public class Program
         await RunAsync(host);
     }
 
+    public static void ConfigureDomainServices(IServiceCollection services)
+    {
+        
+    }
+    
     private void SetServices(HostBuilderContext context, IServiceCollection services)
     {
         services
