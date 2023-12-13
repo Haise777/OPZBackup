@@ -36,6 +36,8 @@ public class BackupService
         var channel = _mapper.Map(_interactionContext.Channel);
         var author = _mapper.Map(_interactionContext.User);
 
+        var c = _interactionContext.Channel;
+        
         var registry = new BackupRegistry()
         {
             Id = 0,
