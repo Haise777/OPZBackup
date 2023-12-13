@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using OPZBot.DataAccess;
 using OPZBot.DataAccess.Caching;
 using OPZBot.DataAccess.Context;
 using OPZBot.DataAccess.Models;

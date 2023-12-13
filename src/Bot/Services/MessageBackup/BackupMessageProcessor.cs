@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Microsoft.EntityFrameworkCore;
+using OPZBot.DataAccess;
 using OPZBot.DataAccess.Caching;
 using OPZBot.DataAccess.Context;
 

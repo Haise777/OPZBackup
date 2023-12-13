@@ -2,7 +2,7 @@
 using Discord.WebSocket;
 using OPZBot.DataAccess.Models;
 
-namespace OPZBot.Services;
+namespace OPZBot.DataAccess;
 
 public class Mapper
 {
