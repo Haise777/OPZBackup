@@ -1,7 +1,7 @@
 ﻿using Discord.Interactions;
-using OPZBot.Bot.Services.MessageBackup;
+using OPZBot.Services.MessageBackup;
 
-namespace OPZBot.Bot.Modules;
+namespace OPZBot.Modules;
 
 [Group("backup","utilizar a função de backup")]
 public class BackupInteractionModule : InteractionModuleBase<SocketInteractionContext>
@@ -17,7 +17,7 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
     [SlashCommand("fazer", "efetua backup deste canal")]
     public async Task MakeBackupCommand([Choice("ate-ultimo", 0), Choice("total", 1)] int choice)
     {
-        // await _backupService.Start(Context, choice < 1);
+        await _backupService.StartBackupAsync(Context, choice < 1);
     }
 
     [SlashCommand("deletar-proprio", "deleta todas as informações presentes no backup relacionadas ao usuario")]

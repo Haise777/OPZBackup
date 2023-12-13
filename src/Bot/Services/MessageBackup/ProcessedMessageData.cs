@@ -1,9 +1,9 @@
-﻿using OPZBot.Core.Entities;
+﻿using OPZBot.DataAccess.Models;
 
-namespace OPZBot.Bot.Services.MessageBackup;
+namespace OPZBot.Services.MessageBackup;
 
 public class ProcessedMessageData
 {
-    public List<User> Users { get; set; }
-    public List<Message> Messages { get; set; }
+    public List<User> Users { get; set; } = new();
+    public List<Message> Messages { get; set; } = new();
 }

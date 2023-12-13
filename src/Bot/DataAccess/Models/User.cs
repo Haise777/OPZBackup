@@ -1,12 +1,10 @@
-﻿namespace OPZBot.Core.Entities;
+﻿namespace OPZBot.DataAccess.Models;
 
-public partial class Channel
+public partial class User
 {
     public ulong Id { get; set; }
 
-    public string Name { get; set; } = null!;
-
-    public DateTime CreatedAt { get; set; }
+    public string Username { get; set; } = null!;
 
     public virtual ICollection<BackupRegistry> BackupRegistries { get; set; } = new List<BackupRegistry>();
 

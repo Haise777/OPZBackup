@@ -1,4 +1,4 @@
-﻿namespace OPZBot.Core.Entities;
+﻿namespace OPZBot.DataAccess.Models;
 
 public partial class BackupRegistry
 {

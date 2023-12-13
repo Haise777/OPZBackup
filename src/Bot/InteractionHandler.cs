@@ -2,7 +2,7 @@
 using Discord.Interactions;
 using Discord.WebSocket;
 
-namespace OPZBot.Bot;
+namespace OPZBot;
 
 public class InteractionHandler
 {

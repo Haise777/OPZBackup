@@ -1,9 +1,9 @@
 ﻿using Discord;
 using Discord.WebSocket;
 
-namespace OPZBot.Bot.Services;
+namespace OPZBot.Services;
 
-public class MessageFetcher
+public class MessageFetcher : IMessageFetcher
 {
     public async Task<IEnumerable<IMessage>> Fetch(ISocketMessageChannel channel)
     {

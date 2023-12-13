@@ -1,30 +1,34 @@
-﻿using OPZBot.Core.Contracts;
-using Discord;
+﻿using Discord;
+using Microsoft.EntityFrameworkCore;
+using OPZBot.DataAccess.Caching;
+using OPZBot.DataAccess.Context;
 
-namespace OPZBot.Bot.Services.MessageBackup;
+namespace OPZBot.Services.MessageBackup;
 
-public class BackupMessageProcessor
+public class BackupMessageProcessor : IBackupMessageProcessor
 {
-    private readonly AutoMapper _mapper;
-    private readonly IMessageRepository _messageRepository;
-    public bool UntilLastBackup;
-    public event Action FinishBackupProcess;
+    private readonly Mapper _mapper;
+    private readonly MyDbContext _dataContext;
+    private readonly IdCacheManager _cache;
+    public bool IsUntilLastBackup { get; set; }
+    public event Action? FinishBackupProcess;
     
-    public BackupMessageProcessor(AutoMapper mapper, IMessageRepository messageRepository)
+    public BackupMessageProcessor(Mapper mapper, MyDbContext dataContext, IdCacheManager cache)
     {
         _mapper = mapper;
-        _messageRepository = messageRepository;
+        _dataContext = dataContext;
+        _cache = cache;
     }
 
-    public async Task<ProcessedMessageData> ProcessMessages(IEnumerable<IMessage> messageBatch, uint backupId)
+    public async Task<ProcessedMessageData> ProcessMessagesAsync(IEnumerable<IMessage> messageBatch, uint backupId)
     {
-        var processedBackup = new ProcessedMessageData();
+        var processedMessages = new ProcessedMessageData();
         
         foreach (var message in messageBatch)
         {
-            if (!await _messageRepository.ExistsAsync(m => m.Id == message.Id))
+            if (!await _dataContext.Messages.AnyAsync(m => m.Id == message.Id))
             {
-                if (UntilLastBackup)
+                if (IsUntilLastBackup)
                 {
                     FinishBackupProcess();
                     break;
@@ -32,13 +36,13 @@ public class BackupMessageProcessor
 
                 continue;
             }
+            
+            if (!await _cache.UserIds.ExistsAsync(message.Author.Id)) 
+                processedMessages.Users.Add(_mapper.Map(message.Author));
 
-            if (!processedBackup.Users.Exists(u => u.Id == message.Author.Id)) 
-                processedBackup.Users.Add(_mapper.Map(message.Author));
-
-            processedBackup.Messages.Add(_mapper.Map(message));
+            processedMessages.Messages.Add(_mapper.Map(message));
         }
 
-        return processedBackup;
+        return processedMessages;
     }
 }

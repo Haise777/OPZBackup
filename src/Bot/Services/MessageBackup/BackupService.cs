@@ -1,36 +1,40 @@
 ﻿using Discord;
 using Discord.Interactions;
-using OPZBot.Core.Entities;
-using OPZBot.DataAccess;
+using OPZBot.DataAccess.Caching;
+using OPZBot.DataAccess.Context;
+using OPZBot.DataAccess.Models;
 
-namespace OPZBot.Bot.Services.MessageBackup;
+namespace OPZBot.Services.MessageBackup;
 
 public class BackupService
 {
-    private readonly MessageFetcher _messageFetcher;
-    private readonly BackupMessageProcessor _messageProcessor;
-    private readonly AutoMapper _mapper;
-    private readonly BackupDataService _dataService;
-    private SocketInteractionContext _command;
+    private readonly IMessageFetcher _messageFetcher;
+    private readonly IBackupMessageProcessor _messageProcessor;
+    private readonly MyDbContext _dataContext;
+    private readonly IdCacheManager _cache;
+    private readonly Mapper _mapper;
+    private SocketInteractionContext? _interactionContext;
     private uint _backupId;
 
-    public BackupService(MessageFetcher messageFetcher, AutoMapper mapper, BackupMessageProcessor messageProcessor, BackupDataService dataService)
+    public BackupService(IMessageFetcher messageFetcher, Mapper mapper, IBackupMessageProcessor messageProcessor,
+        MyDbContext dataContext, IdCacheManager cache)
     {
         _messageFetcher = messageFetcher;
         _mapper = mapper;
         _messageProcessor = messageProcessor;
-        _dataService = dataService;
+        _dataContext = dataContext;
+        _cache = cache;
         _messageProcessor.FinishBackupProcess += StopBackup;
     }
 
-    public async Task Start(SocketInteractionContext command, bool untilLastBackup)
+    public async Task StartBackupAsync(SocketInteractionContext interactionContext, bool isUntilLastBackup)
     {
-        _command = command;
-        _messageProcessor.UntilLastBackup = untilLastBackup;
+        _interactionContext = interactionContext;
+        _messageProcessor.IsUntilLastBackup = isUntilLastBackup;
 
         //Build Channel, Author, BackupRegister
-        var channel = _mapper.Map(command.Channel);
-        var author = _mapper.Map(command.User);
+        var channel = _mapper.Map(_interactionContext.Channel);
+        var author = _mapper.Map(_interactionContext.User);
 
         var registry = new BackupRegistry()
         {
@@ -40,16 +44,22 @@ public class BackupService
             Date = DateTime.Now
         };
         
-        
         _backupId = registry.Id;
-        await _dataService.SaveIfNotExistsAsync(channel);
-        await _dataService.SaveAsync(registry);
-        await _dataService.SaveIfNotExistsAsync(author);
         
+        if (!await _cache.ChannelIds.ExistsAsync(channel.Id))
+            _dataContext.Channels.Add(channel);
+        if (!await _cache.UserIds.ExistsAsync(author.Id))
+            _dataContext.Users.Add(author);
+
+        _dataContext.BackupRegistries.Add(registry);
+
         await StartBackupMessages();
     }
 
     private bool _continueBackup = true;
+
+    private void StopBackup()
+        => _continueBackup = false;
 
     private async Task StartBackupMessages()
     {
@@ -58,29 +68,27 @@ public class BackupService
         {
             IEnumerable<IMessage> fetchedMessages;
 
-            if (lastMessageId == 0)
-                fetchedMessages = await _messageFetcher.Fetch(_command.Channel);
+            if (lastMessageId != 0)
+                fetchedMessages = await _messageFetcher.Fetch(_interactionContext.Channel, lastMessageId);
             else
-                fetchedMessages = await _messageFetcher.Fetch(_command.Channel, lastMessageId);
-
+                fetchedMessages = await _messageFetcher.Fetch(_interactionContext.Channel);
             if (!fetchedMessages.Any()) break;
+
             lastMessageId = fetchedMessages.Last().Id;
+            var processedMessageData = await _messageProcessor.ProcessMessagesAsync(fetchedMessages, _backupId);
+            if (!processedMessageData.Messages.Any()) continue;
 
-            var processedBackup = await _messageProcessor.ProcessMessages(fetchedMessages, _backupId);
-            if (!processedBackup.Messages.Any()) continue;
-
-            await SaveBatch(processedBackup);
+            await SaveBatch(processedMessageData);
         }
 
         //Finalize backup process
     }
-    
+
     private async Task SaveBatch(ProcessedMessageData processedMessageData)
     {
-        await _dataService.SaveIfNotExistsAsync(processedMessageData.Users);
-        await _dataService.SaveAsync(processedMessageData.Messages);
-    }
+        _dataContext.Users.AddRange(processedMessageData.Users);
+        _dataContext.Messages.AddRange(processedMessageData.Messages);
 
-    private void StopBackup()
-        => _continueBackup = false;
+        await _dataContext.SaveChangesAsync();
+    }
 }
