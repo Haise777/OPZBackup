@@ -57,8 +57,7 @@ public class Program
 
         await client.LoginAsync(TokenType.Bot, config["token"]);
         await client.StartAsync();
-
-
+        
         await Task.Delay(-1);
     }
 
@@ -68,12 +67,13 @@ public class Program
         services
             .AddDbContext<MyDbContext>(options
                 => options.UseMySql(config["connectionString"], ServerVersion.Parse("8.0.34-mysql")))
+                    //.LogTo(Console.WriteLine).EnableSensitiveDataLogging().EnableDetailedErrors())
             .AddSingleton(provider =>
                 new IdCacheManager(
                     new DataCache<ulong>().AddAsync(provider.GetRequiredService<MyDbContext>()
                         .Users.Select(u => u.Id).ToList()).Result,
                     new DataCache<ulong>().AddAsync(provider.GetRequiredService<MyDbContext>()
-                        .Users.Select(u => u.Id).ToList()).Result
+                        .Channels.Select(c => c.Id).ToList()).Result
                 )
             )
             .AddSingleton(_ => new DiscordSocketClient(new DiscordSocketConfig
@@ -96,6 +96,8 @@ public class Program
             .AddScoped<BackupService>()
             .AddScoped<IMessageFetcher, MessageFetcher>()
             .AddScoped<IBackupMessageProcessor, BackupMessageProcessor>()
+            .AddScoped<BackupResponseHandler>()
+            .AddScoped<BackupResponseBuilder>()
             ;
     }
 }

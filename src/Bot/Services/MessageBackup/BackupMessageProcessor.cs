@@ -11,8 +11,9 @@ public class BackupMessageProcessor : IBackupMessageProcessor
     private readonly Mapper _mapper;
     private readonly MyDbContext _dataContext;
     private readonly IdCacheManager _cache;
-    public bool IsUntilLastBackup { get; set; }
     public event Action? FinishBackupProcess;
+    
+    public bool IsUntilLastBackup { get; set; }
     
     public BackupMessageProcessor(Mapper mapper, MyDbContext dataContext, IdCacheManager cache)
     {
@@ -21,17 +22,17 @@ public class BackupMessageProcessor : IBackupMessageProcessor
         _cache = cache;
     }
 
-    public async Task<ProcessedMessageData> ProcessMessagesAsync(IEnumerable<IMessage> messageBatch, uint backupId)
+    public async Task<MessageDataBatch> ProcessMessagesAsync(IEnumerable<IMessage> messageBatch, uint backupId)
     {
-        var processedMessages = new ProcessedMessageData();
+        var processedMessages = new MessageDataBatch();
         
         foreach (var message in messageBatch)
         {
-            if (!await _dataContext.Messages.AnyAsync(m => m.Id == message.Id))
+            if (await _dataContext.Messages.AnyAsync(m => message.Id == m.Id))
             {
                 if (IsUntilLastBackup)
                 {
-                    FinishBackupProcess();
+                    FinishBackupProcess?.Invoke();
                     break;
                 }
 
@@ -39,9 +40,9 @@ public class BackupMessageProcessor : IBackupMessageProcessor
             }
             
             if (!await _cache.UserIds.ExistsAsync(message.Author.Id)) 
-                processedMessages.Users.Add(_mapper.Map(message.Author));
+                processedMessages.Users.Add(message.Author);
 
-            processedMessages.Messages.Add(_mapper.Map(message));
+            processedMessages.Messages.Add(message);
         }
 
         return processedMessages;

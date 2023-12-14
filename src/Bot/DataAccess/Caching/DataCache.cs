@@ -15,11 +15,11 @@ public class DataCache<T> : IDataCache<T>, IDisposable
         finally
         {
             _lock.Release();
-            
         }
 
         return this;
     }
+
     public async Task<DataCache<T>> AddAsync(IEnumerable<T> items)
     {
         await _lock.WaitAsync();
@@ -30,12 +30,11 @@ public class DataCache<T> : IDataCache<T>, IDisposable
         finally
         {
             _lock.Release();
-            
         }
 
         return this;
     }
-    
+
     public async Task<bool> ExistsAsync(T item, bool shouldCache = true)
     {
         await _lock.WaitAsync();
@@ -44,7 +43,7 @@ public class DataCache<T> : IDataCache<T>, IDisposable
             if (_cachedData.Contains(item)) return true;
             if (shouldCache)
                 _cachedData.Add(item);
-            
+
             return false;
         }
         finally
@@ -52,7 +51,7 @@ public class DataCache<T> : IDataCache<T>, IDisposable
             _lock.Release();
         }
     }
-    
+
     public async Task RemoveAsync(T item)
     {
         await _lock.WaitAsync();
@@ -65,7 +64,7 @@ public class DataCache<T> : IDataCache<T>, IDisposable
             _lock.Release();
         }
     }
-    
+
     public void Dispose()
     {
         _lock.Dispose();

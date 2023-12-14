@@ -15,6 +15,21 @@ public class Mapper
         };
     }
     
+    public IEnumerable<User> Map(IEnumerable<IUser> socketUsers)
+    {
+        var toReturn = new List<User>();
+        foreach (var user in socketUsers)
+        {
+            toReturn.Add(new User()
+            {
+                Id = user.Id,
+                Username = user.Username
+            });
+        }
+
+        return toReturn;
+    }
+    
     public Channel Map(ISocketMessageChannel socketChannel)
     {
         return new Channel()
@@ -22,6 +37,21 @@ public class Mapper
             Id = socketChannel.Id,
             Name = socketChannel.Name,
         };
+    }
+    
+    public IEnumerable<Channel> Map(IEnumerable<ISocketMessageChannel> socketChannels)
+    {
+        var toReturn = new List<Channel>();
+        foreach (var channel in socketChannels)
+        {
+            toReturn.Add(new Channel()
+            {
+                Id = channel.Id,
+                Name = channel.Name
+            });
+        }
+
+        return toReturn;
     }
     
     public Message Map(IMessage message)
@@ -34,5 +64,23 @@ public class Mapper
             ChannelId = message.Channel.Id,
             SentDate = message.Timestamp.DateTime
         };
+    }
+    
+    public IEnumerable<Message> Map(IEnumerable<IMessage> messages)
+    {
+        var toReturn = new List<Message>();
+        foreach (var message in messages)
+        {
+            toReturn.Add(new Message()
+            {
+                Id = message.Id,
+                Content = message.Content,
+                AuthorId = message.Author.Id,
+                ChannelId = message.Channel.Id,
+                SentDate = message.Timestamp.DateTime
+            });
+        }
+
+        return toReturn;
     }
 }

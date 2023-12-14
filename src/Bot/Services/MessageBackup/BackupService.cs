@@ -17,6 +17,11 @@ public class BackupService
     private SocketInteractionContext? _interactionContext;
     private uint _backupId;
 
+    public event Func<SocketInteractionContext,BackupRegistry,Task>? StartedBackupProcess;
+    public event Func<SocketInteractionContext,MessageDataBatch, Task>? FinishedBatch;
+    public event Func<SocketInteractionContext,Task>? CompletedBackupProcess;
+    public event Func<SocketInteractionContext, Exception,Task>? ProcessHasFailed;
+
     public BackupService(IMessageFetcher messageFetcher, Mapper mapper, IBackupMessageProcessor messageProcessor,
         MyDbContext dataContext, IdCacheManager cache)
     {
@@ -36,7 +41,7 @@ public class BackupService
         //Build Channel, Author, BackupRegister
         var channel = _mapper.Map(_interactionContext.Channel);
         var author = _mapper.Map(_interactionContext.User);
-        
+
         var registry = new BackupRegistry()
         {
             Id = 0,
@@ -44,9 +49,9 @@ public class BackupService
             ChannelId = channel.Id,
             Date = DateTime.Now
         };
-        
+
         _backupId = registry.Id;
-        
+
         if (!await _cache.ChannelIds.ExistsAsync(channel.Id))
             _dataContext.Channels.Add(channel);
         if (!await _cache.UserIds.ExistsAsync(author.Id))
@@ -54,7 +59,18 @@ public class BackupService
 
         _dataContext.BackupRegistries.Add(registry);
 
-        await StartBackupMessages();
+        await StartedBackupProcess?.Invoke(_interactionContext, registry);
+        try
+        {
+            await StartBackupMessages();
+        }
+        catch (Exception ex)
+        {
+            _dataContext.BackupRegistries.Remove(registry);
+            await _dataContext.SaveChangesAsync();
+            await ProcessHasFailed?.Invoke(_interactionContext, ex);
+            throw;
+        }
     }
 
     private bool _continueBackup = true;
@@ -74,21 +90,23 @@ public class BackupService
             else
                 fetchedMessages = await _messageFetcher.Fetch(_interactionContext.Channel);
             if (!fetchedMessages.Any()) break;
-
             lastMessageId = fetchedMessages.Last().Id;
-            var processedMessageData = await _messageProcessor.ProcessMessagesAsync(fetchedMessages, _backupId);
-            if (!processedMessageData.Messages.Any()) continue;
 
-            await SaveBatch(processedMessageData);
+            var messageDataBatch = await _messageProcessor.ProcessMessagesAsync(fetchedMessages, _backupId);
+            if (!messageDataBatch.Messages.Any()) continue;
+
+            await SaveBatch(messageDataBatch);
+            await FinishedBatch?.Invoke(_interactionContext, messageDataBatch);
         }
 
         //Finalize backup process
+        await CompletedBackupProcess?.Invoke(_interactionContext);
     }
 
-    private async Task SaveBatch(ProcessedMessageData processedMessageData)
+    private async Task SaveBatch(MessageDataBatch messageDataBatch)
     {
-        _dataContext.Users.AddRange(processedMessageData.Users);
-        _dataContext.Messages.AddRange(processedMessageData.Messages);
+        _dataContext.Users.AddRange(_mapper.Map(messageDataBatch.Users));
+        _dataContext.Messages.AddRange(_mapper.Map(messageDataBatch.Messages));
 
         await _dataContext.SaveChangesAsync();
     }
