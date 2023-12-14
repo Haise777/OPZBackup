@@ -11,10 +11,8 @@ public class BackupResponseBuilder
     public IMessage? StartMessage { get; set; }
     public IMessage? LastMessage { get; set; }
     public IUser? Author { get; set; }
-    public int NumberOfMessages; //TODO This probably a SRP violation
-    public int BatchNumber; //And also this
 
-    public Embed Build(BackupStage stage)
+    public Embed Build(int batchNumber, int numberOfMessages, BackupStage stage)
     {
         var embedBuilder = ConstructEmbed();
         var t = (DateTime.Now - StartTime)!.Value;
@@ -28,19 +26,19 @@ public class BackupResponseBuilder
                     .WithColor(Color.Gold)
                     .AddField("progresso:",
                         $"Decorrido: {elapsed}\n" +
-                        $"N de mensagens: {NumberOfMessages}\n" +
-                        $"Ciclos realizados: {BatchNumber}\n" +
+                        $"N de mensagens: {numberOfMessages}\n" +
+                        $"Ciclos realizados: {batchNumber}\n" +
                         "Atual: ...");
                 break;
-            
+
             case BackupStage.InProgress:
                 embedBuilder
                     .WithTitle("Em progresso...")
                     .WithColor(Color.Gold)
                     .AddField("Progresso:",
                         $"Decorrido: {elapsed}\n" +
-                        $"N de mensagens: {NumberOfMessages}\n" +
-                        $"Ciclos realizados: {BatchNumber}\n" +
+                        $"N de mensagens: {numberOfMessages}\n" +
+                        $"Ciclos realizados: {batchNumber}\n" +
                         $"Atual: {LastMessage.Author} {LastMessage.Timestamp.DateTime.ToShortDateString()} {LastMessage.Timestamp.DateTime.ToShortTimeString()}" +
                         $"\n{LastMessage.Content}");
                 break;
@@ -51,8 +49,8 @@ public class BackupResponseBuilder
                     .WithColor(Color.Green)
                     .AddField("Estatisticas:",
                         $"Tempo decorrido: {elapsed}\n" +
-                        $"N de mensagens: {NumberOfMessages}\n" +
-                        $"Ciclos realizados: {BatchNumber}");
+                        $"N de mensagens: {numberOfMessages}\n" +
+                        $"Ciclos realizados: {batchNumber}");
                 break;
 
             case BackupStage.Failed:
@@ -61,48 +59,57 @@ public class BackupResponseBuilder
                     .WithColor(Color.Red)
                     .AddField("Estatisticas:",
                         $"Tempo decorrido: {elapsed}\n" +
-                        $"N de mensagens: {NumberOfMessages}\n" +
-                        $"Ciclos realizados: {BatchNumber}");
+                        $"N de mensagens: {numberOfMessages}\n" +
+                        $"Ciclos realizados: {batchNumber}");
                 break;
         }
 
         return embedBuilder.Build();
     }
 
-    private EmbedBuilder ConstructEmbed() //TODO All this ternary operation really the best way?
+    private string[] ParseValuesToStrings()
     {
-        if (Author is null) throw new InvalidOperationException("Author property was not set");
-        var startTime = StartTime.HasValue
-            ? StartTime.Value.ToLongTimeString()
-            : throw new InvalidOperationException("StartTime property was not set");
-        var endTime = EndTime.HasValue
-            ? EndTime.Value.ToLongTimeString()
-            : "...";
-        var firstMessage = StartMessage is not null
+        var parsedValues = new string[4];
+//TODO All this ternary operation really the best way?
+        parsedValues[0] = StartMessage is not null
             ? $"{StartMessage.Author.Username} {StartMessage.Timestamp.DateTime.ToShortDateString()} {StartMessage.Timestamp.DateTime.ToShortTimeString()}" +
               $"\n{StartMessage.Content}"
             : "...";
-        var lastMessage = LastMessage is not null
+        parsedValues[1] = LastMessage is not null
             ? $"{LastMessage.Author.Username} {LastMessage.Timestamp.DateTime.ToShortDateString()} {LastMessage.Timestamp.DateTime.ToShortTimeString()}" +
               $"\n{LastMessage.Content}"
             : "...";
-        
+        parsedValues[2] = StartTime.HasValue
+            ? StartTime.Value.ToLongTimeString()
+            : throw new InvalidOperationException("StartTime builder property is not optional");
+        parsedValues[3] = EndTime.HasValue
+            ? EndTime.Value.ToLongTimeString()
+            : "...";
+
+        return parsedValues;
+    }
+
+    private EmbedBuilder ConstructEmbed()
+    {
+        if (Author is null) throw new InvalidOperationException("Author property was not set");
+        var values = ParseValuesToStrings();
+
         var firstMessageFieldEmbed = new EmbedFieldBuilder()
             .WithName("De:")
-            .WithValue(firstMessage)
+            .WithValue(values[0])
             .WithIsInline(false);
         var lastMessageFieldEmbed = new EmbedFieldBuilder()
             .WithName("Até:")
-            .WithValue(lastMessage)
+            .WithValue(values[1])
             .WithIsInline(false);
-        
+
         var startTimeEmbed = new EmbedFieldBuilder()
             .WithName("Iniciado:")
-            .WithValue(startTime)
+            .WithValue(values[2])
             .WithIsInline(true);
         var endTimeEmbed = new EmbedFieldBuilder()
             .WithName("Terminado:")
-            .WithValue(endTime)
+            .WithValue(values[3])
             .WithIsInline(true);
 
         var madeByEmbed = new EmbedFooterBuilder()
@@ -110,8 +117,6 @@ public class BackupResponseBuilder
             .WithIconUrl(Author.GetAvatarUrl());
 
         var embedBuilder = new EmbedBuilder()
-            .WithTitle("Backup realizado!")
-            .WithColor(Color.Green)
             .AddField(firstMessageFieldEmbed)
             .AddField(lastMessageFieldEmbed)
             .AddField(startTimeEmbed)
