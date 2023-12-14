@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Microsoft.EntityFrameworkCore;
 using OPZBot.DataAccess;
 using OPZBot.DataAccess.Caching;
 using OPZBot.DataAccess.Context;
@@ -7,7 +8,7 @@ using OPZBot.DataAccess.Models;
 
 namespace OPZBot.Services.MessageBackup;
 
-public class BackupService
+public class BackupService //TODO Is this class too much complex? Does it respect SRP?
 {
     private readonly IMessageFetcher _messageFetcher;
     private readonly IBackupMessageProcessor _messageProcessor;
@@ -18,7 +19,7 @@ public class BackupService
     private uint _backupId;
 
     public event Func<SocketInteractionContext,BackupRegistry,Task>? StartedBackupProcess;
-    public event Func<SocketInteractionContext,MessageDataBatch, Task>? FinishedBatch;
+    public event Func<SocketInteractionContext,MessageDataBatchDto, Task>? FinishedBatch;
     public event Func<SocketInteractionContext,Task>? CompletedBackupProcess;
     public event Func<SocketInteractionContext, Exception,Task>? ProcessHasFailed;
 
@@ -42,16 +43,21 @@ public class BackupService
         var channel = _mapper.Map(_interactionContext.Channel);
         var author = _mapper.Map(_interactionContext.User);
 
+        _backupId = await _dataContext.BackupRegistries.AnyAsync()
+            ? await _dataContext.BackupRegistries
+                .OrderByDescending(b => b.Id)
+                .Select(x => x.Id)
+                .FirstAsync() + 1
+            : 1;
+        
         var registry = new BackupRegistry()
         {
-            Id = 0,
+            Id = _backupId,
             AuthorId = author.Id,
             ChannelId = channel.Id,
             Date = DateTime.Now
         };
-
-        _backupId = registry.Id;
-
+        
         if (!await _cache.ChannelIds.ExistsAsync(channel.Id))
             _dataContext.Channels.Add(channel);
         if (!await _cache.UserIds.ExistsAsync(author.Id))
@@ -68,7 +74,7 @@ public class BackupService
         {
             _dataContext.BackupRegistries.Remove(registry);
             await _dataContext.SaveChangesAsync();
-            await ProcessHasFailed?.Invoke(_interactionContext, ex);
+            await ProcessHasFailed?.Invoke(_interactionContext, ex); //TODO Actually implement a proper error handling
             throw;
         }
     }
@@ -92,7 +98,7 @@ public class BackupService
             if (!fetchedMessages.Any()) break;
             lastMessageId = fetchedMessages.Last().Id;
 
-            var messageDataBatch = await _messageProcessor.ProcessMessagesAsync(fetchedMessages, _backupId);
+            var messageDataBatch = await _messageProcessor.ProcessMessagesAsync(fetchedMessages);
             if (!messageDataBatch.Messages.Any()) continue;
 
             await SaveBatch(messageDataBatch);
@@ -100,13 +106,21 @@ public class BackupService
         }
 
         //Finalize backup process
+        if (!await _dataContext.Messages.AnyAsync(x => x.BackupId == _backupId))
+        {
+            var x = await _dataContext.BackupRegistries.FirstAsync(b => b.Id == _backupId);
+            _dataContext.Remove(x);
+            await _dataContext.SaveChangesAsync();
+            //TODO Make a 'there was no message to backup response'
+        }
+        
         await CompletedBackupProcess?.Invoke(_interactionContext);
     }
 
-    private async Task SaveBatch(MessageDataBatch messageDataBatch)
+    private async Task SaveBatch(MessageDataBatchDto messageDataBatchDto)
     {
-        _dataContext.Users.AddRange(_mapper.Map(messageDataBatch.Users));
-        _dataContext.Messages.AddRange(_mapper.Map(messageDataBatch.Messages));
+        _dataContext.Users.AddRange(_mapper.Map(messageDataBatchDto.Users));
+        _dataContext.Messages.AddRange(_mapper.Map(messageDataBatchDto.Messages, _backupId));
 
         await _dataContext.SaveChangesAsync();
     }

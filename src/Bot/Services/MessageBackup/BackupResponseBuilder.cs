@@ -5,12 +5,14 @@ namespace OPZBot.Services.MessageBackup;
 
 public class BackupResponseBuilder
 {
+    //TODO Fix DateTime using wrong timezones
     public DateTime? StartTime { get; set; }
     public DateTime? EndTime { get; set; }
     public IMessage? StartMessage { get; set; }
     public IMessage? LastMessage { get; set; }
     public IUser? Author { get; set; }
-    private int _batchNumber;
+    public int NumberOfMessages; //TODO This probably a SRP violation
+    public int BatchNumber; //And also this
 
     public Embed Build(BackupStage stage)
     {
@@ -26,8 +28,8 @@ public class BackupResponseBuilder
                     .WithColor(Color.Gold)
                     .AddField("progresso:",
                         $"Decorrido: {elapsed}\n" +
-                        $"N de mensagens: {null}\n" +
-                        $"Ciclos realizados: {_batchNumber++}\n" +
+                        $"N de mensagens: {NumberOfMessages}\n" +
+                        $"Ciclos realizados: {BatchNumber}\n" +
                         "Atual: ...");
                 break;
             
@@ -37,10 +39,10 @@ public class BackupResponseBuilder
                     .WithColor(Color.Gold)
                     .AddField("Progresso:",
                         $"Decorrido: {elapsed}\n" +
-                        $"N de mensagens: {null}\n" +
-                        $"Ciclos realizados: {_batchNumber++}\n" +
+                        $"N de mensagens: {NumberOfMessages}\n" +
+                        $"Ciclos realizados: {BatchNumber}\n" +
                         $"Atual: {LastMessage.Author} {LastMessage.Timestamp.DateTime.ToShortDateString()} {LastMessage.Timestamp.DateTime.ToShortTimeString()}" +
-                        $"{LastMessage.Content}");
+                        $"\n{LastMessage.Content}");
                 break;
 
             case BackupStage.Finished:
@@ -49,21 +51,25 @@ public class BackupResponseBuilder
                     .WithColor(Color.Green)
                     .AddField("Estatisticas:",
                         $"Tempo decorrido: {elapsed}\n" +
-                        $"N de mensagens: {null}\n" +
-                        $"Ciclos realizados: {_batchNumber}");
+                        $"N de mensagens: {NumberOfMessages}\n" +
+                        $"Ciclos realizados: {BatchNumber}");
                 break;
 
             case BackupStage.Failed:
                 embedBuilder
                     .WithTitle("Falhou") //TODO rework failed response
-                    .WithColor(Color.Red);
+                    .WithColor(Color.Red)
+                    .AddField("Estatisticas:",
+                        $"Tempo decorrido: {elapsed}\n" +
+                        $"N de mensagens: {NumberOfMessages}\n" +
+                        $"Ciclos realizados: {BatchNumber}");
                 break;
         }
 
         return embedBuilder.Build();
     }
 
-    private EmbedBuilder ConstructEmbed()
+    private EmbedBuilder ConstructEmbed() //TODO All this ternary operation really the best way?
     {
         if (Author is null) throw new InvalidOperationException("Author property was not set");
         var startTime = StartTime.HasValue
@@ -116,7 +122,7 @@ public class BackupResponseBuilder
     }
 }
 
-public enum BackupStage
+public enum BackupStage //TODO Should this really be here?
 {
     Started,
     InProgress,

@@ -6,5 +6,5 @@ public interface IBackupMessageProcessor
 {
     public bool IsUntilLastBackup { get; set; }
     event Action? FinishBackupProcess;
-    Task<MessageDataBatch> ProcessMessagesAsync(IEnumerable<IMessage> messageBatch, uint backupId);
+    Task<MessageDataBatchDto> ProcessMessagesAsync(IEnumerable<IMessage> messageBatch);
 }

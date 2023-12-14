@@ -66,7 +66,7 @@ public class Mapper
         };
     }
     
-    public IEnumerable<Message> Map(IEnumerable<IMessage> messages)
+    public IEnumerable<Message> Map(IEnumerable<IMessage> messages, uint backupId)
     {
         var toReturn = new List<Message>();
         foreach (var message in messages)
@@ -75,6 +75,7 @@ public class Mapper
             {
                 Id = message.Id,
                 Content = message.Content,
+                BackupId = backupId,
                 AuthorId = message.Author.Id,
                 ChannelId = message.Channel.Id,
                 SentDate = message.Timestamp.DateTime

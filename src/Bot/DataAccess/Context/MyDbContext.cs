@@ -1,14 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
-using OPZBot.DataAccess.Models;
+﻿using OPZBot.DataAccess.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace OPZBot.DataAccess.Context;
 
 public partial class MyDbContext : DbContext
 {
-    public MyDbContext()
-    {
-    }
-
     public MyDbContext(DbContextOptions<MyDbContext> options)
         : base(options)
     {
@@ -21,7 +17,6 @@ public partial class MyDbContext : DbContext
     public virtual DbSet<Message> Messages { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
-    
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -35,9 +30,9 @@ public partial class MyDbContext : DbContext
 
             entity.ToTable("backup_registry");
 
-            entity.HasIndex(e => e.AuthorId, "fk_author");
+            entity.HasIndex(e => e.ChannelId, "backup_registry_channels_id_fk");
 
-            entity.HasIndex(e => e.ChannelId, "fk_channel");
+            entity.HasIndex(e => e.AuthorId, "backup_registry_users_id_fk");
 
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
@@ -51,11 +46,11 @@ public partial class MyDbContext : DbContext
             entity.HasOne(d => d.Author).WithMany(p => p.BackupRegistries)
                 .HasForeignKey(d => d.AuthorId)
                 .OnDelete(DeleteBehavior.SetNull)
-                .HasConstraintName("backup_registry_ibfk_1");
+                .HasConstraintName("backup_registry_users_id_fk");
 
             entity.HasOne(d => d.Channel).WithMany(p => p.BackupRegistries)
                 .HasForeignKey(d => d.ChannelId)
-                .HasConstraintName("backup_registry_ibfk_2");
+                .HasConstraintName("backup_registry_channels_id_fk");
         });
 
         modelBuilder.Entity<Channel>(entity =>
@@ -67,11 +62,8 @@ public partial class MyDbContext : DbContext
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
                 .HasColumnName("id");
-            entity.Property(e => e.CreatedAt)
-                .HasColumnType("datetime")
-                .HasColumnName("created_at");
             entity.Property(e => e.Name)
-                .HasMaxLength(100)
+                .HasMaxLength(50)
                 .HasColumnName("name");
         });
 
@@ -81,11 +73,11 @@ public partial class MyDbContext : DbContext
 
             entity.ToTable("messages");
 
-            entity.HasIndex(e => e.AuthorId, "fk_author");
+            entity.HasIndex(e => e.BackupId, "messages_backup_registry_id_fk");
 
-            entity.HasIndex(e => e.BackupId, "fk_backup");
+            entity.HasIndex(e => e.ChannelId, "messages_channels_id_fk");
 
-            entity.HasIndex(e => e.ChannelId, "fk_channel");
+            entity.HasIndex(e => e.AuthorId, "messages_users_id_fk");
 
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
@@ -102,15 +94,15 @@ public partial class MyDbContext : DbContext
 
             entity.HasOne(d => d.Author).WithMany(p => p.Messages)
                 .HasForeignKey(d => d.AuthorId)
-                .HasConstraintName("messages_ibfk_1");
+                .HasConstraintName("messages_users_id_fk");
 
             entity.HasOne(d => d.Backup).WithMany(p => p.Messages)
                 .HasForeignKey(d => d.BackupId)
-                .HasConstraintName("messages_ibfk_3");
+                .HasConstraintName("messages_backup_registry_id_fk");
 
             entity.HasOne(d => d.Channel).WithMany(p => p.Messages)
                 .HasForeignKey(d => d.ChannelId)
-                .HasConstraintName("messages_ibfk_2");
+                .HasConstraintName("messages_channels_id_fk");
         });
 
         modelBuilder.Entity<User>(entity =>

@@ -1,4 +1,7 @@
-﻿namespace OPZBot.DataAccess.Models;
+﻿using System;
+using System.Collections.Generic;
+
+namespace OPZBot.DataAccess.Models;
 
 public partial class Message
 {

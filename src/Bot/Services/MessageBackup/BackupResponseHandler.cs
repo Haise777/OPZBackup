@@ -7,7 +7,7 @@ namespace OPZBot.Services.MessageBackup;
 public class BackupResponseHandler
 {
     private readonly BackupResponseBuilder _responseBuilder;
-    private IMessage? _lastMessage;
+    private IMessage? _lastMessage; //TODO Would that also be a SRP violation?
     
     public event Func<Exception, Task>? NotifyException;
 
@@ -26,16 +26,18 @@ public class BackupResponseHandler
         });
     }
 
-    public async Task SendBatchFinished(SocketInteractionContext context, MessageDataBatch messageBatch)
+    public async Task SendBatchFinished(SocketInteractionContext context, MessageDataBatchDto messageBatchDto)
     {
         await RunUnderErrorNotifier(async () =>
         {
-            _responseBuilder.StartMessage ??= messageBatch.Messages.First();
-            _responseBuilder.LastMessage = messageBatch.Messages.Last();
+            _responseBuilder.StartMessage ??= messageBatchDto.Messages.First();
+            _responseBuilder.LastMessage = messageBatchDto.Messages.Last();
+            _responseBuilder.NumberOfMessages += messageBatchDto.Messages.Count();
+            ++_responseBuilder.BatchNumber;
 
             await context.Interaction.ModifyOriginalResponseAsync(m =>
                 m.Embed = _responseBuilder.Build(BackupStage.InProgress));
-            _lastMessage = messageBatch.Messages.Last();
+            _lastMessage = messageBatchDto.Messages.Last();
         });
     }
 
@@ -48,20 +50,30 @@ public class BackupResponseHandler
 
             await context.Interaction.ModifyOriginalResponseAsync(m =>
                 m.Embed = _responseBuilder.Build(BackupStage.Finished));
+
+            await GhostPing(context);
         });
     }
-
+    
     public async Task SendBackupFailed(SocketInteractionContext context, Exception ex)
     {
         await RunUnderErrorNotifier(async () =>
         {
-            Console.WriteLine(ex);
-            throw new NotImplementedException();
+            await context.Interaction.ModifyOriginalResponseAsync(m =>
+                m.Embed = _responseBuilder.Build(BackupStage.Failed));
+            
+            await GhostPing(context);
         });
     }
     
+    private async Task GhostPing(SocketInteractionContext context)
+    {
+        var ping = await context.Interaction.FollowupAsync($"@<{context.User.Id}>");
+        await Task.Delay(2000);
+        await ping.DeleteAsync();
+    }
     
-    private async Task RunUnderErrorNotifier(Func<Task> run) //TODO Test if it actually works
+    private async Task RunUnderErrorNotifier(Func<Task> run) //TODO Actually implement a error handler for this scenario
     {
         try
         {

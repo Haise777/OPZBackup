@@ -1,5 +1,6 @@
 ﻿namespace OPZBot.DataAccess.Caching;
 
+//TODO Measure performance hit by the semaphore's locks
 public class DataCache<T> : IDataCache<T>, IDisposable
 {
     private readonly List<T> _cachedData = new();
