@@ -55,10 +55,7 @@ public class MessageBackupService : BackupService
         }
     }
 
-    private void StopBackup()
-    {
-        _continueBackup = false;
-    }
+    private void StopBackup() => _continueBackup = false;
 
     private async Task StartBackupMessages()
     {
