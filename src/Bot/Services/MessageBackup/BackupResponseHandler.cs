@@ -7,7 +7,7 @@ namespace OPZBot.Services.MessageBackup;
 public class BackupResponseHandler
 {
     private readonly BackupResponseBuilder _responseBuilder;
-    private IMessage? _lastMessage; //TODO Would that also be a SRP violation?
+    private IMessage? _lastMessage;
     private int _numberOfMessages;
     private int _batchNumber;
 

@@ -32,12 +32,12 @@ public class MessageBackupService : BackupService
     {
         _messageProcessor.IsUntilLastBackup = isUntilLastBackup;
         await base.StartBackupAsync(context);
-        await StartedBackupProcess?.Invoke(context, BackupRegistry);
-        
+        if (StartedBackupProcess is not null) await StartedBackupProcess(context, BackupRegistry);
+
         try
         {
             await StartBackupMessages();
-            
+
             if (!await DataContext.Messages.AnyAsync(x => x.BackupId == BackupRegistry.Id))
             {
                 DataContext.Remove(BackupRegistry);
@@ -49,40 +49,39 @@ public class MessageBackupService : BackupService
         {
             DataContext.BackupRegistries.Remove(BackupRegistry);
             await DataContext.SaveChangesAsync();
-            await ProcessHasFailed?.Invoke(InteractionContext, ex); //TODO Actually implement a proper error handling
+            //TODO Actually implement a proper error handling
+            if (ProcessHasFailed is not null) await ProcessHasFailed(InteractionContext, ex); 
             throw;
         }
     }
 
     private void StopBackup()
         => _continueBackup = false;
-
+    
     private async Task StartBackupMessages()
     {
         IMessage? lastMessage = null;
         while (_continueBackup)
         {
-            IMessage[] fetchedMessages;
-
-            if (lastMessage is not null)
-                fetchedMessages = (await _messageFetcher.Fetch(InteractionContext.Channel, lastMessage.Id)).ToArray();
-            else
-                fetchedMessages = (await _messageFetcher.Fetch(InteractionContext.Channel)).ToArray();
+            var fetchedMessages = lastMessage is not null 
+                ? (await _messageFetcher.Fetch(InteractionContext.Channel, lastMessage.Id)).ToArray() 
+                : (await _messageFetcher.Fetch(InteractionContext.Channel)).ToArray();
+            
             if (!fetchedMessages.Any()) break;
-            
+
             var messageDataBatch = await _messageProcessor.ProcessMessagesAsync(fetchedMessages);
-            
+
             if (!messageDataBatch.Messages.Any()) continue;
 
-            await SaveBatch(messageDataBatch);
-            await FinishedBatch?.Invoke(InteractionContext, messageDataBatch);
             lastMessage = fetchedMessages.Last();
+            if (FinishedBatch is not null) await FinishedBatch(InteractionContext, messageDataBatch);
+            await SaveBatch(messageDataBatch);
         }
 
         //Finalize backup process
-        await CompletedBackupProcess?.Invoke(InteractionContext);
+        if (CompletedBackupProcess is not null) await CompletedBackupProcess(InteractionContext);
     }
-    
+
     private async Task SaveBatch(MessageDataBatchDto messageDataBatchDto)
     {
         DataContext.Users.AddRange(Mapper.Map(messageDataBatchDto.Users));
