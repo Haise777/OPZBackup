@@ -97,7 +97,7 @@ public class Program
             .AddSingleton<Mapper>()
             .AddScoped<IMessageFetcher, MessageFetcher>()
             .AddScoped<IBackupMessageProcessor, BackupMessageProcessor>()
-            .AddScoped<BackupService>()
+            .AddScoped<MessageBackupService>()
             .AddScoped<BackupResponseHandler>()
             .AddScoped<BackupResponseBuilder>()
             ;

@@ -6,10 +6,10 @@ namespace OPZBot.Modules;
 [Group("backup","utilizar a função de backup")]
 public class BackupInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
-    private readonly BackupService _backupService;
+    private readonly MessageBackupService _backupService;
     private readonly BackupResponseHandler _responseHandler;
 
-    public BackupInteractionModule(BackupService backupService, BackupResponseHandler responseHandler)
+    public BackupInteractionModule(MessageBackupService backupService, BackupResponseHandler responseHandler)
     {
         _responseHandler = responseHandler;
         _backupService = backupService;
