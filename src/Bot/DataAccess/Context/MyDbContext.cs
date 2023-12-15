@@ -1,5 +1,5 @@
-﻿using OPZBot.DataAccess.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using OPZBot.DataAccess.Models;
 
 namespace OPZBot.DataAccess.Context;
 

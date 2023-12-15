@@ -36,7 +36,7 @@ public class Program
 
     private async Task RunAsync(IHost host)
     {
-        using IServiceScope serviceScope = host.Services.CreateScope();
+        using var serviceScope = host.Services.CreateScope();
         var provider = serviceScope.ServiceProvider;
 
         var client = provider.GetRequiredService<DiscordSocketClient>();
@@ -68,14 +68,20 @@ public class Program
             .AddDbContext<MyDbContext>(options
                 => options.UseMySql(config["connectionString"], ServerVersion.Parse("8.0.34-mysql")))
             //.LogTo(Console.WriteLine).EnableSensitiveDataLogging().EnableDetailedErrors())
-            .AddSingleton(provider =>
-                new IdCacheManager(
-                    new DataCache<ulong>().AddAsync(provider.GetRequiredService<MyDbContext>()
-                        .Users.Select(u => u.Id).ToList()).Result,
-                    new DataCache<ulong>().AddAsync(provider.GetRequiredService<MyDbContext>()
-                        .Channels.Select(c => c.Id).ToList()).Result,
-                    new DataCache<uint>().AddAsync(provider.GetRequiredService<MyDbContext>()
-                        .BackupRegistries.Select(b => b.Id).ToList()).Result
+            .AddSingleton(provider 
+                => new IdCacheManager(
+                    new DataCache<ulong>().AddAsync(provider
+                        .GetRequiredService<MyDbContext>().Users
+                        .Select(u => u.Id)
+                        .ToList()).Result,
+                    new DataCache<ulong>().AddAsync(provider
+                        .GetRequiredService<MyDbContext>().Channels
+                        .Select(c => c.Id)
+                        .ToList()).Result,
+                    new DataCache<uint>().AddAsync(provider
+                        .GetRequiredService<MyDbContext>().BackupRegistries
+                        .Select(b => b.Id)
+                        .ToList()).Result
                 )
             )
             .AddSingleton(_ => new DiscordSocketClient(new DiscordSocketConfig

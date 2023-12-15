@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace OPZBot.DataAccess.Models;
 
-namespace OPZBot.DataAccess.Models;
-
-public partial class User
+public class User
 {
     public ulong Id { get; set; }
 

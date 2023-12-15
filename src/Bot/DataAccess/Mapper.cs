@@ -8,55 +8,45 @@ public class Mapper
 {
     public User Map(IUser socketUser)
     {
-        return new User()
+        return new User
         {
             Id = socketUser.Id,
             Username = socketUser.Username
         };
     }
-    
+
     public IEnumerable<User> Map(IEnumerable<IUser> socketUsers)
     {
-        var toReturn = new List<User>();
-        foreach (var user in socketUsers)
-        {
-            toReturn.Add(new User()
+        return socketUsers.Select(user
+            => new User
             {
                 Id = user.Id,
                 Username = user.Username
-            });
-        }
-
-        return toReturn;
+            }).ToList();
     }
-    
+
     public Channel Map(ISocketMessageChannel socketChannel)
     {
-        return new Channel()
+        return new Channel
         {
             Id = socketChannel.Id,
-            Name = socketChannel.Name,
+            Name = socketChannel.Name
         };
     }
-    
+
     public IEnumerable<Channel> Map(IEnumerable<ISocketMessageChannel> socketChannels)
     {
-        var toReturn = new List<Channel>();
-        foreach (var channel in socketChannels)
-        {
-            toReturn.Add(new Channel()
+        return socketChannels.Select(channel
+            => new Channel
             {
                 Id = channel.Id,
                 Name = channel.Name
-            });
-        }
-
-        return toReturn;
+            }).ToList();
     }
-    
+
     public Message Map(IMessage message)
     {
-        return new Message()
+        return new Message
         {
             Id = message.Id,
             Content = message.Content,
@@ -65,13 +55,11 @@ public class Mapper
             SentDate = message.Timestamp.DateTime
         };
     }
-    
+
     public IEnumerable<Message> Map(IEnumerable<IMessage> messages, uint backupId)
     {
-        var toReturn = new List<Message>();
-        foreach (var message in messages)
-        {
-            toReturn.Add(new Message()
+        return messages.Select(message
+            => new Message
             {
                 Id = message.Id,
                 Content = message.Content,
@@ -79,9 +67,6 @@ public class Mapper
                 AuthorId = message.Author.Id,
                 ChannelId = message.Channel.Id,
                 SentDate = message.Timestamp.DateTime
-            });
-        }
-
-        return toReturn;
+            }).ToList();
     }
 }

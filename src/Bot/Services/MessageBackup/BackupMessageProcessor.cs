@@ -7,17 +7,18 @@ namespace OPZBot.Services.MessageBackup;
 
 public class BackupMessageProcessor : IBackupMessageProcessor
 {
-    private readonly MyDbContext _dataContext;
     private readonly IdCacheManager _cache;
-    public event Action? FinishBackupProcess;
-
-    public bool IsUntilLastBackup { get; set; }
+    private readonly MyDbContext _dataContext;
 
     public BackupMessageProcessor(MyDbContext dataContext, IdCacheManager cache)
     {
         _dataContext = dataContext;
         _cache = cache;
     }
+
+    public event Action? FinishBackupProcess;
+
+    public bool IsUntilLastBackup { get; set; }
 
     public async Task<MessageDataBatchDto> ProcessMessagesAsync(IEnumerable<IMessage> messageBatch)
     {
@@ -26,7 +27,8 @@ public class BackupMessageProcessor : IBackupMessageProcessor
 
         foreach (var message in messageBatch)
         {
-            if (await _dataContext.Messages.AnyAsync(m => message.Id == m.Id)) //TODO Machinegun database spammer
+#warning Database call spammer //TODO Machinegun database spammer
+            if (await _dataContext.Messages.AnyAsync(m => message.Id == m.Id))
             {
                 if (IsUntilLastBackup)
                 {
@@ -39,7 +41,7 @@ public class BackupMessageProcessor : IBackupMessageProcessor
 
             if (!await _cache.UserIds.ExistsAsync(message.Author.Id))
                 users.Add(message.Author);
-            
+
             messages.Add(message);
         }
 

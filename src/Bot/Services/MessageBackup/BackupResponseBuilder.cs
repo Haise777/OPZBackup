@@ -31,6 +31,9 @@ public class BackupResponseBuilder
                 break;
 
             case BackupStage.InProgress:
+                if (LastMessage is null)
+                    throw new InvalidOperationException(
+                        "'LastMessage' property is not optional when 'InProgress' is set on Builder");
                 embedBuilder
                     .WithTitle("Em progresso...")
                     .WithColor(Color.Gold)
@@ -90,7 +93,7 @@ public class BackupResponseBuilder
 
     private EmbedBuilder ConstructEmbed()
     {
-        if (Author is null) throw new InvalidOperationException("Author property was not set");
+        if (Author is null) throw new InvalidOperationException("'Author' property is not optional");
         var values = ParseValuesToStrings();
 
         var firstMessageFieldEmbed = new EmbedFieldBuilder()
