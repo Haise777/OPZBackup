@@ -4,10 +4,10 @@ namespace OPZBot.Services.MessageBackup;
 
 public class MessageDataBatchDto
 {
-    public IEnumerable<IUser> Users { get; init; }
-    public IEnumerable<IMessage> Messages { get; init; }
+    public IEnumerable<IUser> Users { get; }
+    public IEnumerable<IMessage> Messages { get; }
 
-    public MessageDataBatchDto(List<IUser> users, List<IMessage> messages)
+    public MessageDataBatchDto(IEnumerable<IUser> users, IEnumerable<IMessage> messages)
     {
         Users = users;
         Messages = messages;

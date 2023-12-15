@@ -64,8 +64,8 @@ public class BackupService //TODO Is this class too much complex? Does it respec
             _dataContext.Users.Add(author);
 
         _dataContext.BackupRegistries.Add(registry);
-
         await StartedBackupProcess?.Invoke(_interactionContext, registry);
+
         try
         {
             await StartBackupMessages();
@@ -86,23 +86,26 @@ public class BackupService //TODO Is this class too much complex? Does it respec
 
     private async Task StartBackupMessages()
     {
-        ulong lastMessageId = 0;
+        IMessage? lastMessage = null;
         while (_continueBackup)
         {
             IEnumerable<IMessage> fetchedMessages;
 
-            if (lastMessageId != 0)
-                fetchedMessages = await _messageFetcher.Fetch(_interactionContext.Channel, lastMessageId);
-            else
+            if (lastMessage is not null) 
+                fetchedMessages = await _messageFetcher.Fetch(_interactionContext.Channel, lastMessage.Id);
+            else 
                 fetchedMessages = await _messageFetcher.Fetch(_interactionContext.Channel);
             if (!fetchedMessages.Any()) break;
-            lastMessageId = fetchedMessages.Last().Id;
+            
 
             var messageDataBatch = await _messageProcessor.ProcessMessagesAsync(fetchedMessages);
+            
+            if (lastMessage is not null && messageDataBatch.Messages.Count() < 100) break;
             if (!messageDataBatch.Messages.Any()) continue;
 
             await SaveBatch(messageDataBatch);
             await FinishedBatch?.Invoke(_interactionContext, messageDataBatch);
+            lastMessage = fetchedMessages.Last();
         }
 
         //Finalize backup process
@@ -113,7 +116,6 @@ public class BackupService //TODO Is this class too much complex? Does it respec
             await _dataContext.SaveChangesAsync();
             //TODO Make a 'there was no message to backup response'
         }
-        
         await CompletedBackupProcess?.Invoke(_interactionContext);
     }
 

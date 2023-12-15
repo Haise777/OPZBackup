@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Microsoft.EntityFrameworkCore;
-using OPZBot.DataAccess;
 using OPZBot.DataAccess.Caching;
 using OPZBot.DataAccess.Context;
 
@@ -40,7 +39,7 @@ public class BackupMessageProcessor : IBackupMessageProcessor
 
             if (!await _cache.UserIds.ExistsAsync(message.Author.Id))
                 users.Add(message.Author);
-
+            
             messages.Add(message);
         }
 
