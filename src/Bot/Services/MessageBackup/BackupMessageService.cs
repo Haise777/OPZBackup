@@ -48,7 +48,7 @@ public class BackupMessageService : BackupService
 
             await StartBackupMessages();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             DataContext.BackupRegistries.Remove(BackupRegistry);
             await DataContext.SaveChangesAsync();

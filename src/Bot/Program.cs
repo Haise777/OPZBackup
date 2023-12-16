@@ -61,7 +61,7 @@ public class Program
         catch (Exception ex)
         {
             Log.Fatal(ex, "Host terminated unexpectedly");
-            var sessionDate = $"{SessionDate:dd.MM.yyyy_H.mm.ss}";
+            var sessionDate = $"{SessionDate:dd.MM.yyyy_HH.mm.ss}";
             using (var sw = new StreamWriter(Path.Combine(AppContext.BaseDirectory, $"crashreport_{sessionDate}.log")))
             {
                 sw.WriteLine("Host terminated with error:\n" + ex);

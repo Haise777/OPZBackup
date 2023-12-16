@@ -36,9 +36,9 @@ public static class LogUtil
         if (!Directory.Exists(Path.Combine(AppContext.BaseDirectory, "errorlogs")))
             Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "errorlogs"));
 
-        var sessionDate = $"{Program.SessionDate:dd.MM.yyyy_H.mm.ss}";
+        var sessionDate = $"{Program.SessionDate:dd.MM.yyyy_HH.mm.ss}";
         await using var fileWriter = new StreamWriter(
-            Path.Combine(AppContext.BaseDirectory, $"errorlogs\\log_{sessionDate}"), true);
+            Path.Combine(AppContext.BaseDirectory, $"errorlogs\\log_{sessionDate}.log"), true);
         
         logger.LogError(ex, message, args);
         await fileWriter.WriteLineAsync($"{DateTime.Now}\n{message}\n{ex}\n\n");
