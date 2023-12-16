@@ -32,12 +32,12 @@ public static class LogUtil
 
         logger.Log(logLevel, exception, message);
     }
-    
+
     public static async Task RichLogErrorAsync<T>(this ILogger<T> logger, Exception ex, string? message = null)
     {
         if (!Directory.Exists(Path.Combine(AppContext.BaseDirectory, "errorlogs")))
             Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "errorlogs"));
-        
+
         var sessionDate = $"{Program.SessionDate:dd.MM.yyyy_H.mm.ss}";
         await using var fileWriter = new StreamWriter(
             Path.Combine(AppContext.BaseDirectory, $"errorlogs\\log_{sessionDate}"), true);
@@ -45,4 +45,12 @@ public static class LogUtil
         logger.LogError(ex, message);
         await fileWriter.WriteLineAsync($"{DateTime.Now}\n{message}\n{ex}\n\n");
     }
+
+    public static void LogCommandExecution<T>(this ILogger<T> logger, string service, string author, string channel,
+        string command)
+        => logger.LogInformation(
+            "{service}: {author} > {channel} > {command}", service, author, channel, command);
+
+    public static Task LogAsync<T>(this ILogger<T> l, LogLevel logLevel, Exception? exception, string message)
+        => Task.Run(() => l.Log(logLevel, exception, message));
 }

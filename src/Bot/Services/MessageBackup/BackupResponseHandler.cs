@@ -24,7 +24,7 @@ public class BackupResponseHandler
             _batchNumber, _numberOfMessages, BackupStage.Started));
     }
 
-    public async Task SendBatchFinished(SocketInteractionContext context, MessageDataBatchDto messageBatchDto)
+    public async Task SendBatchFinished(SocketInteractionContext context, MessageDataBatchDto messageBatchDto, BackupRegistry registry)
     {
         _responseBuilder.StartMessage ??= messageBatchDto.Messages.First();
         _responseBuilder.LastMessage = messageBatchDto.Messages.Last();
@@ -37,7 +37,7 @@ public class BackupResponseHandler
         _lastMessage = messageBatchDto.Messages.Last();
     }
 
-    public async Task SendBackupCompleted(SocketInteractionContext context)
+    public async Task SendBackupCompleted(SocketInteractionContext context, BackupRegistry registry)
     {
         _responseBuilder.EndTime = DateTime.Now;
         _responseBuilder.LastMessage = _lastMessage;
@@ -49,7 +49,7 @@ public class BackupResponseHandler
         await GhostPing(context);
     }
 
-    public async Task SendBackupFailed(SocketInteractionContext context, Exception ex)
+    public async Task SendBackupFailed(SocketInteractionContext context, Exception ex, BackupRegistry registry)
     {
         await context.Interaction.ModifyOriginalResponseAsync(m =>
             m.Embed = _responseBuilder.Build(
