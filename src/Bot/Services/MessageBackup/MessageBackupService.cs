@@ -31,6 +31,7 @@ public class MessageBackupService : BackupService
     public event Func<SocketInteractionContext, MessageDataBatchDto, BackupRegistry, Task>? FinishedBatch;
     public event Func<SocketInteractionContext, BackupRegistry, Task>? CompletedBackupProcess;
     public event Func<SocketInteractionContext, Exception, BackupRegistry, Task>? ProcessHasFailed;
+    public event Func<SocketInteractionContext, BackupRegistry, Task>? InvalidBackupAttempt; //TODO To implement
 
     public async Task StartBackupAsync(SocketInteractionContext context, bool isUntilLastBackup)
     {
@@ -46,7 +47,7 @@ public class MessageBackupService : BackupService
             {
                 DataContext.Remove(BackupRegistry);
                 await DataContext.SaveChangesAsync();
-                //TODO Make a 'there was no message to backup response'
+                if (InvalidBackupAttempt is not null) await InvalidBackupAttempt(context, BackupRegistry);
             }
         }
         catch (Exception ex)
@@ -86,7 +87,7 @@ public class MessageBackupService : BackupService
             }
             catch (Exception ex)
             {
-                if (attempts != -1)
+                if (attempts > 0)
                 {
                     await _logger.RichLogErrorAsync(ex,
                         $"Batching process failure, '{--attempts}' attempts remaining");
@@ -96,7 +97,6 @@ public class MessageBackupService : BackupService
             }
         }
 
-        //Finalize backup process
         if (CompletedBackupProcess is not null) await CompletedBackupProcess(InteractionContext, BackupRegistry);
     }
 
