@@ -21,13 +21,13 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
         _logger = logger;
         _loggingWrapper = loggingWrapper;
 
-        _service.StartedBackupProcess += _responseHandler.SendStartNotification;
+        _service.StartedBackupProcess += _responseHandler.SendStartNotificationAsync;
         _service.StartedBackupProcess += _loggingWrapper.LogStart;
-        _service.FinishedBatch += _responseHandler.SendBatchFinished;
+        _service.FinishedBatch += _responseHandler.SendBatchFinishedAsync;
         _service.FinishedBatch += _loggingWrapper.LogBatchFinished;
-        _service.CompletedBackupProcess += _responseHandler.SendCompleted;
+        _service.CompletedBackupProcess += _responseHandler.SendCompletedAsync;
         _service.CompletedBackupProcess += _loggingWrapper.LogCompleted;
-        _service.ProcessHasFailed += _responseHandler.SendFailed;
+        _service.ProcessHasFailed += _responseHandler.SendFailedAsync;
     }
 
     [SlashCommand("fazer", "efetuar backup deste canal")]

@@ -13,7 +13,7 @@ public class ResponseHandler
         _responseBuilder = responseBuilder;
     }
     
-    public async Task SendStartNotification(object? sender ,BackupEventArgs e)
+    public async Task SendStartNotificationAsync(object? sender ,BackupEventArgs e)
     {
         var backupService = sender as BackupMessageService;
         _responseBuilder.Author = e.InteractionContext.User;
@@ -22,7 +22,7 @@ public class ResponseHandler
             backupService.BatchNumber, backupService.SavedMessagesCount, BackupStage.Started));
     }
 
-    public async Task SendBatchFinished(object? sender ,BackupEventArgs e)
+    public async Task SendBatchFinishedAsync(object? sender ,BackupEventArgs e)
     {
         var backupService = sender as BackupMessageService;
         _responseBuilder.StartMessage ??= e.MessageBatch.Messages.First();
@@ -34,7 +34,7 @@ public class ResponseHandler
         _lastMessage = e.MessageBatch.Messages.Last();
     }
 
-    public async Task SendCompleted(object? sender ,BackupEventArgs e)
+    public async Task SendCompletedAsync(object? sender ,BackupEventArgs e)
     {
         var backupService = sender as BackupMessageService;
         _responseBuilder.EndTime = DateTime.Now;
@@ -47,7 +47,7 @@ public class ResponseHandler
         await GhostPing(e.InteractionContext);
     }
 
-    public async Task SendFailed(object? sender ,BackupEventArgs e)
+    public async Task SendFailedAsync(object? sender ,BackupEventArgs e)
     {
         var backupService = sender as BackupMessageService;
         await e.InteractionContext.Interaction.ModifyOriginalResponseAsync(m =>
