@@ -28,9 +28,9 @@ public class MessageBackupService : BackupService
     }
 
     public event Func<SocketInteractionContext, BackupRegistry, Task>? StartedBackupProcess;
-    public event Func<SocketInteractionContext, MessageDataBatchDto, Task>? FinishedBatch;
-    public event Func<SocketInteractionContext, Task>? CompletedBackupProcess;
-    public event Func<SocketInteractionContext, Exception, Task>? ProcessHasFailed;
+    public event Func<SocketInteractionContext, MessageDataBatchDto, BackupRegistry, Task>? FinishedBatch;
+    public event Func<SocketInteractionContext, BackupRegistry, Task>? CompletedBackupProcess;
+    public event Func<SocketInteractionContext, Exception, BackupRegistry, Task>? ProcessHasFailed;
 
     public async Task StartBackupAsync(SocketInteractionContext context, bool isUntilLastBackup)
     {
@@ -41,7 +41,6 @@ public class MessageBackupService : BackupService
         try
         {
             await StartBackupMessages();
-            _logger.LogError("mensage");
 
             if (!await DataContext.Messages.AnyAsync(x => x.BackupId == BackupRegistry.Id))
             {
@@ -54,8 +53,7 @@ public class MessageBackupService : BackupService
         {
             DataContext.BackupRegistries.Remove(BackupRegistry);
             await DataContext.SaveChangesAsync();
-            await _logger.RichLogErrorAsync(ex);
-            if (ProcessHasFailed is not null) await ProcessHasFailed(InteractionContext, ex);
+            if (ProcessHasFailed is not null) await ProcessHasFailed(InteractionContext, ex, BackupRegistry);
             throw;
         }
     }
@@ -65,25 +63,41 @@ public class MessageBackupService : BackupService
     private async Task StartBackupMessages()
     {
         IMessage? lastMessage = null;
+        var attempts = 3;
         while (_continueBackup)
         {
-            var fetchedMessages = lastMessage is not null
-                ? (await _messageFetcher.Fetch(InteractionContext.Channel, lastMessage.Id)).ToArray()
-                : (await _messageFetcher.Fetch(InteractionContext.Channel)).ToArray();
+            try
+            {
+                var fetchedMessages = lastMessage is not null
+                    ? (await _messageFetcher.Fetch(InteractionContext.Channel, lastMessage.Id)).ToArray()
+                    : (await _messageFetcher.Fetch(InteractionContext.Channel)).ToArray();
 
-            if (!fetchedMessages.Any()) break;
+                if (!fetchedMessages.Any()) break;
 
-            var messageDataBatch = await _messageProcessor.ProcessMessagesAsync(fetchedMessages);
+                var messageDataBatch = await _messageProcessor.ProcessMessagesAsync(fetchedMessages);
 
-            if (!messageDataBatch.Messages.Any()) continue;
+                if (!messageDataBatch.Messages.Any()) continue;
 
-            lastMessage = fetchedMessages.Last();
-            if (FinishedBatch is not null) await FinishedBatch(InteractionContext, messageDataBatch);
-            await SaveBatch(messageDataBatch);
+                lastMessage = fetchedMessages.Last();
+                if (FinishedBatch is not null)
+                    await FinishedBatch(InteractionContext, messageDataBatch, BackupRegistry);
+                await SaveBatch(messageDataBatch);
+                attempts = 3;
+            }
+            catch (Exception ex)
+            {
+                if (attempts != -1)
+                {
+                    await _logger.RichLogErrorAsync(ex,
+                        $"Batching process failure, '{--attempts}' attempts remaining");
+                    await Task.Delay(5000);
+                }
+                else throw;
+            }
         }
 
         //Finalize backup process
-        if (CompletedBackupProcess is not null) await CompletedBackupProcess(InteractionContext);
+        if (CompletedBackupProcess is not null) await CompletedBackupProcess(InteractionContext, BackupRegistry);
     }
 
     private async Task SaveBatch(MessageDataBatchDto messageDataBatchDto)
