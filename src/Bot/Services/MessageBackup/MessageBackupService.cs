@@ -1,10 +1,12 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using OPZBot.DataAccess;
 using OPZBot.DataAccess.Caching;
 using OPZBot.DataAccess.Context;
 using OPZBot.DataAccess.Models;
+using OPZBot.Logging;
 
 namespace OPZBot.Services.MessageBackup;
 
@@ -12,14 +14,16 @@ public class MessageBackupService : BackupService
 {
     private readonly IMessageFetcher _messageFetcher;
     private readonly IBackupMessageProcessor _messageProcessor;
+    private readonly ILogger<MessageBackupService> _logger;
     private bool _continueBackup = true;
 
     public MessageBackupService(IMessageFetcher messageFetcher, Mapper mapper, IBackupMessageProcessor messageProcessor,
-        MyDbContext dataContext, IdCacheManager cache)
+        MyDbContext dataContext, IdCacheManager cache, ILogger<MessageBackupService> logger)
         : base(mapper, dataContext, cache)
     {
         _messageFetcher = messageFetcher;
         _messageProcessor = messageProcessor;
+        _logger = logger;
         _messageProcessor.FinishBackupProcess += StopBackup;
     }
 
@@ -37,6 +41,7 @@ public class MessageBackupService : BackupService
         try
         {
             await StartBackupMessages();
+            _logger.LogError("mensage");
 
             if (!await DataContext.Messages.AnyAsync(x => x.BackupId == BackupRegistry.Id))
             {
@@ -49,7 +54,7 @@ public class MessageBackupService : BackupService
         {
             DataContext.BackupRegistries.Remove(BackupRegistry);
             await DataContext.SaveChangesAsync();
-            //TODO Actually implement a proper error handling
+            await _logger.RichLogErrorAsync(ex);
             if (ProcessHasFailed is not null) await ProcessHasFailed(InteractionContext, ex);
             throw;
         }
