@@ -36,7 +36,7 @@ public abstract class BackupService
             ChannelId = channel.Id,
             Date = DateTime.Now
         };
-        
+
         if (!await Cache.ChannelIds.ExistsAsync(channel.Id))
             DataContext.Channels.Add(channel);
         if (!await Cache.UserIds.ExistsAsync(author.Id))

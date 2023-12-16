@@ -5,12 +5,12 @@ using OPZBot.DataAccess.Context;
 
 namespace OPZBot.Services.MessageBackup;
 
-public class BackupMessageProcessor : IBackupMessageProcessor
+public class MessageProcessor : IBackupMessageProcessor
 {
     private readonly IdCacheManager _cache;
     private readonly MyDbContext _dataContext;
 
-    public BackupMessageProcessor(MyDbContext dataContext, IdCacheManager cache)
+    public MessageProcessor(MyDbContext dataContext, IdCacheManager cache)
     {
         _dataContext = dataContext;
         _cache = cache;

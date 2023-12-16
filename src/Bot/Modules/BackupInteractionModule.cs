@@ -8,30 +8,26 @@ namespace OPZBot.Modules;
 [Group("backup", "utilizar a função de backup")]
 public class BackupInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
-    private readonly MessageBackupService _backupService;
-    private readonly BackupResponseHandler _responseHandler;
+    private readonly LoggingWrapper _loggingWrapper;
+    private readonly BackupMessageService _service;
     private readonly ILogger<BackupInteractionModule> _logger;
-    private readonly BackupLogging _backupLogging;
+    private readonly ResponseHandler _responseHandler;
 
-    public BackupInteractionModule(MessageBackupService backupService, BackupResponseHandler responseHandler,
-        ILogger<BackupInteractionModule> logger, BackupLogging backupLogging)
+    public BackupInteractionModule(BackupMessageService service, ResponseHandler responseHandler,
+        ILogger<BackupInteractionModule> logger, LoggingWrapper loggingWrapper)
     {
         _responseHandler = responseHandler;
-        _backupService = backupService;
+        _service = service;
         _logger = logger;
-        _backupLogging = backupLogging;
+        _loggingWrapper = loggingWrapper;
 
-
-        _backupService.StartedBackupProcess += _responseHandler.SendStartNotification;
-        _backupService.StartedBackupProcess += _backupLogging.LogBackupStart;
-        
-        _backupService.FinishedBatch += _responseHandler.SendBatchFinished;
-        _backupService.FinishedBatch += _backupLogging.LogBatchFinished;
-        
-        _backupService.CompletedBackupProcess += _responseHandler.SendBackupCompleted;
-        _backupService.CompletedBackupProcess += _backupLogging.LogBackupCompleted;
-        
-        _backupService.ProcessHasFailed += _responseHandler.SendBackupFailed;
+        _service.StartedBackupProcess += _responseHandler.SendStartNotification;
+        _service.StartedBackupProcess += _loggingWrapper.LogStart;
+        _service.FinishedBatch += _responseHandler.SendBatchFinished;
+        _service.FinishedBatch += _loggingWrapper.LogBatchFinished;
+        _service.CompletedBackupProcess += _responseHandler.SendCompleted;
+        _service.CompletedBackupProcess += _loggingWrapper.LogCompleted;
+        _service.ProcessHasFailed += _responseHandler.SendFailed;
     }
 
     [SlashCommand("fazer", "efetuar backup deste canal")]
@@ -40,13 +36,12 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
         try
         {
             _logger.LogCommandExecution(
-                nameof(BackupService), Context.User.Username, Context.Channel.Name, nameof(MakeBackupCommand));
-
-            await _backupService.StartBackupAsync(Context, choice < 1);
+                nameof(BackupService), Context.User.Username, Context.Channel.Name, nameof(MakeBackupCommand), choice.ToString());
+            await _service.StartBackupAsync(Context, choice == 0);
         }
         catch (Exception ex)
         {
-            await _logger.RichLogErrorAsync(ex, "MakeBackupCommand");
+            await _logger.RichLogErrorAsync(ex, nameof(MakeBackupCommand));
             throw;
         }
     }

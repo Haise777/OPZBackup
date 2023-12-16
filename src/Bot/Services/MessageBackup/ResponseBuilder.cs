@@ -2,7 +2,7 @@
 
 namespace OPZBot.Services.MessageBackup;
 
-public class BackupResponseBuilder
+public class ResponseBuilder
 {
     //TODO Fix DateTime using wrong timezones
     public DateTime? StartTime { get; set; }

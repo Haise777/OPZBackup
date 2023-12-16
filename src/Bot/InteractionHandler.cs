@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Discord.Interactions;
 using Discord.WebSocket;
+using Serilog;
 
 namespace OPZBot;
 
@@ -33,7 +34,8 @@ public class InteractionHandler
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.ToString());
+            Log.Fatal(ex, "Fatal error on redirecting interaction to it's module");
+            throw;
         }
     }
 }
