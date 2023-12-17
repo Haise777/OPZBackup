@@ -13,7 +13,7 @@ public class MessageProcessor : IBackupMessageProcessor
     private readonly IdCacheManager _cache;
     private readonly MyDbContext _dataContext;
     private readonly Mapper _mapper;
-    private FileBackupService _fileBackup;
+    private readonly FileBackupService _fileBackup;
 
     public MessageProcessor(MyDbContext dataContext, IdCacheManager cache, Mapper mapper, FileBackupService fileBackup)
     {
@@ -23,15 +23,15 @@ public class MessageProcessor : IBackupMessageProcessor
         _fileBackup = fileBackup;
     }
 
-    public event Action? FinishBackupProcess;
-
+    public event Action? EndBackupProcess;
     public bool IsUntilLastBackup { get; set; }
 
     public async Task<MessageDataBatchDto> ProcessMessagesAsync(IEnumerable<IMessage> messageBatch, uint registryId)
     {
         var users = new List<User>();
         var messages = new List<Message>();
-
+        var fileCount = 0;
+        
         foreach (var message in messageBatch)
         {
 #warning Database call spammer //TODO Machinegun database spammer
@@ -39,7 +39,7 @@ public class MessageProcessor : IBackupMessageProcessor
             {
                 if (IsUntilLastBackup)
                 {
-                    FinishBackupProcess?.Invoke();
+                    EndBackupProcess?.Invoke();
                     break;
                 }
 
@@ -47,11 +47,11 @@ public class MessageProcessor : IBackupMessageProcessor
             }
 
             var mappedMessage = _mapper.Map(message, registryId);
-            
             if (message.Attachments.Any())
             {
-                await _fileBackup.BackupMessageFilesAsync(message);
+                await _fileBackup.BackupFilesAsync(message);
                 mappedMessage.File = @$"{Program.FileBackupPath}\{message.Id}";
+                fileCount++;
             }
 
             if (!await _cache.UserIds.ExistsAsync(message.Author.Id))
@@ -59,6 +59,6 @@ public class MessageProcessor : IBackupMessageProcessor
             messages.Add(mappedMessage);
         }
 
-        return new MessageDataBatchDto(users, messages);
+        return new MessageDataBatchDto(users, messages, fileCount);
     }
 }

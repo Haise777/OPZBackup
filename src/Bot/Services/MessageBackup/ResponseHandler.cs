@@ -12,33 +12,34 @@ public class ResponseHandler
     {
         _responseBuilder = responseBuilder;
     }
-    
-    public async Task SendStartNotificationAsync(object? sender ,BackupEventArgs e)
+
+    public async Task SendStartNotificationAsync(object? sender, BackupEventArgs e)
     {
         var backupService = sender as BackupMessageService;
         _responseBuilder.Author = e.InteractionContext.User;
         _responseBuilder.StartTime = DateTime.Now;
         await e.InteractionContext.Interaction.RespondAsync(embed: _responseBuilder.Build(
-            backupService.BatchNumber, backupService.SavedMessagesCount, BackupStage.Started));
+            backupService.BatchNumber, backupService.SavedMessagesCount, backupService.SavedFilesCount,
+            BackupStage.Started));
     }
 
-    public async Task SendBatchFinishedAsync(object? sender ,BackupEventArgs e)
+    public async Task SendBatchFinishedAsync(object? sender, BackupEventArgs e)
     {
         var backupService = sender as BackupMessageService;
         _responseBuilder.StartMessage ??=
             await e.InteractionContext.Channel.GetMessageAsync(e.MessageBatch.Messages.First().Id);
         var currentMessage = await e.InteractionContext.Channel.GetMessageAsync(e.MessageBatch.Messages.Last().Id);
         _responseBuilder.CurrentMessage = currentMessage;
-            
-        
-        
+
+
         await e.InteractionContext.Interaction.ModifyOriginalResponseAsync(m =>
             m.Embed = _responseBuilder.Build(
-                backupService.BatchNumber, backupService.SavedMessagesCount, BackupStage.InProgress));
+                backupService.BatchNumber, backupService.SavedMessagesCount, backupService.SavedFilesCount,
+                BackupStage.InProgress));
         _lastMessage = currentMessage;
     }
 
-    public async Task SendCompletedAsync(object? sender ,BackupEventArgs e)
+    public async Task SendCompletedAsync(object? sender, BackupEventArgs e)
     {
         var backupService = sender as BackupMessageService;
         _responseBuilder.EndTime = DateTime.Now;
@@ -46,17 +47,19 @@ public class ResponseHandler
 
         await e.InteractionContext.Interaction.ModifyOriginalResponseAsync(m =>
             m.Embed = _responseBuilder.Build(
-                backupService.BatchNumber, backupService.SavedMessagesCount, BackupStage.Finished));
+                backupService.BatchNumber, backupService.SavedMessagesCount, backupService.SavedFilesCount,
+                BackupStage.Finished));
         await GhostPing(e.InteractionContext);
     }
 
-    public async Task SendFailedAsync(object? sender ,BackupEventArgs e)
+    public async Task SendFailedAsync(object? sender, BackupEventArgs e)
     {
         var backupService = sender as BackupMessageService;
-        
+
         await e.InteractionContext.Interaction.ModifyOriginalResponseAsync(m =>
             m.Embed = _responseBuilder.Build(
-                backupService.BatchNumber, backupService.SavedMessagesCount, BackupStage.Failed));
+                backupService.BatchNumber, backupService.SavedMessagesCount, backupService.SavedFilesCount,
+                BackupStage.Failed));
         await GhostPing(e.InteractionContext);
     }
 

@@ -20,6 +20,7 @@ public class BackupMessageService : BackupService
 
     public int BatchNumber { get; private set; }
     public int SavedMessagesCount { get; private set; }
+    public int SavedFilesCount { get; private set; }
 
     public BackupMessageService(IMessageFetcher messageFetcher, Mapper mapper, IBackupMessageProcessor messageProcessor,
         MyDbContext dataContext, IdCacheManager cache, ILogger<BackupMessageService> logger)
@@ -28,7 +29,7 @@ public class BackupMessageService : BackupService
         _messageFetcher = messageFetcher;
         _messageProcessor = messageProcessor;
         _logger = logger;
-        _messageProcessor.FinishBackupProcess += StopBackup;
+        _messageProcessor.EndBackupProcess += StopBackup;
     }
 
     public event AsyncEventHandler<BackupEventArgs>? StartedBackupProcess;
@@ -90,7 +91,7 @@ public class BackupMessageService : BackupService
                 await FinishedBatch.InvokeAsync(this,
                     new BackupEventArgs(InteractionContext, BackupRegistry, messageDataBatch));
 
-                UpdateStatistics(messageDataBatch.Messages);
+                UpdateStatistics(messageDataBatch);
                 attemptsRemaining = 3;
             }
             catch (Exception ex)
@@ -127,9 +128,10 @@ public class BackupMessageService : BackupService
         await DataContext.SaveChangesAsync();
     }
 
-    private void UpdateStatistics(IEnumerable<Message> fetchedMessages)
+    private void UpdateStatistics(MessageDataBatchDto dataBatch)
     {
-        SavedMessagesCount += fetchedMessages.Count();
+        SavedMessagesCount += dataBatch.Messages.Count();
+        SavedFilesCount += dataBatch.FileCount;
         BatchNumber++;
     }
 

@@ -12,7 +12,7 @@ public class ResponseBuilder
     public IMessage? LastMessage { get; set; }
     public IUser? Author { get; set; }
 
-    public Embed Build(int batchNumber, int numberOfMessages, BackupStage stage)
+    public Embed Build(int batchNumber, int numberOfMessages, int numberOfFiles,BackupStage stage)
     {
         var embedBuilder = ConstructEmbed();
         var t = StartTime.HasValue ? (DateTime.Now - StartTime).Value : TimeSpan.Zero;
@@ -27,6 +27,7 @@ public class ResponseBuilder
                     .AddField("progresso:",
                         $"Decorrido: {elapsed}\n" +
                         $"N de mensagens: {numberOfMessages}\n" +
+                        $"N de arquivos: {numberOfFiles}\n" +
                         $"Ciclos realizados: {batchNumber}\n" +
                         "Atual: ...");
                 break;
@@ -41,6 +42,7 @@ public class ResponseBuilder
                     .AddField("Progresso:",
                         $"Decorrido: {elapsed}\n" +
                         $"N de mensagens: {numberOfMessages}\n" +
+                        $"N de arquivos: {numberOfFiles}\n" +
                         $"Ciclos realizados: {batchNumber}\n" +
                         $"Atual: {CurrentMessage.Author} {CurrentMessage.Timestamp.DateTime.ToShortDateString()} {CurrentMessage.Timestamp.DateTime.ToShortTimeString()}" +
                         $"\n{CurrentMessage.Content}");
@@ -53,6 +55,7 @@ public class ResponseBuilder
                     .AddField("Estatisticas:",
                         $"Tempo decorrido: {elapsed}\n" +
                         $"N de mensagens: {numberOfMessages}\n" +
+                        $"N de arquivos: {numberOfFiles}\n" +
                         $"Ciclos realizados: {batchNumber}");
                 break;
 
@@ -63,6 +66,7 @@ public class ResponseBuilder
                     .AddField("Estatisticas:",
                         $"Tempo decorrido: {elapsed}\n" +
                         $"N de mensagens: {numberOfMessages}\n" +
+                        $"N de arquivos: {numberOfFiles}\n" +
                         $"Ciclos realizados: {batchNumber}");
                 break;
         }

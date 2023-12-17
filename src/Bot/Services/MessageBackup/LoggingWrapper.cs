@@ -25,10 +25,11 @@ public class LoggingWrapper
     public Task LogBatchFinished(object? sender, BackupEventArgs e)
     {
         return _logger.LogAsync(LogLevel.Information, null,
-            "{service}: Backup {registryId} > Finished batch with {messageCount} new messages | {userCount} new users",
+            "{service}: Backup {registryId} > Finished batch with {messageCount} saved messages | {fileCount} saved files | {userCount} new users",
             nameof(BackupService),
             e.Registry.Id,
             e.MessageBatch.Messages.Count(),
+            e.MessageBatch.FileCount,
             e.MessageBatch.Users.Count());
     }
 
