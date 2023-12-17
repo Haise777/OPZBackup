@@ -77,7 +77,7 @@ public class BackupMessageService : BackupService
                 if (!fetchedMessages.Any()) break;
                 lastMessage = fetchedMessages.Last();
 
-                var messageDataBatch = await _messageProcessor.ProcessMessagesAsync(fetchedMessages);
+                var messageDataBatch = await _messageProcessor.ProcessMessagesAsync(fetchedMessages, BackupRegistry.Id);
                 if (!messageDataBatch.Messages.Any())
                 {
                     _logger.LogInformation(
@@ -121,13 +121,13 @@ public class BackupMessageService : BackupService
 
     private async Task SaveBatch(MessageDataBatchDto messageDataBatchDto)
     {
-        DataContext.Users.AddRange(Mapper.Map(messageDataBatchDto.Users));
-        DataContext.Messages.AddRange(Mapper.Map(messageDataBatchDto.Messages, BackupRegistry.Id));
+        DataContext.Users.AddRange(messageDataBatchDto.Users);
+        DataContext.Messages.AddRange(messageDataBatchDto.Messages);
 
         await DataContext.SaveChangesAsync();
     }
 
-    private void UpdateStatistics(IEnumerable<IMessage> fetchedMessages)
+    private void UpdateStatistics(IEnumerable<Message> fetchedMessages)
     {
         SavedMessagesCount += fetchedMessages.Count();
         BatchNumber++;

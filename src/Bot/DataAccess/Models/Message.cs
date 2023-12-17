@@ -1,6 +1,9 @@
-﻿namespace OPZBot.DataAccess.Models;
+﻿using System;
+using System.Collections.Generic;
 
-public class Message
+namespace OPZBot.DataAccess.Models;
+
+public partial class Message
 {
     public ulong Id { get; set; }
 
@@ -13,6 +16,8 @@ public class Message
     public ulong ChannelId { get; set; }
 
     public DateTime SentDate { get; set; }
+
+    public string? File { get; set; }
 
     public virtual User Author { get; set; } = null!;
 

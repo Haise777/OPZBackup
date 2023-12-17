@@ -25,13 +25,17 @@ public class ResponseHandler
     public async Task SendBatchFinishedAsync(object? sender ,BackupEventArgs e)
     {
         var backupService = sender as BackupMessageService;
-        _responseBuilder.StartMessage ??= e.MessageBatch.Messages.First();
-        _responseBuilder.CurrentMessage = e.MessageBatch.Messages.Last();
-
+        _responseBuilder.StartMessage ??=
+            await e.InteractionContext.Channel.GetMessageAsync(e.MessageBatch.Messages.First().Id);
+        var currentMessage = await e.InteractionContext.Channel.GetMessageAsync(e.MessageBatch.Messages.Last().Id);
+        _responseBuilder.CurrentMessage = currentMessage;
+            
+        
+        
         await e.InteractionContext.Interaction.ModifyOriginalResponseAsync(m =>
             m.Embed = _responseBuilder.Build(
                 backupService.BatchNumber, backupService.SavedMessagesCount, BackupStage.InProgress));
-        _lastMessage = e.MessageBatch.Messages.Last();
+        _lastMessage = currentMessage;
     }
 
     public async Task SendCompletedAsync(object? sender ,BackupEventArgs e)

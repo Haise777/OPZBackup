@@ -44,12 +44,13 @@ public class Mapper
             }).ToList();
     }
 
-    public Message Map(IMessage message)
+    public Message Map(IMessage message, uint backupId)
     {
         return new Message
         {
             Id = message.Id,
             Content = message.Content,
+            BackupId = backupId,
             AuthorId = message.Author.Id,
             ChannelId = message.Channel.Id,
             SentDate = message.Timestamp.DateTime

@@ -12,6 +12,7 @@ using OPZBot.DataAccess.Context;
 using OPZBot.Logging;
 using OPZBot.Services;
 using OPZBot.Services.MessageBackup;
+using OPZBot.Services.MessageBackup.FileBackup;
 using Serilog;
 using Serilog.Events;
 using RunMode = Discord.Interactions.RunMode;
@@ -22,6 +23,7 @@ public class Program
 {
     public const string Ver = "v0.1";
     public static DateTime SessionDate { get; } = DateTime.Now;
+    public static string FileBackupPath { get; } = @$"{AppContext.BaseDirectory}\Backup\Files";
 
     public static Task Main(string[] args)
     {
@@ -119,18 +121,20 @@ public class Program
                     }
                 )
             );
-        
-            services.AddSingleton<InteractionHandler>()
+
+        services.AddSingleton<InteractionHandler>()
             .AddSingleton(_ =>
                 new CommandService()) //TODO is it really necessary to be a expression instead of generic?
             .AddSingleton(config)
             .AddSingleton<Mapper>()
+            .AddSingleton<LoggingWrapper>()
             .AddScoped<IMessageFetcher, MessageFetcher>()
             .AddScoped<IBackupMessageProcessor, MessageProcessor>()
             .AddScoped<BackupMessageService>()
             .AddScoped<ResponseHandler>()
             .AddScoped<ResponseBuilder>()
-            .AddSingleton<LoggingWrapper>()
+            .AddScoped<FileBackupService>()
+            .AddHttpClient()
             ;
     }
 }

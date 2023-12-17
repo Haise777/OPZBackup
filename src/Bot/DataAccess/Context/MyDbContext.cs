@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using OPZBot.DataAccess.Models;
 
 namespace OPZBot.DataAccess.Context;
@@ -88,6 +90,9 @@ public partial class MyDbContext : DbContext
             entity.Property(e => e.Content)
                 .HasMaxLength(5000)
                 .HasColumnName("content");
+            entity.Property(e => e.File)
+                .HasMaxLength(256)
+                .HasColumnName("file");
             entity.Property(e => e.SentDate)
                 .HasColumnType("datetime")
                 .HasColumnName("sent_date");
