@@ -37,7 +37,7 @@ public class LoggingWrapper
         var backupService = sender as BackupMessageService;
         
         return _logger.LogAsync(LogLevel.Information, null,
-            "{service}: Backup {registryId} > completed at batch number {batchNumber} with {savedNumber}",
+            "{service}: Backup {registryId} > completed at batch number {batchNumber} with {savedNumber} saved messages",
             nameof(BackupService),
             e.Registry.Id,
             backupService.BatchNumber,

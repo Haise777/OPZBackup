@@ -21,11 +21,27 @@ public class DataCache<T> : IDataCache<T>, IDisposable
         return this;
     }
 
-    public async Task<DataCache<T>> AddAsync(IEnumerable<T> items)
+    public async Task<DataCache<T>> AddRangeAsync(IEnumerable<T> items)
     {
         await _lock.WaitAsync();
         try
         {
+            _cachedData.AddRange(items);
+        }
+        finally
+        {
+            _lock.Release();
+        }
+
+        return this;
+    }
+
+    public async Task<DataCache<T>> UpdateRangeAsync(IEnumerable<T> items)
+    {
+        await _lock.WaitAsync();
+        try
+        {
+            _cachedData.Clear();
             _cachedData.AddRange(items);
         }
         finally

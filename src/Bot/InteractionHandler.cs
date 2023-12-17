@@ -21,7 +21,6 @@ public class InteractionHandler
     public async Task InitializeAsync()
     {
         await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
-
         _client.InteractionCreated += HandleInteraction;
     }
 

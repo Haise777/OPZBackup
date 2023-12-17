@@ -83,12 +83,12 @@ public class Program
         var sCommands = provider.GetRequiredService<InteractionService>();
         var config = provider.GetRequiredService<IConfigurationRoot>();
         var logger = provider.GetRequiredService<ILogger<Program>>();
-
+        
         client.Log += msg
-            => logger.RichLogAsync(LogUtil.ParseLogLevel(msg.Severity), msg.Exception, "BOT: " + msg.Message);
+            => logger.RichLogAsync(LogUtil.ParseLogLevel(msg.Severity), msg.Exception, "{subject} " + msg.Message, "BOT:");
 
         sCommands.Log += msg
-            => logger.RichLogAsync(LogUtil.ParseLogLevel(msg.Severity), msg.Exception, "COMMAND: " + msg.Message);
+            => logger.RichLogAsync(LogUtil.ParseLogLevel(msg.Severity), msg.Exception, "{subject} " + msg.Message, "COMMAND:");
 
         client.Ready += async ()
             => await sCommands.RegisterCommandsToGuildAsync(ulong.Parse(config["testGuild"]!));
@@ -118,8 +118,9 @@ public class Program
                         DefaultRunMode = RunMode.Async
                     }
                 )
-            )
-            .AddSingleton<InteractionHandler>()
+            );
+        
+            services.AddSingleton<InteractionHandler>()
             .AddSingleton(_ =>
                 new CommandService()) //TODO is it really necessary to be a expression instead of generic?
             .AddSingleton(config)

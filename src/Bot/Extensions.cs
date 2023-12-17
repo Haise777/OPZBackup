@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using OPZBot.DataAccess.Caching;
 using OPZBot.DataAccess.Context;
 using OPZBot.Utilities;
@@ -11,15 +12,15 @@ public static class Extensions
     {
         return services.AddSingleton(provider
             => new IdCacheManager(
-                new DataCache<ulong>().AddAsync(provider
+                new DataCache<ulong>().AddRangeAsync(provider
                     .GetRequiredService<MyDbContext>().Users
                     .Select(u => u.Id)
                     .ToList()).Result,
-                new DataCache<ulong>().AddAsync(provider
+                new DataCache<ulong>().AddRangeAsync(provider
                     .GetRequiredService<MyDbContext>().Channels
                     .Select(c => c.Id)
                     .ToList()).Result,
-                new DataCache<uint>().AddAsync(provider
+                new DataCache<uint>().AddRangeAsync(provider
                     .GetRequiredService<MyDbContext>().BackupRegistries
                     .Select(b => b.Id)
                     .ToList()).Result
@@ -33,5 +34,13 @@ public static class Extensions
             : Task.WhenAll(eventAsync.GetInvocationList()
                 .Cast<AsyncEventHandler<TArgs>>()
                 .Select(f => f(sender, e)));
+    }
+
+    public static async Task SynchronizeCacheAsync(this IdCacheManager cacheManager, MyDbContext context)
+    {
+        await cacheManager.ChannelIds.UpdateRangeAsync(
+            await context.Channels.Select(c => c.Id).ToArrayAsync());
+        await cacheManager.UserIds.UpdateRangeAsync(
+            await context.Users.Select(u => u.Id).ToArrayAsync());
     }
 }

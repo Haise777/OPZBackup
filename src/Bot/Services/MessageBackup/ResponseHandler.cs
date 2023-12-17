@@ -26,7 +26,7 @@ public class ResponseHandler
     {
         var backupService = sender as BackupMessageService;
         _responseBuilder.StartMessage ??= e.MessageBatch.Messages.First();
-        _responseBuilder.LastMessage = e.MessageBatch.Messages.Last();
+        _responseBuilder.CurrentMessage = e.MessageBatch.Messages.Last();
 
         await e.InteractionContext.Interaction.ModifyOriginalResponseAsync(m =>
             m.Embed = _responseBuilder.Build(
@@ -43,17 +43,16 @@ public class ResponseHandler
         await e.InteractionContext.Interaction.ModifyOriginalResponseAsync(m =>
             m.Embed = _responseBuilder.Build(
                 backupService.BatchNumber, backupService.SavedMessagesCount, BackupStage.Finished));
-
         await GhostPing(e.InteractionContext);
     }
 
     public async Task SendFailedAsync(object? sender ,BackupEventArgs e)
     {
         var backupService = sender as BackupMessageService;
+        
         await e.InteractionContext.Interaction.ModifyOriginalResponseAsync(m =>
             m.Embed = _responseBuilder.Build(
                 backupService.BatchNumber, backupService.SavedMessagesCount, BackupStage.Failed));
-
         await GhostPing(e.InteractionContext);
     }
 

@@ -20,15 +20,15 @@ public static class LogUtil
     }
 
     public static async Task RichLogAsync<T>
-        (this ILogger<T> logger, LogLevel logLevel, Exception? exception, string message)
+        (this ILogger<T> logger, LogLevel logLevel, Exception? exception, string? message, params object?[] args)
     {
         if (logLevel is LogLevel.Error or LogLevel.Critical && exception is not null)
         {
-            await logger.RichLogErrorAsync(exception, message);
+            await logger.RichLogErrorAsync(exception, message, args);
             return;
         }
 
-        logger.Log(logLevel, exception, message);
+        logger.Log(logLevel, exception, message, args);
     }
 
     public static async Task RichLogErrorAsync<T>(this ILogger<T> logger, Exception ex, string? message, params object?[] args)

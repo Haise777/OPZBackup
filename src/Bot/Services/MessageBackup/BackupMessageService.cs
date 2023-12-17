@@ -40,18 +40,20 @@ public class BackupMessageService : BackupService
     public async Task StartBackupAsync(SocketInteractionContext context, bool isUntilLastBackup)
     {
         _messageProcessor.IsUntilLastBackup = isUntilLastBackup;
-
+        await base.StartBackupAsync(context);
         try
         {
-            await base.StartBackupAsync(context);
             await StartedBackupProcess.InvokeAsync(this, new BackupEventArgs(context, BackupRegistry));
-
             await StartBackupMessages();
         }
         catch (Exception)
         {
-            DataContext.BackupRegistries.Remove(BackupRegistry);
-            await DataContext.SaveChangesAsync();
+            if (BackupRegistry is not null)
+            {
+                DataContext.BackupRegistries.Remove(BackupRegistry);
+                await DataContext.SaveChangesAsync();
+            }
+
             await ProcessHasFailed.InvokeAsync(this, new BackupEventArgs(InteractionContext, BackupRegistry));
             throw;
         }
@@ -76,7 +78,13 @@ public class BackupMessageService : BackupService
                 lastMessage = fetchedMessages.Last();
 
                 var messageDataBatch = await _messageProcessor.ProcessMessagesAsync(fetchedMessages);
-                if (!messageDataBatch.Messages.Any()) continue;
+                if (!messageDataBatch.Messages.Any())
+                {
+                    _logger.LogInformation(
+                        "{service}: Backup {registryId} > Skipped batch as there is no messages valid to save",
+                        nameof(BackupService), BackupRegistry.Id);
+                    continue;
+                }
 
                 await SaveBatch(messageDataBatch);
                 await FinishedBatch.InvokeAsync(this,
@@ -92,7 +100,7 @@ public class BackupMessageService : BackupService
                     await _logger.RichLogErrorAsync(
                         ex, "Batching process failed at batch number {batch}, '{remainingAttempts}' attempts remaining",
                         BatchNumber,
-                        --attemptsRemaining);
+                        attemptsRemaining--);
                     await Task.Delay(5000);
                 }
                 else
@@ -110,7 +118,7 @@ public class BackupMessageService : BackupService
             ? (await _messageFetcher.Fetch(InteractionContext.Channel, startingMessage.Id)).ToArray()
             : (await _messageFetcher.Fetch(InteractionContext.Channel)).ToArray();
     }
-    
+
     private async Task SaveBatch(MessageDataBatchDto messageDataBatchDto)
     {
         DataContext.Users.AddRange(Mapper.Map(messageDataBatchDto.Users));
@@ -118,7 +126,7 @@ public class BackupMessageService : BackupService
 
         await DataContext.SaveChangesAsync();
     }
-    
+
     private void UpdateStatistics(IEnumerable<IMessage> fetchedMessages)
     {
         SavedMessagesCount += fetchedMessages.Count();

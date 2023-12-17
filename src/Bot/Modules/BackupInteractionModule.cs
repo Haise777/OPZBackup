@@ -20,7 +20,7 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
         _service = service;
         _logger = logger;
         _loggingWrapper = loggingWrapper;
-
+        
         _service.StartedBackupProcess += _responseHandler.SendStartNotificationAsync;
         _service.StartedBackupProcess += _loggingWrapper.LogStart;
         _service.FinishedBatch += _responseHandler.SendBatchFinishedAsync;
@@ -33,17 +33,10 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
     [SlashCommand("fazer", "efetuar backup deste canal")]
     public async Task MakeBackupCommand([Choice("ate-ultimo", 0)] [Choice("total", 1)] int choice)
     {
-        try
-        {
-            _logger.LogCommandExecution(
-                nameof(BackupService), Context.User.Username, Context.Channel.Name, nameof(MakeBackupCommand), choice.ToString());
-            await _service.StartBackupAsync(Context, choice == 0);
-        }
-        catch (Exception ex)
-        {
-            await _logger.RichLogErrorAsync(ex, nameof(MakeBackupCommand));
-            throw;
-        }
+        _logger.LogCommandExecution(
+            nameof(BackupService), Context.User.Username, Context.Channel.Name, nameof(MakeBackupCommand),
+            choice.ToString());
+        await _service.StartBackupAsync(Context, choice == 0);
     }
 
     [SlashCommand("deletar-proprio", "deletar todas as informações presentes no backup relacionadas ao usuario")]
@@ -51,4 +44,5 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
     {
         throw new NotImplementedException();
     }
+    
 }

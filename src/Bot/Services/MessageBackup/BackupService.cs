@@ -24,6 +24,7 @@ public abstract class BackupService
 
     protected virtual async Task StartBackupAsync(SocketInteractionContext interactionContext)
     {
+        await Cache.SynchronizeCacheAsync(DataContext);
         InteractionContext = interactionContext;
 
         var channel = Mapper.Map(InteractionContext.Channel);
@@ -41,7 +42,7 @@ public abstract class BackupService
             DataContext.Channels.Add(channel);
         if (!await Cache.UserIds.ExistsAsync(author.Id))
             DataContext.Users.Add(author);
-
+        
         DataContext.BackupRegistries.Add(BackupRegistry);
         await DataContext.SaveChangesAsync();
     }
@@ -54,7 +55,6 @@ public abstract class BackupService
                 .Select(x => x.Id)
                 .FirstAsync() + 1
             : 1;
-
         return registryId;
     }
 }

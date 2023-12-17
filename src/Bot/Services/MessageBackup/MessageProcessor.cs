@@ -27,6 +27,7 @@ public class MessageProcessor : IBackupMessageProcessor
 
         foreach (var message in messageBatch)
         {
+            
 #warning Database call spammer //TODO Machinegun database spammer
             if (await _dataContext.Messages.AnyAsync(m => message.Id == m.Id))
             {
@@ -41,7 +42,6 @@ public class MessageProcessor : IBackupMessageProcessor
 
             if (!await _cache.UserIds.ExistsAsync(message.Author.Id))
                 users.Add(message.Author);
-
             messages.Add(message);
         }
 

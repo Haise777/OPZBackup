@@ -8,13 +8,14 @@ public class ResponseBuilder
     public DateTime? StartTime { get; set; }
     public DateTime? EndTime { get; set; }
     public IMessage? StartMessage { get; set; }
+    public IMessage? CurrentMessage { get; set; }
     public IMessage? LastMessage { get; set; }
     public IUser? Author { get; set; }
 
     public Embed Build(int batchNumber, int numberOfMessages, BackupStage stage)
     {
         var embedBuilder = ConstructEmbed();
-        var t = (DateTime.Now - StartTime)!.Value;
+        var t = StartTime.HasValue ? (DateTime.Now - StartTime).Value : TimeSpan.Zero;
         var elapsed = $"{t.TotalHours:00}:{t:mm\\:ss}";
 
         switch (stage)
@@ -31,9 +32,9 @@ public class ResponseBuilder
                 break;
 
             case BackupStage.InProgress:
-                if (LastMessage is null)
+                if (CurrentMessage is null)
                     throw new InvalidOperationException(
-                        "'LastMessage' property is not optional when 'InProgress' is set on Builder");
+                        "'CurrentMessage' property is not optional when 'InProgress' is set on Builder");
                 embedBuilder
                     .WithTitle("Em progresso...")
                     .WithColor(Color.Gold)
@@ -41,8 +42,8 @@ public class ResponseBuilder
                         $"Decorrido: {elapsed}\n" +
                         $"N de mensagens: {numberOfMessages}\n" +
                         $"Ciclos realizados: {batchNumber}\n" +
-                        $"Atual: {LastMessage.Author} {LastMessage.Timestamp.DateTime.ToShortDateString()} {LastMessage.Timestamp.DateTime.ToShortTimeString()}" +
-                        $"\n{LastMessage.Content}");
+                        $"Atual: {CurrentMessage.Author} {CurrentMessage.Timestamp.DateTime.ToShortDateString()} {CurrentMessage.Timestamp.DateTime.ToShortTimeString()}" +
+                        $"\n{CurrentMessage.Content}");
                 break;
 
             case BackupStage.Finished:
@@ -83,7 +84,7 @@ public class ResponseBuilder
             : "...";
         parsedValues[2] = StartTime.HasValue
             ? StartTime.Value.ToLongTimeString()
-            : throw new InvalidOperationException("StartTime builder property is not optional");
+            : "...";
         parsedValues[3] = EndTime.HasValue
             ? EndTime.Value.ToLongTimeString()
             : "...";
@@ -93,7 +94,6 @@ public class ResponseBuilder
 
     private EmbedBuilder ConstructEmbed()
     {
-        if (Author is null) throw new InvalidOperationException("'Author' property is not optional");
         var values = ParseValuesToStrings();
 
         var firstMessageFieldEmbed = new EmbedFieldBuilder()
@@ -114,16 +114,18 @@ public class ResponseBuilder
             .WithValue(values[3])
             .WithIsInline(true);
 
-        var madeByEmbed = new EmbedFooterBuilder()
-            .WithText($"por: {Author.Username}")
-            .WithIconUrl(Author.GetAvatarUrl());
-
         var embedBuilder = new EmbedBuilder()
             .AddField(firstMessageFieldEmbed)
             .AddField(lastMessageFieldEmbed)
             .AddField(startTimeEmbed)
-            .AddField(endTimeEmbed)
-            .WithFooter(madeByEmbed);
+            .AddField(endTimeEmbed);
+
+        if (Author is not null)
+        {
+            embedBuilder.WithFooter(new EmbedFooterBuilder()
+                .WithText($"por: {Author.Username}")
+                .WithIconUrl(Author.GetAvatarUrl()));
+        }
 
         return embedBuilder;
     }
