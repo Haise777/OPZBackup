@@ -53,12 +53,12 @@ public abstract class BackupService
             .Where(b => b.ChannelId == context.Channel.Id)
             .OrderByDescending(b => b.Date)
             .Select(b => b.Date)
-            .FirstAsync();
+            .FirstOrDefaultAsync();
 
         return DateTime.Now - lastBackupDate;
     }
 
-    public async Task DeleteUserAsync(ulong userId)
+    public virtual async Task DeleteUserAsync(ulong userId)
     {
         var user = await DataContext.Users.SingleOrDefaultAsync(u => u.Id == userId);
         if (user is null) return;

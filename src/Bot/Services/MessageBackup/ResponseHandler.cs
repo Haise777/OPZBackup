@@ -95,13 +95,27 @@ public class ResponseHandler
 
     public async Task SendInvalidAttemptAsync(SocketInteractionContext context, TimeSpan cooldownTime)
     {
-        var formattedTime = cooldownTime > TimeSpan.FromHours(1) 
-            ? $"{cooldownTime.Hours} horas e {cooldownTime.Minutes} minutos" 
+        var formattedTime = cooldownTime > TimeSpan.FromHours(1)
+            ? $"{cooldownTime.Hours} horas e {cooldownTime.Minutes} minutos"
             : $"{cooldownTime.Minutes} minutos e {cooldownTime.Seconds} segundos";
-        
+
         await context.Interaction.RespondAsync("Tentativa de backup inválida" +
                                                $"\n**{formattedTime}** restantes");
         await Task.Delay(7000);
+        await context.Interaction.DeleteOriginalResponseAsync();
+    }
+
+    public async Task SendUserDeletionResultAsync(SocketInteractionContext context, bool wasDeleted)
+    {
+        if (wasDeleted)
+        {
+            await context.Interaction.DeferAsync();
+            await context.Interaction.DeleteOriginalResponseAsync();
+            await context.Interaction.FollowupAsync($"***{context.User.Username}** foi deletado dos registros de backup*");
+            return;
+        }
+
+        await context.Interaction.DeferAsync();
         await context.Interaction.DeleteOriginalResponseAsync();
     }
 }

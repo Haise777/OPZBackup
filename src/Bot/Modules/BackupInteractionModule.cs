@@ -40,7 +40,7 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
         await Context.Interaction.DeferAsync();
         
         var tm = await _backupService.TimeFromLastBackupAsync(Context);
-        if (tm < TimeSpan.FromDays(1) && Program.RUN_WITH_COOLDOWN)
+        if (tm < TimeSpan.FromDays(1) && Program.RUN_WITH_COOLDOWNS)
         {
             await _responseHandler.SendInvalidAttemptAsync(Context, tm);
             return;
@@ -67,18 +67,14 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
         await _backupService.DeleteUserAsync(Context.User.Id);
         _logger.LogInformation(
             "{service}: {user} was deleted from the backup registry", nameof(BackupService), Context.User.Username);
-
-        //TODO Put this in the approprite place
-        await Context.Interaction.DeferAsync();
-        await Context.Interaction.DeleteOriginalResponseAsync();
-        await Context.Interaction.FollowupAsync($"***{Context.User.Username}** was deleted from the registry*");
+        
+        await _responseHandler.SendUserDeletionResultAsync(Context, true);
     }
 
     [ComponentInteraction(CANCEL_USER_DELETE_ID, true)]
     public async Task DeleteUserCancel()
     {
         _logger.LogInformation("{service}: {user} aborted deletion", nameof(BackupService), Context.User.Username);
-        await Context.Interaction.DeferAsync();
-        await Context.Interaction.DeleteOriginalResponseAsync();
+        await _responseHandler.SendUserDeletionResultAsync(Context, false);
     }
 }
