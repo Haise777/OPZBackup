@@ -43,4 +43,10 @@ public class LoggingWrapper
             backupService.SavedMessagesCount,
             backupService.SavedFilesCount);
     }
+
+    public Task LogEmptyBackupAttempt(object? sender, BackupEventArgs args)
+    {
+        return _logger.LogAsync(LogLevel.Information, null,
+            "{service}: Invalid backup attempt > There was no valid message to backup", nameof(BackupService));
+    }
 }

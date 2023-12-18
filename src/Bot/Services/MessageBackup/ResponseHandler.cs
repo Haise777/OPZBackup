@@ -119,4 +119,16 @@ public class ResponseHandler
         await context.Interaction.DeferAsync();
         await context.Interaction.DeleteOriginalResponseAsync();
     }
+
+    public async Task SendEmptyBackupAsync(object? sender, BackupEventArgs args)
+    {
+        await args.InteractionContext.Interaction.ModifyOriginalResponseAsync(m =>
+        {
+            m.Content = "*Tentativa de backup inválida: Não havia mensagens válidas para serem salvas*";
+            m.Embed = null;
+        });
+        
+        await Task.Delay(7000);
+        await args.InteractionContext.Interaction.DeleteOriginalResponseAsync();
+    }
 }

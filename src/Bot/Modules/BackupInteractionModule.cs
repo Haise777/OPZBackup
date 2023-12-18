@@ -33,6 +33,8 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
         _backupService.CompletedBackupProcess += _responseHandler.SendCompletedAsync;
         _backupService.CompletedBackupProcess += _loggingWrapper.LogCompleted;
         _backupService.ProcessHasFailed += _responseHandler.SendFailedAsync;
+        _backupService.EmptyBackupAttempt += _responseHandler.SendEmptyBackupAsync;
+        _backupService.EmptyBackupAttempt += _loggingWrapper.LogEmptyBackupAttempt;
     }
 
     [SlashCommand("fazer", "efetuar backup deste canal")]
