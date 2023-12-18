@@ -8,8 +8,8 @@ namespace OPZBot.Services.MessageBackup.FileBackup;
 public class FileBackupService
 {
     private readonly HttpClient _client;
-    private readonly Regex _matchFileExtension = new(@"([^\.]+)(?=\?ex)");
     private readonly ILogger<FileBackupService> _logger;
+    private readonly Regex _matchFileExtension = new(@"([^\.]+)(?=\?ex)");
 
     public FileBackupService(HttpClient client, ILogger<FileBackupService> logger)
     {

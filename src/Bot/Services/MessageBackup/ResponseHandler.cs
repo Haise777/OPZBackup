@@ -18,9 +18,10 @@ public class ResponseHandler
         var backupService = sender as BackupMessageService;
         _responseBuilder.Author = e.InteractionContext.User;
         _responseBuilder.StartTime = DateTime.Now;
-        await e.InteractionContext.Interaction.RespondAsync(embed: _responseBuilder.Build(
-            backupService.BatchNumber, backupService.SavedMessagesCount, backupService.SavedFilesCount,
-            BackupStage.Started));
+        await e.InteractionContext.Interaction.ModifyOriginalResponseAsync(m =>
+            m.Embed = _responseBuilder.Build(
+                backupService.BatchNumber, backupService.SavedMessagesCount, backupService.SavedFilesCount,
+                BackupStage.Started));
     }
 
     public async Task SendBatchFinishedAsync(object? sender, BackupEventArgs e)
@@ -68,5 +69,26 @@ public class ResponseHandler
         var ping = await context.Interaction.FollowupAsync($"<@{context.User.Id}>");
         await Task.Delay(2000);
         await ping.DeleteAsync();
+    }
+
+    public async Task SendDeleteConfirmationAsync(SocketInteractionContext context)
+    {
+        var button = new ButtonBuilder()
+            .WithStyle(ButtonStyle.Danger)
+            .WithLabel("Confirmar")
+            .WithCustomId("DELETE_CONF_CONFIRM");
+        var buttonCancel = new ButtonBuilder()
+            .WithStyle(ButtonStyle.Secondary)
+            .WithLabel("Cancelar")
+            .WithCustomId("DELETE_CONF_CANCEL");
+
+        var components = new ComponentBuilder()
+            .WithButton(button)
+            .WithButton(buttonCancel)
+            .Build();
+
+        await context.Interaction.RespondAsync(ephemeral: true, text:
+            "Todas as suas mensagens junto de seu usuario serão apagados dos registros de backup" +
+            "\nDeseja prosseguir?", components: components);
     }
 }

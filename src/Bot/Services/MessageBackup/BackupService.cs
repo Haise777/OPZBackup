@@ -42,8 +42,16 @@ public abstract class BackupService
             DataContext.Channels.Add(channel);
         if (!await Cache.UserIds.ExistsAsync(author.Id))
             DataContext.Users.Add(author);
-        
+
         DataContext.BackupRegistries.Add(BackupRegistry);
+        await DataContext.SaveChangesAsync();
+    }
+
+    public async Task DeleteUserAsync(ulong userId)
+    {
+        var user = await DataContext.Users.SingleOrDefaultAsync(u => u.Id == userId)
+            ?? throw new InvalidOperationException($"User '{userId}' does not exists in the registry");
+        DataContext.Users.Remove(user);
         await DataContext.SaveChangesAsync();
     }
 
