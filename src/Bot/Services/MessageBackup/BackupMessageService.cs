@@ -35,7 +35,7 @@ public class BackupMessageService : BackupService
     public event AsyncEventHandler<BackupEventArgs>? FinishedBatch;
     public event AsyncEventHandler<BackupEventArgs>? CompletedBackupProcess;
     public event AsyncEventHandler<BackupEventArgs>? ProcessHasFailed;
-    public event AsyncEventHandler<BackupEventArgs>? InvalidBackupAttempt; //TODO To implement
+    public event AsyncEventHandler<BackupEventArgs>? EmptyBackupAttempt;
 
     public async Task StartBackupAsync(SocketInteractionContext context, bool isUntilLastBackup)
     {
@@ -57,13 +57,6 @@ public class BackupMessageService : BackupService
             await ProcessHasFailed.InvokeAsync(this, new BackupEventArgs(InteractionContext, BackupRegistry));
             throw;
         }
-
-        if (!await DataContext.Messages.AnyAsync(x => x.BackupId == BackupRegistry.Id))
-        {
-            DataContext.Remove(BackupRegistry);
-            await DataContext.SaveChangesAsync();
-            await InvalidBackupAttempt.InvokeAsync(this, new BackupEventArgs(context, BackupRegistry));
-        }
     }
 
     private async Task StartBackupMessages()
@@ -77,7 +70,8 @@ public class BackupMessageService : BackupService
                 if (!fetchedMessages.Any()) break;
                 lastMessage = fetchedMessages.Last();
 
-                var messageDataBatch = await _messageProcessor.ProcessMessagesAsync(fetchedMessages, BackupRegistry.Id);
+                var messageDataBatch =
+                    await _messageProcessor.ProcessMessagesAsync(fetchedMessages, BackupRegistry.Id);
                 if (!messageDataBatch.Messages.Any())
                 {
                     _logger.LogInformation(
@@ -103,12 +97,16 @@ public class BackupMessageService : BackupService
                         attemptsRemaining--);
                     await Task.Delay(5000);
                 }
-                else
-                {
-                    throw;
-                } //TODO make this more readable
+                else throw;
             }
 
+        if (!await DataContext.Messages.AnyAsync(x => x.BackupId == BackupRegistry.Id))
+        {
+            DataContext.Remove(BackupRegistry);
+            await DataContext.SaveChangesAsync();
+            await EmptyBackupAttempt.InvokeAsync(this, new BackupEventArgs(InteractionContext, BackupRegistry));
+            return;
+        }
         await CompletedBackupProcess.InvokeAsync(this, new BackupEventArgs(InteractionContext, BackupRegistry));
     }
 
@@ -116,7 +114,7 @@ public class BackupMessageService : BackupService
     {
         return startingMessage is not null
             ? (await _messageFetcher.Fetch(InteractionContext.Channel, startingMessage.Id)).ToArray()
-            : (await _messageFetcher.Fetch(InteractionContext.Channel)).ToArray();
+            : (await _messageFetcher.Fetch(InteractionContext.Channel)).ExcludeFirst().ToArray();
     }
 
     private async Task SaveBatch(MessageDataBatchDto messageDataBatchDto)

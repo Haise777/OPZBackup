@@ -31,9 +31,10 @@ public class MessageProcessor : IBackupMessageProcessor
         var users = new List<User>();
         var messages = new List<Message>();
         var fileCount = 0;
-
+        
         foreach (var message in messageBatch)
         {
+            if (message.Content == "") continue;
 #warning Database call spammer //TODO Machinegun database spammer
             if (await _dataContext.Messages.AnyAsync(m => message.Id == m.Id))
             {

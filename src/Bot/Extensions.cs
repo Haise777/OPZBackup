@@ -95,4 +95,7 @@ public static class Extensions
         await cacheManager.UserIds.UpdateRangeAsync(
             await context.Users.Select(u => u.Id).ToArrayAsync());
     }
+
+    public static IEnumerable<TSource> ExcludeFirst<TSource>(this IEnumerable<TSource> source) where TSource : class
+        => source.Where(x => x != source.First());
 }
