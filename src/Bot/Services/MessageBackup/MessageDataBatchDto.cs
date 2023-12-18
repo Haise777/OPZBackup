@@ -1,5 +1,4 @@
-﻿using Discord;
-using OPZBot.DataAccess.Models;
+﻿using OPZBot.DataAccess.Models;
 
 namespace OPZBot.Services.MessageBackup;
 

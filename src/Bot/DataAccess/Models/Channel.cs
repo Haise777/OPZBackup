@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace OPZBot.DataAccess.Models;
 
-namespace OPZBot.DataAccess.Models;
-
-public partial class Channel
+public class Channel
 {
     public ulong Id { get; set; }
 

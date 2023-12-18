@@ -12,7 +12,7 @@ public class ResponseBuilder
     public IMessage? LastMessage { get; set; }
     public IUser? Author { get; set; }
 
-    public Embed Build(int batchNumber, int numberOfMessages, int numberOfFiles,BackupStage stage)
+    public Embed Build(int batchNumber, int numberOfMessages, int numberOfFiles, BackupStage stage)
     {
         var embedBuilder = ConstructEmbed();
         var t = StartTime.HasValue ? (DateTime.Now - StartTime).Value : TimeSpan.Zero;
@@ -125,11 +125,9 @@ public class ResponseBuilder
             .AddField(endTimeEmbed);
 
         if (Author is not null)
-        {
             embedBuilder.WithFooter(new EmbedFooterBuilder()
                 .WithText($"por: {Author.Username}")
                 .WithIconUrl(Author.GetAvatarUrl()));
-        }
 
         return embedBuilder;
     }

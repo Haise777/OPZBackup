@@ -17,10 +17,6 @@ public class BackupMessageService : BackupService
     private readonly IBackupMessageProcessor _messageProcessor;
     private bool _continueBackup = true;
 
-    public int BatchNumber { get; private set; }
-    public int SavedMessagesCount { get; private set; }
-    public int SavedFilesCount { get; private set; }
-
     public BackupMessageService(IMessageFetcher messageFetcher, Mapper mapper, IBackupMessageProcessor messageProcessor,
         MyDbContext dataContext, IdCacheManager cache, ILogger<BackupMessageService> logger)
         : base(mapper, dataContext, cache)
@@ -30,6 +26,10 @@ public class BackupMessageService : BackupService
         _logger = logger;
         _messageProcessor.EndBackupProcess += StopBackup;
     }
+
+    public int BatchNumber { get; private set; }
+    public int SavedMessagesCount { get; private set; }
+    public int SavedFilesCount { get; private set; }
 
     public event AsyncEventHandler<BackupEventArgs>? StartedBackupProcess;
     public event AsyncEventHandler<BackupEventArgs>? FinishedBatch;

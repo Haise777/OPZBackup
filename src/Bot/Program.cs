@@ -49,17 +49,18 @@ public class Program
                             .MinimumLevel.Information()
                             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                             .WriteTo.Console(),
-                    preserveStaticLogger: true
+                    true
                 )
                 .Build();
-            
+
             await RunAsync(host);
         }
         catch (Exception ex)
         {
             Log.Fatal(ex, "Host terminated unexpectedly");
             var sessionDate = $"{SessionTime:dd.MM.yyyy_HH.mm.ss}";
-            await using (var sw = new StreamWriter(Path.Combine(AppContext.BaseDirectory, $"crashreport_{sessionDate}.log")))
+            await using (var sw = new StreamWriter(Path.Combine(AppContext.BaseDirectory,
+                             $"crashreport_{sessionDate}.log")))
             {
                 await sw.WriteLineAsync("Host terminated with error:\n" + ex);
             }

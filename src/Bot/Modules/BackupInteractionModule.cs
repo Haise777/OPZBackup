@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using OPZBot.Logging;
 using OPZBot.Services.MessageBackup;
+
 // ReSharper disable UnusedMember.Global
 
 namespace OPZBot.Modules;
@@ -11,10 +12,10 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
 {
     public const string CONFIRM_USER_DELETE_ID = "DLT_CONF_CONFIRM";
     public const string CANCEL_USER_DELETE_ID = "DLT_CONF_CANCEL";
-
-    private readonly LoggingWrapper _loggingWrapper;
     private readonly BackupMessageService _backupService;
     private readonly ILogger<BackupInteractionModule> _logger;
+
+    private readonly LoggingWrapper _loggingWrapper;
     private readonly ResponseHandler _responseHandler;
 
     public BackupInteractionModule(BackupMessageService backupService, ResponseHandler responseHandler,
@@ -38,7 +39,7 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
     public async Task MakeBackupCommand([Choice("ate-ultimo", 0)] [Choice("total", 1)] int choice)
     {
         await Context.Interaction.DeferAsync();
-        
+
         var tm = await _backupService.TimeFromLastBackupAsync(Context);
         if (tm < TimeSpan.FromDays(1) && Program.RUN_WITH_COOLDOWNS)
         {
@@ -61,13 +62,13 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
     }
 
     //DeleteUserInBackupCommand() Confirmation button interaction handlers
-    [ComponentInteraction(CONFIRM_USER_DELETE_ID, true)] //TODO Can it be false?
+    [ComponentInteraction(CONFIRM_USER_DELETE_ID, true)]
     public async Task DeleteUserConfirm()
     {
         await _backupService.DeleteUserAsync(Context.User.Id);
         _logger.LogInformation(
             "{service}: {user} was deleted from the backup registry", nameof(BackupService), Context.User.Username);
-        
+
         await _responseHandler.SendUserDeletionResultAsync(Context, true);
     }
 

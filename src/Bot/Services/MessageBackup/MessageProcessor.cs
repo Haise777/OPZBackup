@@ -12,8 +12,8 @@ public class MessageProcessor : IBackupMessageProcessor
 {
     private readonly IdCacheManager _cache;
     private readonly MyDbContext _dataContext;
-    private readonly Mapper _mapper;
     private readonly FileBackupService _fileBackup;
+    private readonly Mapper _mapper;
 
     public MessageProcessor(MyDbContext dataContext, IdCacheManager cache, Mapper mapper, FileBackupService fileBackup)
     {
@@ -31,7 +31,7 @@ public class MessageProcessor : IBackupMessageProcessor
         var users = new List<User>();
         var messages = new List<Message>();
         var fileCount = 0;
-        
+
         foreach (var message in messageBatch)
         {
 #warning Database call spammer //TODO Machinegun database spammer

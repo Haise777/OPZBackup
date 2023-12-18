@@ -72,6 +72,18 @@ public class ResponseHandler
         await ping.DeleteAsync();
     }
 
+    public async Task SendInvalidAttemptAsync(SocketInteractionContext context, TimeSpan cooldownTime)
+    {
+        var formattedTime = cooldownTime > TimeSpan.FromHours(1)
+            ? $"{cooldownTime.Hours} horas e {cooldownTime.Minutes} minutos"
+            : $"{cooldownTime.Minutes} minutos e {cooldownTime.Seconds} segundos";
+
+        await context.Interaction.RespondAsync("Tentativa de backup inválida" +
+                                               $"\n**{formattedTime}** restantes");
+        await Task.Delay(7000);
+        await context.Interaction.DeleteOriginalResponseAsync();
+    }
+
     public async Task SendDeleteConfirmationAsync(SocketInteractionContext context)
     {
         var button = new ButtonBuilder()
@@ -93,25 +105,14 @@ public class ResponseHandler
             "\nDeseja prosseguir?", components: components);
     }
 
-    public async Task SendInvalidAttemptAsync(SocketInteractionContext context, TimeSpan cooldownTime)
-    {
-        var formattedTime = cooldownTime > TimeSpan.FromHours(1)
-            ? $"{cooldownTime.Hours} horas e {cooldownTime.Minutes} minutos"
-            : $"{cooldownTime.Minutes} minutos e {cooldownTime.Seconds} segundos";
-
-        await context.Interaction.RespondAsync("Tentativa de backup inválida" +
-                                               $"\n**{formattedTime}** restantes");
-        await Task.Delay(7000);
-        await context.Interaction.DeleteOriginalResponseAsync();
-    }
-
     public async Task SendUserDeletionResultAsync(SocketInteractionContext context, bool wasDeleted)
     {
         if (wasDeleted)
         {
             await context.Interaction.DeferAsync();
             await context.Interaction.DeleteOriginalResponseAsync();
-            await context.Interaction.FollowupAsync($"***{context.User.Username}** foi deletado dos registros de backup*");
+            await context.Interaction.FollowupAsync(
+                $"***{context.User.Username}** foi deletado dos registros de backup*");
             return;
         }
 

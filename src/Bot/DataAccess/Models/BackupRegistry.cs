@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace OPZBot.DataAccess.Models;
 
-namespace OPZBot.DataAccess.Models;
-
-public partial class BackupRegistry
+public class BackupRegistry
 {
     public uint Id { get; set; }
 

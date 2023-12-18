@@ -55,7 +55,7 @@ public static class Extensions
             .AddHttpClient()
             .RemoveAll<IHttpMessageHandlerBuilderFilter>()
         );
-        
+
         return host;
     }
 

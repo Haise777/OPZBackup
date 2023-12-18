@@ -27,11 +27,11 @@ public class FileBackupService
             await BackupMultipleFiles(message);
             return;
         }
-        
+
         var fileUrl = message.Attachments.First().Url;
         var extension = _matchFileExtension.Match(fileUrl).Value;
 
-        byte[] file = await DownloadFile(fileUrl);
+        var file = await DownloadFile(fileUrl);
 
         await File.WriteAllBytesAsync(
             $@"{Program.FileBackupPath}\{message.Id}.{extension}", file);
@@ -58,7 +58,6 @@ public class FileBackupService
     {
         var attempts = 0;
         while (true)
-        {
             try
             {
                 var file = await _client.GetByteArrayAsync(url);
@@ -75,6 +74,5 @@ public class FileBackupService
 
                 throw;
             }
-        }
     }
 }
