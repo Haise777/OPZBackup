@@ -49,8 +49,9 @@ public abstract class BackupService
 
     public async Task DeleteUserAsync(ulong userId)
     {
-        var user = await DataContext.Users.SingleOrDefaultAsync(u => u.Id == userId)
-            ?? throw new InvalidOperationException($"User '{userId}' does not exists in the registry");
+        var user = await DataContext.Users.SingleOrDefaultAsync(u => u.Id == userId);
+        if (user is null) return;
+        
         DataContext.Users.Remove(user);
         await DataContext.SaveChangesAsync();
     }

@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using OPZBot.Modules;
 
 namespace OPZBot.Services.MessageBackup;
 
@@ -76,11 +77,11 @@ public class ResponseHandler
         var button = new ButtonBuilder()
             .WithStyle(ButtonStyle.Danger)
             .WithLabel("Confirmar")
-            .WithCustomId("DELETE_CONF_CONFIRM");
+            .WithCustomId(BackupInteractionModule.CONFIRM_USER_DELETE_ID);
         var buttonCancel = new ButtonBuilder()
             .WithStyle(ButtonStyle.Secondary)
             .WithLabel("Cancelar")
-            .WithCustomId("DELETE_CONF_CANCEL");
+            .WithCustomId(BackupInteractionModule.CANCEL_USER_DELETE_ID);
 
         var components = new ComponentBuilder()
             .WithButton(button)
@@ -88,7 +89,7 @@ public class ResponseHandler
             .Build();
 
         await context.Interaction.RespondAsync(ephemeral: true, text:
-            "Todas as suas mensagens junto de seu usuario serão apagados dos registros de backup" +
+            "**Todas as suas mensagens** junto de seu usuario serão apagados dos registros de backup" +
             "\nDeseja prosseguir?", components: components);
     }
 }

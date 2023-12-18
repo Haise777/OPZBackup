@@ -8,6 +8,9 @@ namespace OPZBot.Modules;
 [Group("backup", "utilizar a função de backup")]
 public class BackupInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
+    public const string CONFIRM_USER_DELETE_ID = "DLT_CONF_CONFIRM";
+    public const string CANCEL_USER_DELETE_ID = "DLT_CONF_CANCEL";
+    
     private readonly LoggingWrapper _loggingWrapper;
     private readonly BackupMessageService _backupService;
     private readonly ILogger<BackupInteractionModule> _logger;
@@ -49,18 +52,23 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
         await _responseHandler.SendDeleteConfirmationAsync(Context);
     }
 
-    [ComponentInteraction("DELETE_CONF_CONFIRM", true)]
+    [ComponentInteraction(CONFIRM_USER_DELETE_ID, true)] //TODO Can it be false?
     public async Task DeleteUserConfirm()
     {
         await _backupService.DeleteUserAsync(Context.User.Id);
-
         _logger.LogInformation(
             "{service}: {user} was deleted from the backup registry", nameof(BackupService), Context.User.Username);
+
+        await Context.Interaction.DeferAsync();
+        await Context.Interaction.DeleteOriginalResponseAsync();
+        await Context.Interaction.FollowupAsync($"***{Context.User.Username}** was deleted from the registry*");
     }
 
-    [ComponentInteraction("DELETE_CONF_CANCEL", true)]
+    [ComponentInteraction(CANCEL_USER_DELETE_ID, true)]
     public async Task DeleteUserCancel()
     {
+        _logger.LogInformation("{service}: {user} aborted deletion", nameof(BackupService), Context.User.Username);
+        await Context.Interaction.DeferAsync();
         await Context.Interaction.DeleteOriginalResponseAsync();
     }
 }
