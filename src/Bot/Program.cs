@@ -16,6 +16,8 @@ public class Program
     public const bool RUN_WITH_COOLDOWNS = false;
     public static DateTime SessionTime { get; } = DateTime.Now;
     public static string FileBackupPath { get; } = @$"{AppContext.BaseDirectory}\Backup\Files";
+    public static ulong MainAdminRoleId { get; private set; }
+    public static ulong BotUserId { get; private set; }
 
     public static Task Main(string[] args)
     {
@@ -40,7 +42,9 @@ public class Program
                 .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile("config.json")
                 .Build();
-
+            BotUserId = ulong.Parse(config["botUserId"]!);
+            MainAdminRoleId = ulong.Parse(config["mainAdminRoleId"]!);
+            
             using var host = Host.CreateDefaultBuilder()
                 .ConfigureBotServices(config)
                 .UseSerilog((_, _, cfg)
@@ -93,7 +97,7 @@ public class Program
         client.Ready += async () =>
         {
 #if DEBUG
-            await sCommands.RegisterCommandsToGuildAsync(ulong.Parse(config["testGuild"]!));
+            await sCommands.RegisterCommandsToGuildAsync(ulong.Parse(config["testGuildId"]!));
 #else
             await sCommands.RegisterCommandsGloballyAsync();
 #endif
