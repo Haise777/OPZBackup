@@ -39,14 +39,13 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
     {
         await Context.Interaction.DeferAsync();
         
-#if !DEBUG
         var tm = await _backupService.TimeFromLastBackupAsync(Context);
-        if (tm < TimeSpan.FromDays(1))
+        if (tm < TimeSpan.FromDays(1) && Program.RUN_WITH_COOLDOWN)
         {
             await _responseHandler.SendInvalidAttemptAsync(Context, tm);
             return;
         }
-#endif
+
         _logger.LogCommandExecution(
             nameof(BackupService), Context.User.Username, Context.Channel.Name, nameof(MakeBackupCommand),
             choice.ToString());

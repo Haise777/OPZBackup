@@ -21,7 +21,8 @@ namespace OPZBot;
 
 public class Program
 {
-    public const string Ver = "v0.1";
+    public const string VER = "v0.1";
+    public const bool RUN_WITH_COOLDOWN = false;
     public static DateTime SessionDate { get; } = DateTime.Now;
     public static string FileBackupPath { get; } = @$"{AppContext.BaseDirectory}\Backup\Files";
 
@@ -38,7 +39,8 @@ public class Program
             .Enrich.FromLogContext()
             .WriteTo.Console()
             .CreateLogger();
-
+        if (!RUN_WITH_COOLDOWN) Log.Warning("Running without cooldown!");
+        
         try
         {
             Log.Information("Starting host");
