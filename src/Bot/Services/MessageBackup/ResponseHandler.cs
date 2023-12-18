@@ -92,4 +92,16 @@ public class ResponseHandler
             "**Todas as suas mensagens** junto de seu usuario serão apagados dos registros de backup" +
             "\nDeseja prosseguir?", components: components);
     }
+
+    public async Task SendInvalidAttemptAsync(SocketInteractionContext context, TimeSpan cooldownTime)
+    {
+        var formattedTime = cooldownTime > TimeSpan.FromHours(1) 
+            ? $"{cooldownTime.Hours} horas e {cooldownTime.Minutes} minutos" 
+            : $"{cooldownTime.Minutes} minutos e {cooldownTime.Seconds} segundos";
+        
+        await context.Interaction.RespondAsync("Tentativa de backup inválida" +
+                                               $"\n**{formattedTime}** restantes");
+        await Task.Delay(7000);
+        await context.Interaction.DeleteOriginalResponseAsync();
+    }
 }

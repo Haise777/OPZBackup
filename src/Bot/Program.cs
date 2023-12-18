@@ -85,15 +85,23 @@ public class Program
         var sCommands = provider.GetRequiredService<InteractionService>();
         var config = provider.GetRequiredService<IConfigurationRoot>();
         var logger = provider.GetRequiredService<ILogger<Program>>();
-        
+
         client.Log += msg
-            => logger.RichLogAsync(LogUtil.ParseLogLevel(msg.Severity), msg.Exception, "{subject} " + msg.Message, "BOT:");
+            => logger.RichLogAsync(LogUtil.ParseLogLevel(msg.Severity), msg.Exception, "{subject} " + msg.Message,
+                "BOT:");
 
         sCommands.Log += msg
-            => logger.RichLogAsync(LogUtil.ParseLogLevel(msg.Severity), msg.Exception, "{subject} " + msg.Message, "COMMAND:");
+            => logger.RichLogAsync(LogUtil.ParseLogLevel(msg.Severity), msg.Exception, "{subject} " + msg.Message,
+                "COMMAND:");
 
-        client.Ready += async ()
-            => await sCommands.RegisterCommandsToGuildAsync(ulong.Parse(config["testGuild"]!));
+        client.Ready += async () =>
+        {
+#if DEBUG
+            await sCommands.RegisterCommandsToGuildAsync(ulong.Parse(config["testGuild"]!));
+#else
+            await sCommands.RegisterCommandsGloballyAsync();
+#endif
+        };
 
         await client.LoginAsync(TokenType.Bot, config["token"]);
         await client.StartAsync();

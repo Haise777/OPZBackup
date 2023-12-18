@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using OPZBot.DataAccess;
 using OPZBot.DataAccess.Caching;
 using OPZBot.DataAccess.Context;
-using OPZBot.DataAccess.Models;
 using OPZBot.Logging;
 using OPZBot.Utilities;
 

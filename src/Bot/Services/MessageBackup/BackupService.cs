@@ -47,11 +47,22 @@ public abstract class BackupService
         await DataContext.SaveChangesAsync();
     }
 
+    public async Task<TimeSpan> TimeFromLastBackupAsync(SocketInteractionContext context)
+    {
+        var lastBackupDate = await DataContext.BackupRegistries
+            .Where(b => b.ChannelId == context.Channel.Id)
+            .OrderByDescending(b => b.Date)
+            .Select(b => b.Date)
+            .FirstAsync();
+
+        return DateTime.Now - lastBackupDate;
+    }
+
     public async Task DeleteUserAsync(ulong userId)
     {
         var user = await DataContext.Users.SingleOrDefaultAsync(u => u.Id == userId);
         if (user is null) return;
-        
+
         DataContext.Users.Remove(user);
         await DataContext.SaveChangesAsync();
     }
