@@ -1,10 +1,10 @@
 ﻿using Discord;
+using OPZBot.Extensions;
 
 namespace OPZBot.Services.MessageBackup;
 
 public class ResponseBuilder
 {
-    //TODO Fix DateTime using wrong timezones
     public DateTime? StartTime { get; set; }
     public DateTime? EndTime { get; set; }
     public IMessage? StartMessage { get; set; }
@@ -12,7 +12,7 @@ public class ResponseBuilder
     public IMessage? LastMessage { get; set; }
     public IUser? Author { get; set; }
 
-    public Embed Build(int batchNumber, int numberOfMessages, int numberOfFiles, BackupStage stage)
+    public Embed Build(int batchNumber, int numberOfMessages, int numberOfFiles, ProgressStage stage)
     {
         var embedBuilder = ConstructEmbed();
         var t = StartTime.HasValue ? (DateTime.Now - StartTime).Value : TimeSpan.Zero;
@@ -20,7 +20,7 @@ public class ResponseBuilder
 
         switch (stage)
         {
-            case BackupStage.Started:
+            case ProgressStage.Started:
                 embedBuilder
                     .WithTitle("Em progresso...")
                     .WithColor(Color.Gold)
@@ -32,7 +32,7 @@ public class ResponseBuilder
                         "Atual: ...");
                 break;
 
-            case BackupStage.InProgress:
+            case ProgressStage.InProgress:
                 if (CurrentMessage is null)
                     throw new InvalidOperationException(
                         "'CurrentMessage' property is not optional when 'InProgress' is set on Builder");
@@ -44,11 +44,11 @@ public class ResponseBuilder
                         $"N de mensagens: {numberOfMessages}\n" +
                         $"N de arquivos: {numberOfFiles}\n" +
                         $"Ciclos realizados: {batchNumber}\n" +
-                        $"Atual: {CurrentMessage.Author} {CurrentMessage.Timestamp.DateTime.ToShortDateString()} {CurrentMessage.Timestamp.DateTime.ToShortTimeString()}" +
+                        $"Atual: {CurrentMessage.Author} {CurrentMessage.TimestampWithFixedTimezone().ToShortDateString()} {CurrentMessage.Timestamp.DateTime.ToShortTimeString()}" +
                         $"\n{CurrentMessage.Content}");
                 break;
 
-            case BackupStage.Finished:
+            case ProgressStage.Finished:
                 embedBuilder
                     .WithTitle("Backup finalizado")
                     .WithColor(Color.Green)
@@ -59,9 +59,9 @@ public class ResponseBuilder
                         $"Ciclos realizados: {batchNumber}");
                 break;
 
-            case BackupStage.Failed:
+            case ProgressStage.Failed:
                 embedBuilder
-                    .WithTitle("Falhou") //TODO rework failed response
+                    .WithTitle("Falhou")
                     .WithColor(Color.Red)
                     .AddField("Estatisticas:",
                         $"Tempo decorrido: {elapsed}\n" +
@@ -77,13 +77,12 @@ public class ResponseBuilder
     private string[] ParseValuesToStrings()
     {
         var parsedValues = new string[4];
-//TODO All this ternary operation really the best way?
         parsedValues[0] = StartMessage is not null
-            ? $"{StartMessage.Author.Username} {StartMessage.Timestamp.DateTime.ToShortDateString()} {StartMessage.Timestamp.DateTime.ToShortTimeString()}" +
+            ? $"{StartMessage.Author.Username} {StartMessage.TimestampWithFixedTimezone().ToShortDateString()} {StartMessage.TimestampWithFixedTimezone().ToShortTimeString()}" +
               $"\n{StartMessage.Content}"
             : "...";
         parsedValues[1] = LastMessage is not null
-            ? $"{LastMessage.Author.Username} {LastMessage.Timestamp.DateTime.ToShortDateString()} {LastMessage.Timestamp.DateTime.ToShortTimeString()}" +
+            ? $"{LastMessage.Author.Username} {LastMessage.TimestampWithFixedTimezone().ToShortDateString()} {LastMessage.TimestampWithFixedTimezone().ToShortTimeString()}" +
               $"\n{LastMessage.Content}"
             : "...";
         parsedValues[2] = StartTime.HasValue
@@ -133,7 +132,7 @@ public class ResponseBuilder
     }
 }
 
-public enum BackupStage //TODO Should this really be here?
+public enum ProgressStage
 {
     Started,
     InProgress,

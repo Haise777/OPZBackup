@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OPZBot.Extensions;
 using OPZBot.Logging;
 using Serilog;
 using Serilog.Events;
@@ -13,10 +14,11 @@ namespace OPZBot;
 
 public class Program
 {
-    public const string APP_VER = "0.1";
-    public static bool RunWithCooldowns { get; private set; }
+    public const string APP_VER = "0.11";
     public static DateTime SessionTime { get; } = DateTime.Now;
     public static string FileBackupPath { get; } = @$"{AppContext.BaseDirectory}Backup\Files";
+    public static bool RunWithCooldowns { get; private set; }
+    public static int TimezoneAdjust { get; private set; }
     public static ulong MainAdminRoleId { get; private set; }
     public static ulong BotUserId { get; private set; }
 
@@ -35,7 +37,7 @@ public class Program
             .Enrich.FromLogContext()
             .WriteTo.Console()
             .CreateLogger();
-
+        
         try
         {
             Log.Information("Starting host");
@@ -44,8 +46,10 @@ public class Program
                 .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile("config.json")
                 .Build();
+            
             MainAdminRoleId = config.GetValue<ulong>("MainAdminRoleId");
             RunWithCooldowns = config.GetValue<bool>("RunWithCooldowns");
+            TimezoneAdjust = config.GetValue<int>("TimezoneAdjust");
             if (!RunWithCooldowns) Log.Warning("Running without cooldowns!");
 
             using var host = Host.CreateDefaultBuilder()
@@ -65,12 +69,7 @@ public class Program
         catch (Exception ex)
         {
             Log.Fatal(ex, "Host terminated unexpectedly");
-            var sessionDate = $"{SessionTime:dd.MM.yyyy_HH.mm.ss}";
-            await using (var sw = new StreamWriter(Path.Combine(AppContext.BaseDirectory,
-                             $"crashreport_{sessionDate}.log")))
-            {
-                await sw.WriteLineAsync("Host terminated with error:\n" + ex);
-            }
+            await LogFileWritter.LogHostCrash(ex);
         }
         finally
         {
@@ -107,8 +106,7 @@ public class Program
             BotUserId = client.CurrentUser.Id;
             client.ValidateConfigIds(config);
         };
-        
-        
+
         await client.LoginAsync(TokenType.Bot, config["Token"]);
         await client.StartAsync();
         await Task.Delay(-1);

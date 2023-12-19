@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using OPZBot.DataAccess.Models;
+using OPZBot.Extensions;
 
 namespace OPZBot.DataAccess;
 
@@ -53,7 +54,7 @@ public class Mapper
             BackupId = backupId,
             AuthorId = message.Author.Id,
             ChannelId = message.Channel.Id,
-            SentDate = message.Timestamp.DateTime
+            SentDate = message.TimestampWithFixedTimezone()
         };
     }
 
@@ -67,7 +68,7 @@ public class Mapper
                 BackupId = backupId,
                 AuthorId = message.Author.Id,
                 ChannelId = message.Channel.Id,
-                SentDate = message.Timestamp.DateTime
+                SentDate = message.TimestampWithFixedTimezone()
             }).ToList();
     }
 }
