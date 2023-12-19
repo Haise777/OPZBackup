@@ -13,9 +13,9 @@ namespace OPZBot.Services.MessageBackup.FileBackup;
 
 public class FileBackupService : IFileBackupService
 {
-    private readonly HttpClient _client;
+    private readonly HttpClient _client; //TODO new http?
     private readonly ILogger<FileBackupService> _logger;
-    private readonly Regex _matchFileExtension = new(@"([^\.]+)(?=\?ex)");
+    private static readonly Regex MatchFileExtension = new(@"([^\.]+)(?=\?ex)");
 
     public FileBackupService(HttpClient client, ILogger<FileBackupService> logger)
     {
@@ -35,7 +35,7 @@ public class FileBackupService : IFileBackupService
         }
 
         var fileUrl = message.Attachments.First().Url;
-        var extension = _matchFileExtension.Match(fileUrl).Value;
+        var extension = MatchFileExtension.Match(fileUrl).Value;
 
         var file = await DownloadFile(fileUrl);
 
@@ -54,7 +54,7 @@ public class FileBackupService : IFileBackupService
         foreach (var attachment in message.Attachments)
         {
             var file = await DownloadFile(attachment.Url);
-            var extension = _matchFileExtension.Match(attachment.Url).Value;
+            var extension = MatchFileExtension.Match(attachment.Url).Value;
 
             await File.WriteAllBytesAsync(@$"{dirPath}\file{++n}.{extension}", file);
         }

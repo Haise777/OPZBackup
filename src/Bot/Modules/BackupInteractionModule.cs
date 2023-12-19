@@ -56,7 +56,7 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
             await Context.Interaction.DeferAsync();
 
             var tm = await _backupService.TimeFromLastBackupAsync(Context);
-            if (tm < TimeSpan.FromDays(1) && Program.RunWithCooldowns)
+            if (tm > TimeSpan.FromHours(0) && Program.RunWithCooldowns)
             {
                 _logger.LogInformation("{service}: Backup is still in cooldown for this channel", nameof(BackupService));
                 await _responseHandler.SendInvalidAttemptAsync(Context, tm);

@@ -34,15 +34,19 @@ public class MessageProcessor : IBackupMessageProcessor
 
     public async Task<MessageDataBatchDto> ProcessMessagesAsync(IEnumerable<IMessage> messageBatch, uint registryId)
     {
+        var existingMessageIds = await _dataContext.Messages
+            .Where(x => x.ChannelId == messageBatch.First().Channel.Id)
+            .Select(m => m.Id)
+            .ToArrayAsync();
+        
         var users = new List<User>();
         var messages = new List<Message>();
         var fileCount = 0;
-
+        
         foreach (var message in messageBatch)
         {
             if (message.Content == "" && message.Author.Id == Program.BotUserId) continue;
-#warning Database call spammer //TODO Machinegun database spammer
-            if (await _dataContext.Messages.AnyAsync(m => message.Id == m.Id))
+            if (existingMessageIds.Any(m => m == message.Id))
             {
                 if (IsUntilLastBackup)
                 {

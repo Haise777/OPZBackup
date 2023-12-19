@@ -37,7 +37,7 @@ public abstract class BackupService : IBackupService
             .Select(b => b.Date)
             .FirstOrDefaultAsync();
 
-        return DateTime.Now - lastBackupDate;
+        return TimeSpan.FromDays(1) - (DateTime.Now - lastBackupDate);
     }
 
     public virtual async Task DeleteUserAsync(ulong userId)
