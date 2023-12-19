@@ -14,6 +14,7 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
     public const string CANCEL_USER_DELETE_ID = "DLT_CONF_CANCEL";
     private readonly IBackupMessageService _backupService;
     private readonly ILogger<BackupInteractionModule> _logger;
+    private static readonly SemaphoreSlim LockPreCommand = new(1, 1);
     private static readonly SemaphoreSlim Lock = new(1,1);
 
     private readonly IResponseHandler _responseHandler;
@@ -41,14 +42,11 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
     [SlashCommand("fazer", "efetuar backup deste canal")]
     public async Task MakeBackupCommand([Choice("ate-ultimo", 0)] [Choice("total", 1)] int choice)
     {
-        if (Lock.CurrentCount < 1)
-        {
-            await Context.Interaction.RespondAsync("*Por limitações do Discord, não é possivel efetuar mais de um processo de backup simutaneamente*");
-            await Task.Delay(7000);
-            await Context.Interaction.DeleteOriginalResponseAsync();
-            return;
-        }
-        await Lock.WaitAsync();
+        _logger.LogCommandExecution(
+            nameof(BackupService), Context.User.Username, Context.Channel.Name, nameof(MakeBackupCommand),
+            choice.ToString());
+
+        if (await CheckIfBackupInProcess()) return;
         try
         {
             await Context.Interaction.DeferAsync();
@@ -56,13 +54,11 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
             var tm = await _backupService.TimeFromLastBackupAsync(Context);
             if (tm < TimeSpan.FromDays(1) && Program.RunWithCooldowns)
             {
+                _logger.LogInformation("{service}: Backup is still in cooldown for this channel", nameof(BackupService));
                 await _responseHandler.SendInvalidAttemptAsync(Context, tm);
                 return;
             }
-
-            _logger.LogCommandExecution(
-                nameof(BackupService), Context.User.Username, Context.Channel.Name, nameof(MakeBackupCommand),
-                choice.ToString());
+            
             await _backupService.StartBackupAsync(Context, choice == 0);
         }
         finally
@@ -70,6 +66,26 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
             Lock.Release();
         }
         
+    }
+
+    private async Task<bool> CheckIfBackupInProcess()
+    {
+        await LockPreCommand.WaitAsync();
+        try
+        {
+            if (Lock.CurrentCount < 1)
+            {
+                _ = _responseHandler.SendAlreadyInProgressAsync(Context);
+                return true;
+            }
+
+            await Lock.WaitAsync();
+            return false;
+        }
+        finally
+        {
+            LockPreCommand.Release();
+        }
     }
 
     [SlashCommand("deletar-proprio", "DELETAR todas as informações presentes no backup relacionadas ao usuario PERMANENTEMENTE")]

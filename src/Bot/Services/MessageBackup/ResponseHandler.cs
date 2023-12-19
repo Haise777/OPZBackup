@@ -75,7 +75,7 @@ public class ResponseHandler : IResponseHandler
     public async Task SendInvalidAttemptAsync(SocketInteractionContext context, TimeSpan cooldownTime)
     {
         var formattedTime = cooldownTime > TimeSpan.FromHours(1)
-            ? $"{cooldownTime.Hours} horas e {cooldownTime.Minutes} minutos"
+            ? $"{24 - cooldownTime.Hours} horas e {cooldownTime.Minutes} minutos"
             : $"{cooldownTime.Minutes} minutos e {cooldownTime.Seconds} segundos";
 
         await context.Interaction.FollowupAsync("Tentativa de backup inválida" +
@@ -130,5 +130,14 @@ public class ResponseHandler : IResponseHandler
 
         await Task.Delay(7000);
         await args.InteractionContext.Interaction.DeleteOriginalResponseAsync();
+    }
+
+    public async Task SendAlreadyInProgressAsync(SocketInteractionContext context)
+    {
+        await context.Interaction.RespondAsync(
+            "*Por limitações do Discord, não é possivel efetuar mais de um processo de backup simutaneamente*");
+        
+        await Task.Delay(7000);
+        await context.Interaction.DeleteOriginalResponseAsync();
     }
 }

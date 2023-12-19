@@ -12,4 +12,5 @@ public interface IResponseHandler
     Task SendDeleteConfirmationAsync(SocketInteractionContext context);
     Task SendUserDeletionResultAsync(SocketInteractionContext context, bool wasDeleted);
     Task SendEmptyBackupAsync(object? sender, BackupEventArgs args);
+    Task SendAlreadyInProgressAsync(SocketInteractionContext context);
 }
