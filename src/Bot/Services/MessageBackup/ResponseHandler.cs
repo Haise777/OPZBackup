@@ -1,11 +1,10 @@
 ﻿using Discord;
 using Discord.Interactions;
-using Discord.Rest;
 using OPZBot.Modules;
 
 namespace OPZBot.Services.MessageBackup;
 
-public class ResponseHandler
+public class ResponseHandler : IResponseHandler
 {
     private readonly ResponseBuilder _responseBuilder;
     private ulong _interactionMessageId;
@@ -24,7 +23,7 @@ public class ResponseHandler
         _interactionMessageId = (await e.InteractionContext.Interaction.FollowupAsync(
             embed: _responseBuilder.Build(
                 backupService.BatchNumber, backupService.SavedMessagesCount, backupService.SavedFilesCount,
-                BackupStage.Started))).Id;
+                ProgressStage.Started))).Id;
     }
 
     public async Task SendBatchFinishedAsync(object? sender, BackupEventArgs e)
@@ -34,11 +33,11 @@ public class ResponseHandler
             await e.InteractionContext.Channel.GetMessageAsync(e.MessageBatch.Messages.First().Id);
         var currentMessage = await e.InteractionContext.Channel.GetMessageAsync(e.MessageBatch.Messages.Last().Id);
         _responseBuilder.CurrentMessage = currentMessage;
-        
+
         await e.InteractionContext.Channel.ModifyMessageAsync(_interactionMessageId, m =>
             m.Embed = _responseBuilder.Build(
                 backupService.BatchNumber, backupService.SavedMessagesCount, backupService.SavedFilesCount,
-                BackupStage.InProgress));
+                ProgressStage.InProgress));
         _lastMessage = currentMessage;
     }
 
@@ -51,7 +50,7 @@ public class ResponseHandler
         await e.InteractionContext.Channel.ModifyMessageAsync(_interactionMessageId, m =>
             m.Embed = _responseBuilder.Build(
                 backupService.BatchNumber, backupService.SavedMessagesCount, backupService.SavedFilesCount,
-                BackupStage.Finished));
+                ProgressStage.Finished));
         await GhostPing(e.InteractionContext);
     }
 
@@ -62,7 +61,7 @@ public class ResponseHandler
         await e.InteractionContext.Channel.ModifyMessageAsync(_interactionMessageId, m =>
             m.Embed = _responseBuilder.Build(
                 backupService.BatchNumber, backupService.SavedMessagesCount, backupService.SavedFilesCount,
-                BackupStage.Failed));
+                ProgressStage.Failed));
         await GhostPing(e.InteractionContext);
     }
 
@@ -80,7 +79,7 @@ public class ResponseHandler
             : $"{cooldownTime.Minutes} minutos e {cooldownTime.Seconds} segundos";
 
         await context.Interaction.FollowupAsync("Tentativa de backup inválida" +
-                                               $"\n**{formattedTime}** restantes");
+                                                $"\n**{formattedTime}** restantes");
         await Task.Delay(7000);
         await context.Interaction.DeleteOriginalResponseAsync();
     }
@@ -102,7 +101,7 @@ public class ResponseHandler
             .Build();
 
         await context.Interaction.RespondAsync(ephemeral: true, text:
-            "**Todas as suas mensagens** junto de seu usuario serão apagados dos registros de backup" +
+            "**Todas as suas mensagens** junto de seu usuario serão apagados dos registros de backup permanentemente" +
             "\nDeseja prosseguir?", components: components);
     }
 
@@ -128,7 +127,7 @@ public class ResponseHandler
             m.Content = "*Tentativa de backup inválida: Não havia mensagens válidas para serem salvas*";
             m.Embed = null;
         });
-        
+
         await Task.Delay(7000);
         await args.InteractionContext.Interaction.DeleteOriginalResponseAsync();
     }

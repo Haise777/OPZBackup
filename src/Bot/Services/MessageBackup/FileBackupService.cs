@@ -5,7 +5,7 @@ using OPZBot.Logging;
 
 namespace OPZBot.Services.MessageBackup.FileBackup;
 
-public class FileBackupService
+public class FileBackupService : IFileBackupService
 {
     private readonly HttpClient _client;
     private readonly ILogger<FileBackupService> _logger;

@@ -7,4 +7,5 @@ internal class BotConfig
     public ulong? MainAdminRoleId { get; set; }
     public bool RunWithCooldowns { get; set; }
     public ulong? TestGuildId { get; set; }
+    public int? TimezoneAdjust { get; set; }
 }

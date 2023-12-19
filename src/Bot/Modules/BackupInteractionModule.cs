@@ -12,13 +12,14 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
 {
     public const string CONFIRM_USER_DELETE_ID = "DLT_CONF_CONFIRM";
     public const string CANCEL_USER_DELETE_ID = "DLT_CONF_CANCEL";
-    private readonly BackupMessageService _backupService;
+    private readonly IBackupMessageService _backupService;
     private readonly ILogger<BackupInteractionModule> _logger;
+    private static readonly SemaphoreSlim Lock = new(1,1);
 
+    private readonly IResponseHandler _responseHandler;
     private readonly LoggingWrapper _loggingWrapper;
-    private readonly ResponseHandler _responseHandler;
 
-    public BackupInteractionModule(BackupMessageService backupService, ResponseHandler responseHandler,
+    public BackupInteractionModule(IBackupMessageService backupService, IResponseHandler responseHandler,
         ILogger<BackupInteractionModule> logger, LoggingWrapper loggingWrapper)
     {
         _responseHandler = responseHandler;
@@ -40,22 +41,38 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
     [SlashCommand("fazer", "efetuar backup deste canal")]
     public async Task MakeBackupCommand([Choice("ate-ultimo", 0)] [Choice("total", 1)] int choice)
     {
-        await Context.Interaction.DeferAsync();
-
-        var tm = await _backupService.TimeFromLastBackupAsync(Context);
-        if (tm < TimeSpan.FromDays(1) && Program.RunWithCooldowns)
+        if (Lock.CurrentCount < 1)
         {
-            await _responseHandler.SendInvalidAttemptAsync(Context, tm);
+            await Context.Interaction.RespondAsync("*Por limitações do Discord, não é possivel efetuar mais de um processo de backup simutaneamente*");
+            await Task.Delay(7000);
+            await Context.Interaction.DeleteOriginalResponseAsync();
             return;
         }
+        await Lock.WaitAsync();
+        try
+        {
+            await Context.Interaction.DeferAsync();
 
-        _logger.LogCommandExecution(
-            nameof(BackupService), Context.User.Username, Context.Channel.Name, nameof(MakeBackupCommand),
-            choice.ToString());
-        await _backupService.StartBackupAsync(Context, choice == 0);
+            var tm = await _backupService.TimeFromLastBackupAsync(Context);
+            if (tm < TimeSpan.FromDays(1) && Program.RunWithCooldowns)
+            {
+                await _responseHandler.SendInvalidAttemptAsync(Context, tm);
+                return;
+            }
+
+            _logger.LogCommandExecution(
+                nameof(BackupService), Context.User.Username, Context.Channel.Name, nameof(MakeBackupCommand),
+                choice.ToString());
+            await _backupService.StartBackupAsync(Context, choice == 0);
+        }
+        finally
+        {
+            Lock.Release();
+        }
+        
     }
 
-    [SlashCommand("deletar-proprio", "deletar todas as informações presentes no backup relacionadas ao usuario")]
+    [SlashCommand("deletar-proprio", "DELETAR todas as informações presentes no backup relacionadas ao usuario PERMANENTEMENTE")]
     public async Task DeleteUserInBackupCommand()
     {
         _logger.LogCommandExecution(

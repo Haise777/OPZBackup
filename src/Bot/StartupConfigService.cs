@@ -4,24 +4,25 @@ using Microsoft.Extensions.Configuration;
 
 namespace OPZBot;
 
-internal class StartupConfig
+internal class StartupConfigService
 {
     private readonly BotConfig _botConfig;
 
-    public StartupConfig()
+    public StartupConfigService()
     {
         var startupConfig = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("config.json")
             .Build();
 
-        _botConfig = new()
+        _botConfig = new BotConfig
         {
             Token = startupConfig.GetValue<string?>("Token", null),
             ConnectionString = startupConfig.GetValue<string?>("ConnectionString", null),
             MainAdminRoleId = startupConfig.GetValue<ulong?>("MainAdminRoleId", null),
-            RunWithCooldowns = startupConfig.GetValue<bool>("RunWithCooldowns", true),
-            TestGuildId = startupConfig.GetValue<ulong?>("TestGuildId", null)
+            RunWithCooldowns = startupConfig.GetValue("RunWithCooldowns", true),
+            TestGuildId = startupConfig.GetValue<ulong?>("TestGuildId", null),
+            TimezoneAdjust = startupConfig.GetValue<int?>("TimezoneAdjust", null)
         };
     }
 
@@ -56,7 +57,7 @@ internal class StartupConfig
                 case 'X':
                 case 'x':
                     Console.WriteLine("\nclosing application with exit code 0");
-                    Environment.Exit(0); //TODO check if this is the best way to do it
+                    Environment.Exit(0);
                     break;
                 default:
                     Console.WriteLine(" is not a valid input");
@@ -75,20 +76,21 @@ internal class StartupConfig
                 $"OPZBot - ver{Program.APP_VER} \n" +
                 $"Set bot startup values \n" +
                 $"\n" +
-                $"[T] Bot token > {_botConfig.Token}\n" +
+                $"[B] Bot token > {_botConfig.Token}\n" +
                 $"[A] Main admin role id > {_botConfig.MainAdminRoleId}\n" +
                 $"[S] Database connection string > {_botConfig.ConnectionString}\n" +
+                $"[T] Timezone adjust value > {_botConfig.TimezoneAdjust}\n" +
                 $"[C] General cooldowns > {_botConfig.RunWithCooldowns}\n" +
                 $"[X] Return\n");
 
 #if DEBUG
             Console.WriteLine($"[D] DEBUG: Test guild id > {_botConfig.TestGuildId}\n");
 #endif
-            string? input = "";
+            var input = "";
             switch (Console.ReadKey().KeyChar)
             {
-                case 'T':
-                case 't':
+                case 'B':
+                case 'b':
                     input = WriteInput("Bot token");
                     if (ConfirmChanges(_botConfig.Token, input))
                         _botConfig.Token = input;
@@ -105,6 +107,12 @@ internal class StartupConfig
                     input = WriteInput("Database connection string");
                     if (ConfirmChanges(_botConfig.ConnectionString, input))
                         _botConfig.ConnectionString = input;
+                    break;
+                case 'T':
+                case 't':
+                    input = WriteInput("Timezone adjust value");
+                    _botConfig.TimezoneAdjust = int.TryParse(input, out var timezoneAdjust) ? timezoneAdjust : null;
+
                     break;
                 case 'C':
                 case 'c':
@@ -137,14 +145,6 @@ internal class StartupConfig
         return Console.ReadLine();
     }
 
-    private void WriteJsonConfig()
-    {
-        var serializerOptions = new JsonSerializerOptions()
-            { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
-        var jsonString = JsonSerializer.Serialize(_botConfig, serializerOptions);
-        File.WriteAllText($"{AppContext.BaseDirectory}config.json", jsonString);
-    }
-
     private bool ConfirmChanges(string? oldValues, string? newValues)
     {
         while (true)
@@ -171,5 +171,13 @@ internal class StartupConfig
                     continue;
             }
         }
+    }
+
+    private void WriteJsonConfig()
+    {
+        var serializerOptions = new JsonSerializerOptions
+            { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
+        var jsonString = JsonSerializer.Serialize(_botConfig, serializerOptions);
+        File.WriteAllText($"{AppContext.BaseDirectory}config.json", jsonString);
     }
 }

@@ -1,12 +1,11 @@
 ﻿namespace OPZBot.DataAccess.Caching;
 
-//TODO Measure performance hit by the semaphore's locks
 public class DataCache<T> : IDataCache<T>, IDisposable
 {
     private readonly List<T> _cachedData = new();
     private readonly SemaphoreSlim _lock = new(1, 1);
 
-    public async Task<DataCache<T>> AddAsync(T item)
+    public async Task<IDataCache<T>> AddAsync(T item)
     {
         await _lock.WaitAsync();
         try
@@ -21,7 +20,7 @@ public class DataCache<T> : IDataCache<T>, IDisposable
         return this;
     }
 
-    public async Task<DataCache<T>> AddRangeAsync(IEnumerable<T> items)
+    public async Task<IDataCache<T>> AddRangeAsync(IEnumerable<T> items)
     {
         await _lock.WaitAsync();
         try
@@ -36,7 +35,7 @@ public class DataCache<T> : IDataCache<T>, IDisposable
         return this;
     }
 
-    public async Task<DataCache<T>> UpdateRangeAsync(IEnumerable<T> items)
+    public async Task<IDataCache<T>> UpdateRangeAsync(IEnumerable<T> items)
     {
         await _lock.WaitAsync();
         try

@@ -5,12 +5,13 @@ using Microsoft.Extensions.Logging;
 using OPZBot.DataAccess;
 using OPZBot.DataAccess.Caching;
 using OPZBot.DataAccess.Context;
+using OPZBot.Extensions;
 using OPZBot.Logging;
 using OPZBot.Utilities;
 
 namespace OPZBot.Services.MessageBackup;
 
-public class BackupMessageService : BackupService
+public class BackupMessageService : BackupService, IBackupMessageService
 {
     private readonly ILogger<BackupMessageService> _logger;
     private readonly IMessageFetcher _messageFetcher;
@@ -97,7 +98,10 @@ public class BackupMessageService : BackupService
                         attemptsRemaining--);
                     await Task.Delay(5000);
                 }
-                else throw;
+                else
+                {
+                    throw;
+                }
             }
 
         if (!await DataContext.Messages.AnyAsync(x => x.BackupId == BackupRegistry.Id))
@@ -107,6 +111,7 @@ public class BackupMessageService : BackupService
             await EmptyBackupAttempt.InvokeAsync(this, new BackupEventArgs(InteractionContext, BackupRegistry));
             return;
         }
+
         await CompletedBackupProcess.InvokeAsync(this, new BackupEventArgs(InteractionContext, BackupRegistry));
     }
 

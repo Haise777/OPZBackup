@@ -4,10 +4,11 @@ using OPZBot.DataAccess;
 using OPZBot.DataAccess.Caching;
 using OPZBot.DataAccess.Context;
 using OPZBot.DataAccess.Models;
+using OPZBot.Extensions;
 
 namespace OPZBot.Services.MessageBackup;
 
-public abstract class BackupService
+public abstract class BackupService : IBackupService
 {
     protected readonly IdCacheManager Cache;
     protected readonly MyDbContext DataContext;
