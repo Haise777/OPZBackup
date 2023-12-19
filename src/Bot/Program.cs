@@ -14,12 +14,12 @@ namespace OPZBot;
 
 public class Program
 {
-    public const string APP_VER = "0.11";
+    public const string APP_VER = "0.12";
     public static DateTime SessionTime { get; } = DateTime.Now;
     public static string FileBackupPath { get; } = @$"{AppContext.BaseDirectory}Backup\Files";
     public static bool RunWithCooldowns { get; private set; }
     public static int TimezoneAdjust { get; private set; }
-    public static ulong MainAdminRoleId { get; private set; }
+    public static ulong? MainAdminRoleId { get; private set; }
     public static ulong BotUserId { get; private set; }
 
     public static Task Main(string[] args)
@@ -29,7 +29,7 @@ public class Program
 
     private async Task MainAsync(string[] args)
     {
-        new StartupConfigService().Initialize();
+        new StartupConfigMenu().Initialize();
 
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Information()
@@ -44,10 +44,10 @@ public class Program
 
             var config = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("config.json")
+                .AddJsonFile(BotConfigService.CONFIG_FILE_NAME)
                 .Build();
             
-            MainAdminRoleId = config.GetValue<ulong>("MainAdminRoleId");
+            MainAdminRoleId = config.GetValue<ulong?>("MainAdminRoleId");
             RunWithCooldowns = config.GetValue<bool>("RunWithCooldowns");
             TimezoneAdjust = config.GetValue<int>("TimezoneAdjust");
             if (!RunWithCooldowns) Log.Warning("Running without cooldowns!");
@@ -74,6 +74,7 @@ public class Program
         finally
         {
             await Log.CloseAndFlushAsync();
+            Environment.ExitCode = 1;
         }
     }
 

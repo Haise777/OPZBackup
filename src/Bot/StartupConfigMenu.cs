@@ -1,35 +1,11 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using Microsoft.Extensions.Configuration;
+﻿namespace OPZBot;
 
-namespace OPZBot;
-
-internal class StartupConfigService
+internal class StartupConfigMenu : BotConfigService
 {
-    private readonly BotConfig _botConfig;
-
-    public StartupConfigService()
-    {
-        var startupConfig = new ConfigurationBuilder()
-            .SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile("config.json")
-            .Build();
-
-        _botConfig = new BotConfig
-        {
-            Token = startupConfig.GetValue<string?>("Token", null),
-            ConnectionString = startupConfig.GetValue<string?>("ConnectionString", null),
-            MainAdminRoleId = startupConfig.GetValue<ulong?>("MainAdminRoleId", null),
-            RunWithCooldowns = startupConfig.GetValue("RunWithCooldowns", true),
-            TestGuildId = startupConfig.GetValue<ulong?>("TestGuildId", null),
-            TimezoneAdjust = startupConfig.GetValue<int?>("TimezoneAdjust", null)
-        };
-    }
-
     public void Initialize()
     {
         Menu();
-        WriteJsonConfig();
+        WriteConfigFile(Config);
         Console.Clear();
     }
 
@@ -56,7 +32,7 @@ internal class StartupConfigService
                     break;
                 case 'X':
                 case 'x':
-                    Console.WriteLine("\nclosing application with exit code 0");
+                    WriteConfigFile(Config);
                     Environment.Exit(0);
                     break;
                 default:
@@ -76,15 +52,15 @@ internal class StartupConfigService
                 $"OPZBot - ver{Program.APP_VER} \n" +
                 $"Set bot startup values \n" +
                 $"\n" +
-                $"[B] Bot token > {_botConfig.Token}\n" +
-                $"[A] Main admin role id > {_botConfig.MainAdminRoleId}\n" +
-                $"[S] Database connection string > {_botConfig.ConnectionString}\n" +
-                $"[T] Timezone adjust value > {_botConfig.TimezoneAdjust}\n" +
-                $"[C] General cooldowns > {_botConfig.RunWithCooldowns}\n" +
+                $"[B] Bot token > {Config.Token?[^7..]?.Insert(0, "xxxxxx...")}\n" +
+                $"[A] Main admin role id > {Config.MainAdminRoleId}\n" +
+                $"[S] Database connection string > {Config.ConnectionString}\n" +
+                $"[T] Timezone adjust value > {Config.TimezoneAdjust}\n" +
+                $"[C] General cooldowns > {Config.RunWithCooldowns}\n" +
                 $"[X] Return\n");
 
 #if DEBUG
-            Console.WriteLine($"[D] DEBUG: Test guild id > {_botConfig.TestGuildId}\n");
+            Console.WriteLine($"[D] DEBUG: Test guild id > {Config.TestGuildId}\n");
 #endif
             var input = "";
             switch (Console.ReadKey().KeyChar)
@@ -92,31 +68,31 @@ internal class StartupConfigService
                 case 'B':
                 case 'b':
                     input = WriteInput("Bot token");
-                    if (ConfirmChanges(_botConfig.Token, input))
-                        _botConfig.Token = input;
+                    if (ConfirmChanges(Config.Token, input, true))
+                        Config.Token = input;
                     break;
                 case 'A':
                 case 'a':
                     input = WriteInput("Main admin role id");
-                    if (ConfirmChanges(_botConfig.MainAdminRoleId.ToString(), input))
-                        _botConfig.MainAdminRoleId =
+                    if (ConfirmChanges(Config.MainAdminRoleId.ToString(), input))
+                        Config.MainAdminRoleId =
                             ulong.TryParse(input, out var adminRoleId) ? adminRoleId : null;
                     break;
                 case 'S':
                 case 's':
                     input = WriteInput("Database connection string");
-                    if (ConfirmChanges(_botConfig.ConnectionString, input))
-                        _botConfig.ConnectionString = input;
+                    if (ConfirmChanges(Config.ConnectionString, input))
+                        Config.ConnectionString = input;
                     break;
                 case 'T':
                 case 't':
                     input = WriteInput("Timezone adjust value");
-                    _botConfig.TimezoneAdjust = int.TryParse(input, out var timezoneAdjust) ? timezoneAdjust : null;
+                    Config.TimezoneAdjust = int.TryParse(input, out var timezoneAdjust) ? timezoneAdjust : null;
 
                     break;
                 case 'C':
                 case 'c':
-                    _botConfig.RunWithCooldowns = !_botConfig.RunWithCooldowns;
+                    Config.RunWithCooldowns = !Config.RunWithCooldowns;
 
                     break;
                 case 'X':
@@ -126,8 +102,8 @@ internal class StartupConfigService
                 case 'D':
                 case 'd':
                     input = WriteInput("DEBUG: Test guild id");
-                    if (ConfirmChanges(_botConfig.TestGuildId.ToString(), input))
-                        _botConfig.TestGuildId = ulong.TryParse(input, out var testGuildId) ? testGuildId : null;
+                    if (ConfirmChanges(Config.TestGuildId.ToString(), input))
+                        Config.TestGuildId = ulong.TryParse(input, out var testGuildId) ? testGuildId : null;
                     break;
 #endif
                 default:
@@ -145,14 +121,14 @@ internal class StartupConfigService
         return Console.ReadLine();
     }
 
-    private bool ConfirmChanges(string? oldValues, string? newValues)
+    private bool ConfirmChanges(string? oldValues, string? newValues, bool shouldCensor = false)
     {
         while (true)
         {
             Console.Clear();
             Console.WriteLine(
                 "Confirm changes\n" +
-                $"old: {oldValues}\n" +
+                $"old: {(shouldCensor ? oldValues?[^7..]?.Insert(0, "xxxxxx...") : oldValues)}\n" +
                 $"new: {newValues}");
 
             Console.WriteLine("\n [y] / [n]");
@@ -171,13 +147,5 @@ internal class StartupConfigService
                     continue;
             }
         }
-    }
-
-    private void WriteJsonConfig()
-    {
-        var serializerOptions = new JsonSerializerOptions
-            { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
-        var jsonString = JsonSerializer.Serialize(_botConfig, serializerOptions);
-        File.WriteAllText($"{AppContext.BaseDirectory}config.json", jsonString);
     }
 }

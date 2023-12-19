@@ -10,12 +10,10 @@ public static class SocketClientExtension
     {
         try
         {
-            var adminRole = client.Guilds.First().GetRole(config.GetValue<ulong>("MainAdminRoleId"))
-                            ?? throw new ApplicationException("'MainAdminRoleId' invalid config value");
-#if DEBUG
-            var testGuild = client.Guilds.First().GetRole(config.GetValue<ulong>("TestGuildId"))
-                            ?? throw new ApplicationException("'TestGuildId' invalid config value");
-#endif
+            _ = config.GetValue<ulong?>("MainAdminRoleId") is not null
+                ? client.Guilds.First().GetRole(config.GetValue<ulong>("MainAdminRoleId"))
+                  ?? throw new ApplicationException("'MainAdminRoleId' invalid config value")
+                : null;
         }
         catch (ApplicationException ex)
         {
