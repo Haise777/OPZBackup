@@ -4,11 +4,11 @@ using Microsoft.Extensions.Configuration;
 
 namespace OPZBot;
 
-internal class StartupConfig
+internal class StartupConfigService
 {
     private readonly BotConfig _botConfig;
 
-    public StartupConfig()
+    public StartupConfigService()
     {
         var startupConfig = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)

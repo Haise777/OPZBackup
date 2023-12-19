@@ -27,7 +27,7 @@ public class Program
 
     private async Task MainAsync(string[] args)
     {
-        new StartupConfig().Initialize();
+        new StartupConfigService().Initialize();
 
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Information()
