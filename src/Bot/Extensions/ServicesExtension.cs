@@ -8,19 +8,18 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Http;
+using OPZBot;
 using OPZBot.DataAccess;
 using OPZBot.DataAccess.Caching;
 using OPZBot.DataAccess.Context;
 using OPZBot.Services;
 using OPZBot.Services.MessageBackup;
 using OPZBot.Services.MessageBackup.FileBackup;
-using OPZBot.Utilities;
-using Serilog;
 using RunMode = Discord.Interactions.RunMode;
 
-namespace OPZBot;
+namespace OPZBot.Extensions;
 
-public static class Extensions
+public static class ServicesExtension
 {
     public static IHostBuilder ConfigureBotServices(this IHostBuilder host, IConfigurationRoot config)
     {
@@ -41,17 +40,17 @@ public static class Extensions
                     }
                 )
             )
+            .AddSingleton(config)
             .AddSingleton<InteractionHandler>()
             .AddSingleton<CommandService>()
-            .AddSingleton(config)
             .AddSingleton<Mapper>()
             .AddSingleton<LoggingWrapper>()
             .AddScoped<IMessageFetcher, MessageFetcher>()
             .AddScoped<IBackupMessageProcessor, MessageProcessor>()
-            .AddScoped<BackupMessageService>()
-            .AddScoped<ResponseHandler>()
+            .AddScoped<IBackupMessageService, BackupMessageService>()
+            .AddScoped<IResponseHandler, ResponseHandler>()
+            .AddScoped<IFileBackupService, FileBackupService>()
             .AddScoped<ResponseBuilder>()
-            .AddScoped<FileBackupService>()
             .AddHttpClient()
             .RemoveAll<IHttpMessageHandlerBuilderFilter>()
         );
@@ -76,44 +75,5 @@ public static class Extensions
                     .Select(b => b.Id)
                     .ToList()).Result
             ));
-    }
-
-    public static Task InvokeAsync<TArgs>(this AsyncEventHandler<TArgs>? eventAsync, object? sender, TArgs e)
-    {
-        return eventAsync is null
-            ? Task.CompletedTask
-            : Task.WhenAll(eventAsync.GetInvocationList()
-                .Cast<AsyncEventHandler<TArgs>>()
-                .Select(f => f(sender, e)));
-    }
-
-    public static async Task SynchronizeCacheAsync(this IdCacheManager cacheManager, MyDbContext context)
-    {
-        Log.Information("{service} Cache has been synchronized", "Cache:");
-        await cacheManager.ChannelIds.UpdateRangeAsync(
-            await context.Channels.Select(c => c.Id).ToArrayAsync());
-        await cacheManager.UserIds.UpdateRangeAsync(
-            await context.Users.Select(u => u.Id).ToArrayAsync());
-    }
-
-    public static IEnumerable<TSource> ExcludeFirst<TSource>(this IEnumerable<TSource> source) where TSource : class
-        => source.Where(x => x != source.First());
-
-    public static void ValidateConfigIds(this DiscordSocketClient client, IConfigurationRoot config)
-    {
-        try
-        {
-            var adminRole = client.Guilds.First().GetRole(config.GetValue<ulong>("MainAdminRoleId"))
-                            ?? throw new ApplicationException("'MainAdminRoleId' invalid config value");
-#if DEBUG
-            var testGuild = client.Guilds.First().GetRole(config.GetValue<ulong>("TestGuildId"))
-                            ?? throw new ApplicationException("'TestGuildId' invalid config value");
-#endif
-        }
-        catch (ApplicationException ex)
-        {
-            Log.Fatal(ex, "Invalid config value");
-            Environment.Exit(-1);
-        }
     }
 }
