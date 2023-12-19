@@ -5,6 +5,7 @@
 // LICENSE file in the root directory of this source tree.
 
 namespace OPZBot;
+
 internal class StartupConfigMenu : BotConfigService
 {
     public void Initialize()

@@ -13,9 +13,9 @@ namespace OPZBot.Services.MessageBackup.FileBackup;
 
 public class FileBackupService : IFileBackupService
 {
-    private readonly HttpClient _client; //TODO new http?
-    private readonly ILogger<FileBackupService> _logger;
     private static readonly Regex MatchFileExtension = new(@"([^\.]+)(?=\?ex)");
+    private readonly ILogger<FileBackupService> _logger;
+    private readonly HttpClient _client;
 
     public FileBackupService(HttpClient client, ILogger<FileBackupService> logger)
     {

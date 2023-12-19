@@ -16,9 +16,9 @@ namespace OPZBot.Services.MessageBackup;
 
 public class MessageProcessor : IBackupMessageProcessor
 {
-    private readonly IFileBackupService _fileBackup;
     private readonly IdCacheManager _cache;
     private readonly MyDbContext _dataContext;
+    private readonly IFileBackupService _fileBackup;
     private readonly Mapper _mapper;
 
     public MessageProcessor(MyDbContext dataContext, IdCacheManager cache, Mapper mapper, IFileBackupService fileBackup)
@@ -38,11 +38,11 @@ public class MessageProcessor : IBackupMessageProcessor
             .Where(x => x.ChannelId == messageBatch.First().Channel.Id)
             .Select(m => m.Id)
             .ToArrayAsync();
-        
+
         var users = new List<User>();
         var messages = new List<Message>();
         var fileCount = 0;
-        
+
         foreach (var message in messageBatch)
         {
             if (message.Content == "" && message.Author.Id == Program.BotUserId) continue;

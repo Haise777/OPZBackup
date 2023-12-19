@@ -43,7 +43,7 @@ public class Program
             .Enrich.FromLogContext()
             .WriteTo.Console()
             .CreateLogger();
-        
+
         try
         {
             Log.Information("Starting host");
@@ -52,7 +52,7 @@ public class Program
                 .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile(BotConfigService.CONFIG_FILE_NAME)
                 .Build();
-            
+
             MainAdminRoleId = config.GetValue<ulong?>("MainAdminRoleId");
             RunWithCooldowns = config.GetValue<bool>("RunWithCooldowns");
             TimezoneAdjust = config.GetValue<int>("TimezoneAdjust");

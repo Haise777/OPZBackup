@@ -152,6 +152,5 @@ public class BackupMessageService : BackupService, IBackupMessageService
         return true;
     }
 
-    private void StopBackup() 
-        => _continueBackup = false;
+    private void StopBackup() => _continueBackup = false;
 }

@@ -70,7 +70,7 @@ public class ResponseHandler : IResponseHandler
                 ProgressStage.Failed));
         await GhostPing(e.InteractionContext);
     }
-    
+
     public async Task SendInvalidAttemptAsync(SocketInteractionContext context, TimeSpan cooldownTime)
     {
         var formattedTime = cooldownTime > TimeSpan.FromHours(0.99)
@@ -135,11 +135,11 @@ public class ResponseHandler : IResponseHandler
     {
         await context.Interaction.RespondAsync(
             "*Por limitações do Discord, não é possivel efetuar mais de um processo de backup simutaneamente*");
-        
+
         await Task.Delay(7000);
         await context.Interaction.DeleteOriginalResponseAsync();
     }
-    
+
     private async Task GhostPing(SocketInteractionContext context)
     {
         var ping = await context.Channel.SendMessageAsync($"<@{context.User.Id}>");
