@@ -34,15 +34,8 @@ public static class LogUtil
     public static async Task RichLogErrorAsync<T>(this ILogger<T> logger, Exception ex, string? message,
         params object?[] args)
     {
-        if (!Directory.Exists(Path.Combine(AppContext.BaseDirectory, "errorlogs")))
-            Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "errorlogs"));
-
-        var sessionDate = $"{Program.SessionTime:dd.MM.yyyy_HH.mm.ss}";
-        await using var fileWriter = new StreamWriter(
-            Path.Combine(AppContext.BaseDirectory, $"errorlogs\\log_{sessionDate}.log"), true);
-
         logger.LogError(ex, message, args);
-        await fileWriter.WriteLineAsync($"{DateTime.Now}\n{message}\n{ex}\n\n");
+        await LogFileWritter.LogError(ex, message);
     }
 
     public static void LogCommandExecution<T>

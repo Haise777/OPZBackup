@@ -1,3 +1,3 @@
 ﻿namespace OPZBot.Utilities;
 
-public delegate Task AsyncEventHandler<TArgs>(object? sender, TArgs args);
+public delegate Task AsyncEventHandler<in TArgs>(object? sender, TArgs args);
