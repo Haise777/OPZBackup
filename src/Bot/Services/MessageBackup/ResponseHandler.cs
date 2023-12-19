@@ -71,17 +71,10 @@ public class ResponseHandler : IResponseHandler
         await GhostPing(e.InteractionContext);
     }
 
-    private async Task GhostPing(SocketInteractionContext context)
-    {
-        var ping = await context.Channel.SendMessageAsync($"<@{context.User.Id}>");
-        await Task.Delay(2000);
-        await ping.DeleteAsync();
-    }
-
     public async Task SendInvalidAttemptAsync(SocketInteractionContext context, TimeSpan cooldownTime)
     {
-        var formattedTime = cooldownTime > TimeSpan.FromHours(1)
-            ? $"{24 - cooldownTime.Hours} horas e {cooldownTime.Minutes} minutos"
+        var formattedTime = cooldownTime > TimeSpan.FromHours(0.99)
+            ? $"{cooldownTime.Hours} horas e {cooldownTime.Minutes} minutos"
             : $"{cooldownTime.Minutes} minutos e {cooldownTime.Seconds} segundos";
 
         await context.Interaction.FollowupAsync("Tentativa de backup inválida" +
@@ -142,8 +135,15 @@ public class ResponseHandler : IResponseHandler
     {
         await context.Interaction.RespondAsync(
             "*Por limitações do Discord, não é possivel efetuar mais de um processo de backup simutaneamente*");
-        
+
         await Task.Delay(7000);
         await context.Interaction.DeleteOriginalResponseAsync();
+    }
+
+    private async Task GhostPing(SocketInteractionContext context)
+    {
+        var ping = await context.Channel.SendMessageAsync($"<@{context.User.Id}>");
+        await Task.Delay(2000);
+        await ping.DeleteAsync();
     }
 }

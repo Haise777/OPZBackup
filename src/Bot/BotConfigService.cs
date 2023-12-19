@@ -23,7 +23,7 @@ internal class BotConfigService
             WriteConfigFile(new BotConfig());
         }
 
-        IConfigurationRoot startupConfig = GetConfigurations();
+        var startupConfig = GetConfigurations();
 
         Config = new BotConfig
         {
@@ -35,7 +35,7 @@ internal class BotConfigService
             TimezoneAdjust = startupConfig.GetValue<int?>("TimezoneAdjust", null)
         };
     }
-    
+
     public void WriteConfigFile(BotConfig config)
     {
         var serializerOptions = new JsonSerializerOptions
@@ -43,7 +43,7 @@ internal class BotConfigService
         var jsonString = JsonSerializer.Serialize(config, serializerOptions);
         File.WriteAllText($"{AppContext.BaseDirectory}{CONFIG_FILE_NAME}", jsonString);
     }
-    
+
     public IConfigurationRoot GetConfigurations()
     {
         try

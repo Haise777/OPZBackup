@@ -16,13 +16,13 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
 {
     public const string CONFIRM_USER_DELETE_ID = "DLT_CONF_CONFIRM";
     public const string CANCEL_USER_DELETE_ID = "DLT_CONF_CANCEL";
+    private static readonly SemaphoreSlim LockPreCommand = new(1, 1);
+    private static readonly SemaphoreSlim Lock = new(1, 1);
+
     private readonly IBackupMessageService _backupService;
     private readonly ILogger<BackupInteractionModule> _logger;
-    private static readonly SemaphoreSlim LockPreCommand = new(1, 1);
-    private static readonly SemaphoreSlim Lock = new(1,1);
-
-    private readonly IResponseHandler _responseHandler;
     private readonly LoggingWrapper _loggingWrapper;
+    private readonly IResponseHandler _responseHandler;
 
     public BackupInteractionModule(IBackupMessageService backupService, IResponseHandler responseHandler,
         ILogger<BackupInteractionModule> logger, LoggingWrapper loggingWrapper)
@@ -56,23 +56,24 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
             await Context.Interaction.DeferAsync();
 
             var tm = await _backupService.TimeFromLastBackupAsync(Context);
-            if (tm < TimeSpan.FromDays(1) && Program.RunWithCooldowns)
+            if (tm > TimeSpan.FromHours(0) && Program.RunWithCooldowns)
             {
-                _logger.LogInformation("{service}: Backup is still in cooldown for this channel", nameof(BackupService));
+                _logger.LogInformation(
+                    "{service}: Backup is still in cooldown for this channel", nameof(BackupService));
                 await _responseHandler.SendInvalidAttemptAsync(Context, tm);
                 return;
             }
-            
+
             await _backupService.StartBackupAsync(Context, choice == 0);
         }
         finally
         {
             Lock.Release();
         }
-        
     }
 
-    [SlashCommand("deletar-proprio", "DELETAR todas as informações presentes no backup relacionadas ao usuario PERMANENTEMENTE")]
+    [SlashCommand("deletar-proprio",
+        "DELETAR todas as informações presentes no backup relacionadas ao usuario PERMANENTEMENTE")]
     public async Task DeleteUserInBackupCommand()
     {
         _logger.LogCommandExecution(
@@ -97,7 +98,7 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
         _logger.LogInformation("{service}: {user} aborted deletion", nameof(BackupService), Context.User.Username);
         await _responseHandler.SendUserDeletionResultAsync(Context, false);
     }
-    
+
     private async Task<bool> CheckIfBackupInProcess()
     {
         await LockPreCommand.WaitAsync();
