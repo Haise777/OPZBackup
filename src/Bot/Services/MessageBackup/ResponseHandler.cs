@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.Rest;
 using OPZBot.Modules;
 
 namespace OPZBot.Services.MessageBackup;
@@ -7,6 +8,7 @@ namespace OPZBot.Services.MessageBackup;
 public class ResponseHandler
 {
     private readonly ResponseBuilder _responseBuilder;
+    private ulong _interactionMessageId;
     private IMessage? _lastMessage;
 
     public ResponseHandler(ResponseBuilder responseBuilder)
@@ -19,10 +21,10 @@ public class ResponseHandler
         var backupService = sender as BackupMessageService;
         _responseBuilder.Author = e.InteractionContext.User;
         _responseBuilder.StartTime = DateTime.Now;
-        await e.InteractionContext.Interaction.ModifyOriginalResponseAsync(m =>
-            m.Embed = _responseBuilder.Build(
+        _interactionMessageId = (await e.InteractionContext.Interaction.FollowupAsync(
+            embed: _responseBuilder.Build(
                 backupService.BatchNumber, backupService.SavedMessagesCount, backupService.SavedFilesCount,
-                BackupStage.Started));
+                BackupStage.Started))).Id;
     }
 
     public async Task SendBatchFinishedAsync(object? sender, BackupEventArgs e)
@@ -32,9 +34,8 @@ public class ResponseHandler
             await e.InteractionContext.Channel.GetMessageAsync(e.MessageBatch.Messages.First().Id);
         var currentMessage = await e.InteractionContext.Channel.GetMessageAsync(e.MessageBatch.Messages.Last().Id);
         _responseBuilder.CurrentMessage = currentMessage;
-
-
-        await e.InteractionContext.Interaction.ModifyOriginalResponseAsync(m =>
+        
+        await e.InteractionContext.Channel.ModifyMessageAsync(_interactionMessageId, m =>
             m.Embed = _responseBuilder.Build(
                 backupService.BatchNumber, backupService.SavedMessagesCount, backupService.SavedFilesCount,
                 BackupStage.InProgress));
@@ -47,7 +48,7 @@ public class ResponseHandler
         _responseBuilder.EndTime = DateTime.Now;
         _responseBuilder.LastMessage = _lastMessage;
 
-        await e.InteractionContext.Interaction.ModifyOriginalResponseAsync(m =>
+        await e.InteractionContext.Channel.ModifyMessageAsync(_interactionMessageId, m =>
             m.Embed = _responseBuilder.Build(
                 backupService.BatchNumber, backupService.SavedMessagesCount, backupService.SavedFilesCount,
                 BackupStage.Finished));
@@ -58,7 +59,7 @@ public class ResponseHandler
     {
         var backupService = sender as BackupMessageService;
 
-        await e.InteractionContext.Interaction.ModifyOriginalResponseAsync(m =>
+        await e.InteractionContext.Channel.ModifyMessageAsync(_interactionMessageId, m =>
             m.Embed = _responseBuilder.Build(
                 backupService.BatchNumber, backupService.SavedMessagesCount, backupService.SavedFilesCount,
                 BackupStage.Failed));
@@ -67,7 +68,7 @@ public class ResponseHandler
 
     private async Task GhostPing(SocketInteractionContext context)
     {
-        var ping = await context.Interaction.FollowupAsync($"<@{context.User.Id}>");
+        var ping = await context.Channel.SendMessageAsync($"<@{context.User.Id}>");
         await Task.Delay(2000);
         await ping.DeleteAsync();
     }
@@ -78,7 +79,7 @@ public class ResponseHandler
             ? $"{cooldownTime.Hours} horas e {cooldownTime.Minutes} minutos"
             : $"{cooldownTime.Minutes} minutos e {cooldownTime.Seconds} segundos";
 
-        await context.Interaction.RespondAsync("Tentativa de backup inválida" +
+        await context.Interaction.FollowupAsync("Tentativa de backup inválida" +
                                                $"\n**{formattedTime}** restantes");
         await Task.Delay(7000);
         await context.Interaction.DeleteOriginalResponseAsync();
@@ -122,7 +123,7 @@ public class ResponseHandler
 
     public async Task SendEmptyBackupAsync(object? sender, BackupEventArgs args)
     {
-        await args.InteractionContext.Interaction.ModifyOriginalResponseAsync(m =>
+        await args.InteractionContext.Channel.ModifyMessageAsync(_interactionMessageId, m =>
         {
             m.Content = "*Tentativa de backup inválida: Não havia mensagens válidas para serem salvas*";
             m.Embed = null;

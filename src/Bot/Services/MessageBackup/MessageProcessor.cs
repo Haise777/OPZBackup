@@ -34,7 +34,7 @@ public class MessageProcessor : IBackupMessageProcessor
         
         foreach (var message in messageBatch)
         {
-            if (message.Content == "") continue;
+            if (message.Content == "" && message.Author.Id == Program.BotUserId) continue;
 #warning Database call spammer //TODO Machinegun database spammer
             if (await _dataContext.Messages.AnyAsync(m => message.Id == m.Id))
             {

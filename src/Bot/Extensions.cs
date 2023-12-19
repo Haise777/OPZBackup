@@ -98,4 +98,22 @@ public static class Extensions
 
     public static IEnumerable<TSource> ExcludeFirst<TSource>(this IEnumerable<TSource> source) where TSource : class
         => source.Where(x => x != source.First());
+
+    public static void ValidateConfigIds(this DiscordSocketClient client, IConfigurationRoot config)
+    {
+        try
+        {
+            var adminRole = client.Guilds.First().GetRole(config.GetValue<ulong>("MainAdminRoleId"))
+                            ?? throw new ApplicationException("'MainAdminRoleId' invalid config value");
+#if DEBUG
+            var testGuild = client.Guilds.First().GetRole(config.GetValue<ulong>("TestGuildId"))
+                            ?? throw new ApplicationException("'TestGuildId' invalid config value");
+#endif
+        }
+        catch (ApplicationException ex)
+        {
+            Log.Fatal(ex, "Invalid config value");
+            Environment.Exit(-1);
+        }
+    }
 }

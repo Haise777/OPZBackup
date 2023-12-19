@@ -13,9 +13,10 @@ namespace OPZBot;
 
 public class Program
 {
-    public const bool RUN_WITH_COOLDOWNS = false;
+    public const string APP_VER = "0.1";
+    public static bool RunWithCooldowns { get; private set; }
     public static DateTime SessionTime { get; } = DateTime.Now;
-    public static string FileBackupPath { get; } = @$"{AppContext.BaseDirectory}\Backup\Files";
+    public static string FileBackupPath { get; } = @$"{AppContext.BaseDirectory}Backup\Files";
     public static ulong MainAdminRoleId { get; private set; }
     public static ulong BotUserId { get; private set; }
 
@@ -26,13 +27,14 @@ public class Program
 
     private async Task MainAsync(string[] args)
     {
+        new StartupConfig().Initialize();
+
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Information()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
             .Enrich.FromLogContext()
             .WriteTo.Console()
             .CreateLogger();
-        if (!RUN_WITH_COOLDOWNS) Log.Warning("Running without cooldowns!");
 
         try
         {
@@ -42,9 +44,10 @@ public class Program
                 .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile("config.json")
                 .Build();
-            BotUserId = ulong.Parse(config["botUserId"]!);
-            MainAdminRoleId = ulong.Parse(config["mainAdminRoleId"]!);
-            
+            MainAdminRoleId = config.GetValue<ulong>("MainAdminRoleId");
+            RunWithCooldowns = config.GetValue<bool>("RunWithCooldowns");
+            if (!RunWithCooldowns) Log.Warning("Running without cooldowns!");
+
             using var host = Host.CreateDefaultBuilder()
                 .ConfigureBotServices(config)
                 .UseSerilog((_, _, cfg)
@@ -97,13 +100,16 @@ public class Program
         client.Ready += async () =>
         {
 #if DEBUG
-            await sCommands.RegisterCommandsToGuildAsync(ulong.Parse(config["testGuildId"]!));
+            await sCommands.RegisterCommandsToGuildAsync(config.GetValue<ulong>("TestGuildId"));
 #else
             await sCommands.RegisterCommandsGloballyAsync();
 #endif
+            BotUserId = client.CurrentUser.Id;
+            client.ValidateConfigIds(config);
         };
-
-        await client.LoginAsync(TokenType.Bot, config["token"]);
+        
+        
+        await client.LoginAsync(TokenType.Bot, config["Token"]);
         await client.StartAsync();
         await Task.Delay(-1);
     }
