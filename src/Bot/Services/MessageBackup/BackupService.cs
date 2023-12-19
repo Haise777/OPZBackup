@@ -19,14 +19,34 @@ public abstract class BackupService : IBackupService
     protected readonly IdCacheManager Cache;
     protected readonly MyDbContext DataContext;
     protected readonly Mapper Mapper;
-    protected BackupRegistry BackupRegistry;
-    protected SocketInteractionContext InteractionContext;
+    protected BackupRegistry? BackupRegistry;
+    protected SocketInteractionContext? InteractionContext;
 
     protected BackupService(Mapper mapper, MyDbContext dataContext, IdCacheManager cache)
     {
         Mapper = mapper;
         DataContext = dataContext;
         Cache = cache;
+    }
+
+    public async Task<TimeSpan> TimeFromLastBackupAsync(SocketInteractionContext context)
+    {
+        var lastBackupDate = await DataContext.BackupRegistries
+            .Where(b => b.ChannelId == context.Channel.Id)
+            .OrderByDescending(b => b.Date)
+            .Select(b => b.Date)
+            .FirstOrDefaultAsync();
+
+        return DateTime.Now - lastBackupDate;
+    }
+
+    public virtual async Task DeleteUserAsync(ulong userId)
+    {
+        var user = await DataContext.Users.SingleOrDefaultAsync(u => u.Id == userId);
+        if (user is null) return;
+
+        DataContext.Users.Remove(user);
+        await DataContext.SaveChangesAsync();
     }
 
     protected virtual async Task StartBackupAsync(SocketInteractionContext interactionContext)
@@ -51,26 +71,6 @@ public abstract class BackupService : IBackupService
             DataContext.Users.Add(author);
 
         DataContext.BackupRegistries.Add(BackupRegistry);
-        await DataContext.SaveChangesAsync();
-    }
-
-    public async Task<TimeSpan> TimeFromLastBackupAsync(SocketInteractionContext context)
-    {
-        var lastBackupDate = await DataContext.BackupRegistries
-            .Where(b => b.ChannelId == context.Channel.Id)
-            .OrderByDescending(b => b.Date)
-            .Select(b => b.Date)
-            .FirstOrDefaultAsync();
-
-        return DateTime.Now - lastBackupDate;
-    }
-
-    public virtual async Task DeleteUserAsync(ulong userId)
-    {
-        var user = await DataContext.Users.SingleOrDefaultAsync(u => u.Id == userId);
-        if (user is null) return;
-
-        DataContext.Users.Remove(user);
         await DataContext.SaveChangesAsync();
     }
 

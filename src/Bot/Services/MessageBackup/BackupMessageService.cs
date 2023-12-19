@@ -48,6 +48,7 @@ public class BackupMessageService : BackupService, IBackupMessageService
     {
         _messageProcessor.IsUntilLastBackup = isUntilLastBackup;
         await base.StartBackupAsync(context);
+
         try
         {
             await StartedBackupProcess.InvokeAsync(this, new BackupEventArgs(context, BackupRegistry));
@@ -78,14 +79,8 @@ public class BackupMessageService : BackupService, IBackupMessageService
                 lastMessage = fetchedMessages.Last();
 
                 var messageDataBatch =
-                    await _messageProcessor.ProcessMessagesAsync(fetchedMessages, BackupRegistry.Id);
-                if (!messageDataBatch.Messages.Any())
-                {
-                    _logger.LogInformation(
-                        "{service}: Backup {registryId} > Skipped batch as there is no messages valid to save",
-                        nameof(BackupService), BackupRegistry.Id);
-                    continue;
-                }
+                    await _messageProcessor.ProcessMessagesAsync(fetchedMessages, BackupRegistry!.Id);
+                if (IsEmptyBatch(messageDataBatch)) continue;
 
                 await SaveBatch(messageDataBatch);
                 await FinishedBatch.InvokeAsync(this,
@@ -97,35 +92,29 @@ public class BackupMessageService : BackupService, IBackupMessageService
             catch (Exception ex)
             {
                 if (attemptsRemaining > 0)
-                {
-                    await _logger.RichLogErrorAsync(
-                        ex, "Batching process failed at batch number {batch}, '{remainingAttempts}' attempts remaining",
-                        BatchNumber,
-                        attemptsRemaining--);
-                    await Task.Delay(5000);
-                }
-                else
-                {
-                    throw;
-                }
+                    await BatchFailed(ex, attemptsRemaining--);
+                else throw;
             }
 
-        if (!await DataContext.Messages.AnyAsync(x => x.BackupId == BackupRegistry.Id))
-        {
-            DataContext.Remove(BackupRegistry);
-            await DataContext.SaveChangesAsync();
-            await EmptyBackupAttempt.InvokeAsync(this, new BackupEventArgs(InteractionContext, BackupRegistry));
-            return;
-        }
-
+        if (await CheckIfBackupIsEmpty()) return;
         await CompletedBackupProcess.InvokeAsync(this, new BackupEventArgs(InteractionContext, BackupRegistry));
     }
 
     private async Task<IMessage[]> FetchMessages(IMessage? startingMessage)
     {
         return startingMessage is not null
-            ? (await _messageFetcher.Fetch(InteractionContext.Channel, startingMessage.Id)).ToArray()
-            : (await _messageFetcher.Fetch(InteractionContext.Channel)).ExcludeFirst().ToArray();
+            ? (await _messageFetcher.Fetch(InteractionContext!.Channel, startingMessage.Id)).ToArray()
+            : (await _messageFetcher.Fetch(InteractionContext!.Channel)).ExcludeFirst().ToArray();
+    }
+
+    private bool IsEmptyBatch(MessageDataBatchDto batch)
+    {
+        if (batch.Messages.Any()) return false;
+
+        _logger.LogInformation(
+            "{service}: Backup {registryId} > Skipped batch as there is no messages valid to save",
+            nameof(BackupService), BackupRegistry!.Id);
+        return true;
     }
 
     private async Task SaveBatch(MessageDataBatchDto messageDataBatchDto)
@@ -143,8 +132,26 @@ public class BackupMessageService : BackupService, IBackupMessageService
         BatchNumber++;
     }
 
-    private void StopBackup()
+    private async Task BatchFailed(Exception ex, int attemptsRemaining)
     {
-        _continueBackup = false;
+        await _logger.RichLogErrorAsync(
+            ex, "Batching process failed at batch number {batch}, '{remainingAttempts}' attempts remaining",
+            BatchNumber,
+            attemptsRemaining);
+        await Task.Delay(5000);
     }
+
+    private async Task<bool> CheckIfBackupIsEmpty()
+    {
+        if (await DataContext.Messages.AnyAsync(x => x.BackupId == BackupRegistry!.Id))
+            return false;
+
+        DataContext.Remove(BackupRegistry!);
+        await DataContext.SaveChangesAsync();
+        await EmptyBackupAttempt.InvokeAsync(this, new BackupEventArgs(InteractionContext, BackupRegistry));
+        return true;
+    }
+
+    private void StopBackup() 
+        => _continueBackup = false;
 }

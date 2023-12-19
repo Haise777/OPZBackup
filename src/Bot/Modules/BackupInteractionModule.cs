@@ -9,8 +9,6 @@ using Microsoft.Extensions.Logging;
 using OPZBot.Logging;
 using OPZBot.Services.MessageBackup;
 
-// ReSharper disable UnusedMember.Global
-
 namespace OPZBot.Modules;
 
 [Group("backup", "utilizar a função de backup")]
@@ -74,26 +72,6 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
         
     }
 
-    private async Task<bool> CheckIfBackupInProcess()
-    {
-        await LockPreCommand.WaitAsync();
-        try
-        {
-            if (Lock.CurrentCount < 1)
-            {
-                _ = _responseHandler.SendAlreadyInProgressAsync(Context);
-                return true;
-            }
-
-            await Lock.WaitAsync();
-            return false;
-        }
-        finally
-        {
-            LockPreCommand.Release();
-        }
-    }
-
     [SlashCommand("deletar-proprio", "DELETAR todas as informações presentes no backup relacionadas ao usuario PERMANENTEMENTE")]
     public async Task DeleteUserInBackupCommand()
     {
@@ -118,5 +96,25 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
     {
         _logger.LogInformation("{service}: {user} aborted deletion", nameof(BackupService), Context.User.Username);
         await _responseHandler.SendUserDeletionResultAsync(Context, false);
+    }
+    
+    private async Task<bool> CheckIfBackupInProcess()
+    {
+        await LockPreCommand.WaitAsync();
+        try
+        {
+            if (Lock.CurrentCount < 1)
+            {
+                _ = _responseHandler.SendAlreadyInProgressAsync(Context);
+                return true;
+            }
+
+            await Lock.WaitAsync();
+            return false;
+        }
+        finally
+        {
+            LockPreCommand.Release();
+        }
     }
 }
