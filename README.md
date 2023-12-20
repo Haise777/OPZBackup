@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-  <img src=".github/banner.png" alt="OpzbotBanner" width="600">
+  <img src=".github/banner.png" alt="OpzbotBanner" width="400">
   <br>
   <br>
   OPZBot
