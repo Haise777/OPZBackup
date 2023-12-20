@@ -14,7 +14,6 @@
   <a href="#how-to-use">How To Use</a> •
   <a href="#download">Download</a> •
   <a href="#credits">Credits</a> •
-  <a href="#license">License</a>
 </p>
 
 ## Key Features
@@ -78,12 +77,9 @@ This software uses the following open source packages:
 - [Discord.Net](https://github.com/discord-net/Discord.Net)
 - [Serilog](https://github.com/serilog/serilog)
 
-## License
-
-OPZBot is released under [BSD 3-Clause license](https://opensource.org/license/bsd-3-clause/)
-
 ---
-
+> OPZBot is released under [BSD 3-Clause license](https://opensource.org/license/bsd-3-clause/)
+>
 > *Contact me*\
 > *Email:* [gashimabucoro@proton.me](mailto:gashimabucoro@proton.me) &nbsp;&middot;&nbsp;
 > *Discord:* [@.haise_san](https://discord.com/users/374337303897702401)
