@@ -7,7 +7,7 @@
   <br>
 </h1>
 
-<h4 align="center">A multipurpose Discord Bot for my server built using <a href="https://github.com/discord-net/Discord.Net" target="_blank">Discord.Net</a>.</h4>
+<h4 align="center">A multipurpose Discord Bot for my server, built using <a href="https://github.com/discord-net/Discord.Net" target="_blank">Discord.Net</a>.</h4>
 
 <p align="center">
   <a href="#key-features">Key Features</a> •
