@@ -23,12 +23,15 @@ internal class BotConfigService
             WriteConfigFile(new BotConfig());
         }
 
+        if (!Directory.Exists(@$"{AppContext.BaseDirectory}\Backup"))
+            Directory.CreateDirectory(@$"{AppContext.BaseDirectory}\Backup");
+
+
         var startupConfig = GetConfigurations();
 
         Config = new BotConfig
         {
             Token = startupConfig.GetValue<string?>("Token", null),
-            ConnectionString = startupConfig.GetValue<string?>("ConnectionString", null),
             MainAdminRoleId = startupConfig.GetValue<ulong?>("MainAdminRoleId", null),
             RunWithCooldowns = startupConfig.GetValue("RunWithCooldowns", true),
             TestGuildId = startupConfig.GetValue<ulong?>("TestGuildId", null),

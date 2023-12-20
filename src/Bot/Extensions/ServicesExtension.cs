@@ -30,8 +30,7 @@ public static class ServicesExtension
     {
         host.ConfigureServices((ctx, services) => services
             .AddDbContext<MyDbContext>(options
-                => options.UseMySql(config["connectionString"], ServerVersion.Parse("8.0.34-mysql")))
-            .AddConfiguredCacheManager()
+                => options.UseSqlite(@$"Data Source={AppContext.BaseDirectory}Backup\discord_backup.db"))
             .AddSingleton(_ => new DiscordSocketClient(new DiscordSocketConfig
             {
                 GatewayIntents = GatewayIntents.All,
@@ -48,6 +47,7 @@ public static class ServicesExtension
             .AddSingleton(config)
             .AddSingleton<InteractionHandler>()
             .AddSingleton<CommandService>()
+            .AddSingleton<IdCacheManager>()
             .AddSingleton<Mapper>()
             .AddSingleton<LoggingWrapper>()
             .AddScoped<IMessageFetcher, MessageFetcher>()
@@ -61,24 +61,5 @@ public static class ServicesExtension
         );
 
         return host;
-    }
-
-    public static IServiceCollection AddConfiguredCacheManager(this IServiceCollection services)
-    {
-        return services.AddSingleton(provider
-            => new IdCacheManager(
-                new DataCache<ulong>().AddRangeAsync(provider
-                    .GetRequiredService<MyDbContext>().Users
-                    .Select(u => u.Id)
-                    .ToList()).Result,
-                new DataCache<ulong>().AddRangeAsync(provider
-                    .GetRequiredService<MyDbContext>().Channels
-                    .Select(c => c.Id)
-                    .ToList()).Result,
-                new DataCache<uint>().AddRangeAsync(provider
-                    .GetRequiredService<MyDbContext>().BackupRegistries
-                    .Select(b => b.Id)
-                    .ToList()).Result
-            ));
     }
 }

@@ -28,6 +28,7 @@ public class FileBackupService : IFileBackupService
     public async Task BackupFilesAsync(IMessage message)
     {
         if (!message.Attachments.Any()) return;
+        await CreateChannelDirIfNotExists(message);
         if (message.Attachments.Count > 1)
         {
             await BackupMultipleFiles(message);
@@ -40,12 +41,12 @@ public class FileBackupService : IFileBackupService
         var file = await DownloadFile(fileUrl);
 
         await File.WriteAllBytesAsync(
-            $@"{Program.FileBackupPath}\{message.Id}.{extension}", file);
+            $@"{Program.FileBackupPath}\{message.Channel.Id}\{message.Id}.{extension}", file);
     }
-
+    
     private async Task BackupMultipleFiles(IMessage message)
     {
-        var dirPath = @$"{Program.FileBackupPath}\{message.Id}";
+        var dirPath = @$"{Program.FileBackupPath}\{message.Channel.Id}\{message.Id}";
 
         if (!Directory.Exists(dirPath))
             Directory.CreateDirectory(dirPath);
@@ -80,5 +81,14 @@ public class FileBackupService : IFileBackupService
 
                 throw;
             }
+    }
+    
+    private Task CreateChannelDirIfNotExists(IMessage message)
+    {
+        return Task.Run(() =>
+        {
+            if (!Directory.Exists($@"{Program.FileBackupPath}\{message.Channel.Id}"))
+                Directory.CreateDirectory($@"{Program.FileBackupPath}\{message.Channel.Id}");
+        });
     }
 }

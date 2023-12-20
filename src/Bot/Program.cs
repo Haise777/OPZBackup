@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OPZBot.DataAccess.Context;
 using OPZBot.Extensions;
 using OPZBot.Logging;
 using Serilog;
@@ -70,7 +71,17 @@ public class Program
                 )
                 .Build();
 
+            using (var serviceScope = host.Services.CreateScope())
+            {
+                var context = serviceScope.ServiceProvider.GetRequiredService<MyDbContext>();
+                await context.Database.EnsureCreatedAsync();
+            }
+            
             await RunAsync(host);
+        }
+        catch (HostAbortedException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

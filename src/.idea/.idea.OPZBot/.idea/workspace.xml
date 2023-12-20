@@ -9,11 +9,16 @@
   <component name="ChangeListManager">
     <list default="true" id="42cf5f64-0284-42d2-8c25-9c5ff55382ad" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.OPZBot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.OPZBot/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Modules/BackupInteractionModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Modules/BackupInteractionModule.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/BackupService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/BackupService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Bot.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Bot.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/BotConfig.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/BotConfig.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/BotConfigService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/BotConfigService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/DataAccess/Context/MyDbContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/DataAccess/Context/MyDbContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Extensions/ServicesExtension.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Extensions/ServicesExtension.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Program.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/FileBackupService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/FileBackupService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/LoggingWrapper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/LoggingWrapper.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/MessageProcessor.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/MessageProcessor.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/ResponseHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/ResponseHandler.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/StartupConfigMenu.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/StartupConfigMenu.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,6 +43,8 @@
     </option>
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="file://$USER_HOME$/AppData/Local/Symbols/src/dotnet/runtime/5535e31a712343a63f5d7d796cd874e563e5ac14/src/libraries/Microsoft.Extensions.DependencyInjection.Abstractions/src/ServiceCollectionServiceExtensions.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/AppData/Local/Symbols/src/dotnet/runtime/5535e31a712343a63f5d7d796cd874e563e5ac14/src/libraries/Microsoft.Extensions.DependencyInjection.Abstractions/src/ServiceDescriptor.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/ILViewer/b2e4ae2fb73b433ebd7bf20aae2e011820800/2b/419c3c44/02000021.il" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/33167b41fdf845bea0923a05c90bf33dd5600/b0/d26c01d8/SocketInteraction.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/b2e4ae2fb73b433ebd7bf20aae2e011820800/04/423f8d08/CommandService.cs" root0="SKIP_HIGHLIGHTING" />
@@ -64,10 +71,12 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    ".NET Project.Bot.executor": "Debug",
+    ".NET Project.Bot.executor": "Run",
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "dev",
+    "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",

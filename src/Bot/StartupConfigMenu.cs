@@ -60,7 +60,6 @@ internal class StartupConfigMenu : BotConfigService
                 $"\n" +
                 $"[B] Bot token > {Config.Token?[^7..]?.Insert(0, "xxxxxx...")}\n" +
                 $"[A] Main admin role id > {Config.MainAdminRoleId}\n" +
-                $"[S] Database connection string > {Config.ConnectionString}\n" +
                 $"[T] Timezone adjust value > {Config.TimezoneAdjust}\n" +
                 $"[C] General cooldowns > {Config.RunWithCooldowns}\n" +
                 $"[X] Return\n");
@@ -83,12 +82,6 @@ internal class StartupConfigMenu : BotConfigService
                     if (ConfirmChanges(Config.MainAdminRoleId.ToString(), input))
                         Config.MainAdminRoleId =
                             ulong.TryParse(input, out var adminRoleId) ? adminRoleId : null;
-                    break;
-                case 'S':
-                case 's':
-                    input = WriteInput("Database connection string");
-                    if (ConfirmChanges(Config.ConnectionString, input))
-                        Config.ConnectionString = input;
                     break;
                 case 'T':
                 case 't':
