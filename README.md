@@ -58,7 +58,7 @@
   - The general cooldown refers to limiting if you can make more than one backup per channel per day, it is recommended to leave it on `True`
   <br>
 * You can then return and select the `[R] Run` option  
-
+---
 <h3>After the bot is running</h3>  
 
 * You can use [slash commands](https://support.discord.com/hc/en-us/articles/1500000368501-Slash-Commands-FAQ) to interact with the bot
