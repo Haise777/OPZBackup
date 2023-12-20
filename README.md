@@ -31,7 +31,7 @@
 * Go to Discord's [Developer Portal](https://discord.com/developers/applications)  
   <br>
 * Create a new application by clicking on the blue `New Application` button on the top right of the page  
-  - *Give it any name that you want.*  
+  - *You can name it how you want.*  
   <br>
 * After creating and selecting your new application, go to the `Bot` tab on the left  
   - Click on `Reset Token` button and copy the generated token  
