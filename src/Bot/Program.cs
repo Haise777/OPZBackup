@@ -20,7 +20,7 @@ namespace OPZBot;
 
 public class Program
 {
-    public const string APP_VER = "0.12";
+    public const string APP_VER = "0.13";
     public static DateTime SessionTime { get; } = DateTime.Now;
     public static string FileBackupPath { get; } = @$"{AppContext.BaseDirectory}Backup\Files";
     public static bool RunWithCooldowns { get; private set; }
@@ -43,7 +43,7 @@ public class Program
             .Enrich.FromLogContext()
             .WriteTo.Console()
             .CreateLogger();
-        
+
         try
         {
             Log.Information("Starting host");
@@ -52,7 +52,7 @@ public class Program
                 .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile(BotConfigService.CONFIG_FILE_NAME)
                 .Build();
-            
+
             MainAdminRoleId = config.GetValue<ulong?>("MainAdminRoleId");
             RunWithCooldowns = config.GetValue<bool>("RunWithCooldowns");
             TimezoneAdjust = config.GetValue<int>("TimezoneAdjust");
