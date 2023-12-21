@@ -18,7 +18,7 @@
 
 ## Key Features
 
-* Backup of text channels
+* Backup of text channels to a database file
   - All of channel's messages.
   - Full file backup support without any file type limitations.
 
@@ -79,7 +79,7 @@ This software uses the following open source packages:
 
 ---
 > OPZBot is released under [BSD 3-Clause license](https://opensource.org/license/bsd-3-clause/)
->
+
 > *Contact me*\
 > *Email:* [gashimabucoro@proton.me](mailto:gashimabucoro@proton.me) &nbsp;&middot;&nbsp;
 > *Discord:* [@.haise_san](https://discord.com/users/374337303897702401)
