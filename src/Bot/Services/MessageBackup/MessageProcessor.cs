@@ -62,7 +62,7 @@ public class MessageProcessor : IBackupMessageProcessor
             if (message.Attachments.Any())
             {
                 concurrentDownloads.Add(_fileBackup.BackupFilesAsync(message));
-                mappedMessage.File = @$"{Program.FileBackupPath}\{message.Channel.Id}\{message.Id}";
+                mappedMessage.File = @$"Backup\{message.Channel.Id}\{message.Id}";
                 fileCount += message.Attachments.Count;
             }
 

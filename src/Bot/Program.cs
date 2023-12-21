@@ -59,7 +59,7 @@ public class Program
             TimezoneAdjust = config.GetValue<int>("TimezoneAdjust");
             if (!RunWithCooldowns) Log.Warning("Running without cooldowns!");
 
-            using var host = Host.CreateDefaultBuilder()
+            using var host = Host.CreateDefaultBuilder(args)
                 .ConfigureBotServices(config)
                 .UseSerilog((_, _, cfg)
                         => cfg
