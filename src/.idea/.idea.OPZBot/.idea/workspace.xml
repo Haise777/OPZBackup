@@ -9,6 +9,10 @@
   <component name="ChangeListManager">
     <list default="true" id="42cf5f64-0284-42d2-8c25-9c5ff55382ad" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.OPZBot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.OPZBot/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Services/IMessageFetcher.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/IMessageFetcher.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/BackupMessageService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/BackupMessageService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/FileBackupService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/FileBackupService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageFetcher.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageFetcher.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,14 +65,14 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    ".NET Project.Bot.executor": "Run",
+    ".NET Project.Bot.executor": "Debug",
     "ASKED_ADD_EXTERNAL_FILES": "true",
     "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "Publish to folder.Publish Bot to folder (1).executor": "Run",
     "Publish to folder.Publish Bot to folder.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
+    "git-widget-placeholder": "dev",
     "ignore.virus.scanning.warn.message": "true",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",

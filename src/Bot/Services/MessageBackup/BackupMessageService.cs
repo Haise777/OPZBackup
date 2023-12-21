@@ -103,8 +103,8 @@ public class BackupMessageService : BackupService, IBackupMessageService
     private async Task<IMessage[]> FetchMessages(IMessage? startingMessage)
     {
         return startingMessage is not null
-            ? (await _messageFetcher.Fetch(InteractionContext!.Channel, startingMessage.Id)).ToArray()
-            : (await _messageFetcher.Fetch(InteractionContext!.Channel)).ExcludeFirst().ToArray();
+            ? (await _messageFetcher.FetchAsync(InteractionContext!.Channel, startingMessage.Id)).ToArray()
+            : (await _messageFetcher.FetchAsync(InteractionContext!.Channel)).ExcludeFirst().ToArray();
     }
 
     private bool IsEmptyBatch(MessageDataBatchDto batch)

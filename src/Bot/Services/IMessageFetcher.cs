@@ -11,6 +11,6 @@ namespace OPZBot.Services;
 
 public interface IMessageFetcher
 {
-    Task<IEnumerable<IMessage>> Fetch(ISocketMessageChannel channel);
-    Task<IEnumerable<IMessage>> Fetch(ISocketMessageChannel channel, ulong startFrom);
+    Task<IEnumerable<IMessage>> FetchAsync(ISocketMessageChannel channel);
+    Task<IEnumerable<IMessage>> FetchAsync(ISocketMessageChannel channel, ulong startFrom);
 }
