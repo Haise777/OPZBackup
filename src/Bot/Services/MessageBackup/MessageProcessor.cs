@@ -42,6 +42,7 @@ public class MessageProcessor : IBackupMessageProcessor
         var users = new List<User>();
         var messages = new List<Message>();
         var fileCount = 0;
+        var concurrentDownloads = new List<Task>();
 
         foreach (var message in messageBatch)
         {
@@ -60,7 +61,7 @@ public class MessageProcessor : IBackupMessageProcessor
             var mappedMessage = _mapper.Map(message, registryId);
             if (message.Attachments.Any())
             {
-                await _fileBackup.BackupFilesAsync(message);
+                concurrentDownloads.Add(_fileBackup.BackupFilesAsync(message));
                 mappedMessage.File = @$"{Program.FileBackupPath}\{message.Channel.Id}\{message.Id}";
                 fileCount += message.Attachments.Count;
             }
@@ -70,6 +71,7 @@ public class MessageProcessor : IBackupMessageProcessor
             messages.Add(mappedMessage);
         }
 
+        await Task.WhenAll(concurrentDownloads);
         return new MessageDataBatchDto(users, messages, fileCount);
     }
 }
