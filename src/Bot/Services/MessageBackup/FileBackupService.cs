@@ -13,8 +13,9 @@ namespace OPZBot.Services.MessageBackup.FileBackup;
 
 public class FileBackupService : IFileBackupService
 {
-    private static readonly Regex MatchFileExtension = new(@"([^\.]+)(?=\?ex)");
+    private static readonly Regex MatchFileExtension = new(@"([^\.]+?)(?=\?ex)");
     private readonly ILogger<FileBackupService> _logger;
+    private readonly SemaphoreSlim _downloadLimiter = new(50, 50);
     private readonly HttpClient _client;
 
     public FileBackupService(HttpClient client, ILogger<FileBackupService> logger)
@@ -27,21 +28,30 @@ public class FileBackupService : IFileBackupService
 
     public async Task BackupFilesAsync(IMessage message)
     {
-        if (!message.Attachments.Any()) return;
-        await CreateChannelDirIfNotExists(message);
-        if (message.Attachments.Count > 1)
+        await _downloadLimiter.WaitAsync();
+        try
         {
-            await BackupMultipleFiles(message);
-            return;
+            if (!message.Attachments.Any()) return;
+            await CreateChannelDirIfNotExists(message);
+            if (message.Attachments.Count > 1)
+            {
+                await BackupMultipleFiles(message);
+                return;
+            }
+
+            var fileUrl = message.Attachments.First().Url;
+            var extension = MatchFileExtension.Match(fileUrl).Value;
+            if (extension.Length > 6) extension = "";
+
+            var file = await DownloadFile(fileUrl);
+
+            await File.WriteAllBytesAsync(
+                $@"{Program.FileBackupPath}\{message.Channel.Id}\{message.Id}.{extension}", file);
         }
-
-        var fileUrl = message.Attachments.First().Url;
-        var extension = MatchFileExtension.Match(fileUrl).Value;
-
-        var file = await DownloadFile(fileUrl);
-
-        await File.WriteAllBytesAsync(
-            $@"{Program.FileBackupPath}\{message.Channel.Id}\{message.Id}.{extension}", file);
+        finally
+        {
+            _downloadLimiter.Release();
+        }
     }
     
     private async Task BackupMultipleFiles(IMessage message)
@@ -56,6 +66,7 @@ public class FileBackupService : IFileBackupService
         {
             var file = await DownloadFile(attachment.Url);
             var extension = MatchFileExtension.Match(attachment.Url).Value;
+            if (extension.Length > 8) extension = "";
 
             await File.WriteAllBytesAsync(@$"{dirPath}\file{++n}.{extension}", file);
         }

@@ -9,6 +9,8 @@
   <component name="ChangeListManager">
     <list default="true" id="42cf5f64-0284-42d2-8c25-9c5ff55382ad" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.OPZBot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.OPZBot/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/FileBackupService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/FileBackupService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/MessageProcessor.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/MessageProcessor.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -68,7 +70,7 @@
     "Publish to folder.Publish Bot to folder.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
+    "git-widget-placeholder": "dev",
     "ignore.virus.scanning.warn.message": "true",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",

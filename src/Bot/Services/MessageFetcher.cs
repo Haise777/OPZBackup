@@ -11,13 +11,14 @@ namespace OPZBot.Services;
 
 public class MessageFetcher : IMessageFetcher
 {
-    public Task<IEnumerable<IMessage>> Fetch(ISocketMessageChannel channel)
+    public async Task<IEnumerable<IMessage>> FetchAsync(ISocketMessageChannel channel)
     {
-        return channel.GetMessagesAsync(10).FlattenAsync();
+        var x = await channel.GetMessagesAsync(500).FlattenAsync();
+        return x;
     }
 
-    public Task<IEnumerable<IMessage>> Fetch(ISocketMessageChannel channel, ulong startFrom)
+    public async Task<IEnumerable<IMessage>> FetchAsync(ISocketMessageChannel channel, ulong startFrom)
     {
-        return channel.GetMessagesAsync(startFrom, Direction.Before, 10).FlattenAsync();
+        return await channel.GetMessagesAsync(startFrom, Direction.Before, limit: 500).FlattenAsync();
     }
 }
