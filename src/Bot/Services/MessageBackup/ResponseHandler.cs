@@ -140,6 +140,13 @@ public class ResponseHandler : IResponseHandler
         await context.Interaction.DeleteOriginalResponseAsync();
     }
 
+    public async Task SendNotRightPermissionAsync(SocketInteractionContext context)
+    {
+        await context.Interaction.RespondAsync("*Você não possui as permissões adequadas para este comando*");
+        await Task.Delay(7000);
+        await context.Interaction.DeleteOriginalResponseAsync();
+    }
+
     private async Task GhostPing(SocketInteractionContext context)
     {
         var ping = await context.Channel.SendMessageAsync($"<@{context.User.Id}>");

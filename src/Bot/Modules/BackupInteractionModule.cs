@@ -5,6 +5,7 @@
 // LICENSE file in the root directory of this source tree.
 
 using Discord.Interactions;
+using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using OPZBot.Logging;
 using OPZBot.Services.MessageBackup;
@@ -50,6 +51,7 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
             nameof(BackupService), Context.User.Username, Context.Channel.Name, nameof(MakeBackupCommand),
             choice.ToString());
 
+        if (!await CheckForAdminRole()) return;
         if (await CheckIfBackupInProcess()) return;
         try
         {
@@ -117,5 +119,15 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
         {
             LockPreCommand.Release();
         }
+    }
+
+    private async Task<bool> CheckForAdminRole()
+    {
+        var user = Context.User as SocketGuildUser;
+
+        if (user!.Roles.Any(x => x.Id == Program.MainAdminRoleId)) return true;
+
+        await _responseHandler.SendNotRightPermissionAsync(Context);
+        return false;
     }
 }
