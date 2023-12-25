@@ -9,17 +9,13 @@ using OPZBot.DataAccess.Models;
 
 namespace OPZBot.Services.MessageBackup;
 
-public class BackupEventArgs : EventArgs
+public class BackupEventArgs(
+    SocketInteractionContext? context = null,
+    BackupRegistry? registry = null,
+    MessageDataBatchDto? messageBatch = null)
+    : EventArgs
 {
-    public BackupEventArgs(SocketInteractionContext? context = null, BackupRegistry? registry = null,
-        MessageDataBatchDto? messageBatch = null)
-    {
-        InteractionContext = context;
-        Registry = registry;
-        MessageBatch = messageBatch;
-    }
-
-    public SocketInteractionContext? InteractionContext { get; set; }
-    public BackupRegistry? Registry { get; set; }
-    public MessageDataBatchDto? MessageBatch { get; set; }
+    public SocketInteractionContext? InteractionContext { get; set; } = context;
+    public BackupRegistry? Registry { get; set; } = registry;
+    public MessageDataBatchDto? MessageBatch { get; set; } = messageBatch;
 }

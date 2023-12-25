@@ -25,7 +25,7 @@ public static class LogFileWritter
         var sessionDate = $"{Program.SessionTime:dd.MM.yyyy_HH.mm.ss}";
 
         await using var fileWriter = new StreamWriter(
-            Path.Combine(AppContext.BaseDirectory, $"errorlogs\\log_{sessionDate}.log"), true);
+            Path.Combine(AppContext.BaseDirectory, $"errorlogs/log_{sessionDate}.log"), true);
 
         await fileWriter.WriteLineAsync($"{DateTime.Now}\n{message}\n{ex}\n\n");
     }

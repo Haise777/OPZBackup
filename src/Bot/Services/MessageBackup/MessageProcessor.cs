@@ -14,27 +14,19 @@ using OPZBot.Services.MessageBackup.FileBackup;
 
 namespace OPZBot.Services.MessageBackup;
 
-public class MessageProcessor : IBackupMessageProcessor
+public class MessageProcessor(
+    MyDbContext dataContext,
+    IdCacheManager cache,
+    Mapper mapper,
+    IFileBackupService fileBackup)
+    : IBackupMessageProcessor
 {
-    private readonly IdCacheManager _cache;
-    private readonly MyDbContext _dataContext;
-    private readonly IFileBackupService _fileBackup;
-    private readonly Mapper _mapper;
-
-    public MessageProcessor(MyDbContext dataContext, IdCacheManager cache, Mapper mapper, IFileBackupService fileBackup)
-    {
-        _dataContext = dataContext;
-        _cache = cache;
-        _mapper = mapper;
-        _fileBackup = fileBackup;
-    }
-
     public event Action? EndBackupProcess;
     public bool IsUntilLastBackup { get; set; }
 
     public async Task<MessageDataBatchDto> ProcessMessagesAsync(IEnumerable<IMessage> messageBatch, uint registryId)
     {
-        var existingMessageIds = await _dataContext.Messages
+        var existingMessageIds = await dataContext.Messages
             .Where(x => x.ChannelId == messageBatch.First().Channel.Id)
             .Select(m => m.Id)
             .ToArrayAsync();
@@ -58,16 +50,16 @@ public class MessageProcessor : IBackupMessageProcessor
                 continue;
             }
 
-            var mappedMessage = _mapper.Map(message, registryId);
+            var mappedMessage = mapper.Map(message, registryId);
             if (message.Attachments.Any())
             {
-                concurrentDownloads.Add(_fileBackup.BackupFilesAsync(message));
+                concurrentDownloads.Add(fileBackup.BackupFilesAsync(message));
                 mappedMessage.File = @$"Backup\{message.Channel.Id}\{message.Id}";
                 fileCount += message.Attachments.Count;
             }
 
-            if (!await _cache.UserIds.ExistsAsync(message.Author.Id))
-                users.Add(_mapper.Map(message.Author));
+            if (!await cache.UserIds.ExistsAsync(message.Author.Id))
+                users.Add(mapper.Map(message.Author));
             messages.Add(mappedMessage);
         }
 

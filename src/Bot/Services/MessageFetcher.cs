@@ -13,12 +13,12 @@ public class MessageFetcher : IMessageFetcher
 {
     public async Task<IEnumerable<IMessage>> FetchAsync(ISocketMessageChannel channel)
     {
-        var x = await channel.GetMessagesAsync(10).FlattenAsync();
+        var x = await channel.GetMessagesAsync(500).FlattenAsync();
         return x;
     }
 
     public async Task<IEnumerable<IMessage>> FetchAsync(ISocketMessageChannel channel, ulong startFrom)
     {
-        return await channel.GetMessagesAsync(startFrom, Direction.Before, limit: 10).FlattenAsync();
+        return await channel.GetMessagesAsync(startFrom, Direction.Before, limit: 500).FlattenAsync();
     }
 }

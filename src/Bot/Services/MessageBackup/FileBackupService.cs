@@ -46,7 +46,7 @@ public class FileBackupService : IFileBackupService
             var file = await DownloadFile(fileUrl);
 
             await File.WriteAllBytesAsync(
-                $@"{Program.FileBackupPath}\{message.Channel.Id}\{message.Id}.{extension}", file);
+                $@"{Program.FileBackupPath}/{message.Channel.Id}/{message.Id}.{extension}", file);
         }
         finally
         {
@@ -56,7 +56,7 @@ public class FileBackupService : IFileBackupService
     
     private async Task BackupMultipleFiles(IMessage message)
     {
-        var dirPath = @$"{Program.FileBackupPath}\{message.Channel.Id}\{message.Id}";
+        var dirPath = @$"{Program.FileBackupPath}/{message.Channel.Id}/{message.Id}";
 
         if (!Directory.Exists(dirPath))
             Directory.CreateDirectory(dirPath);
@@ -68,7 +68,7 @@ public class FileBackupService : IFileBackupService
             var extension = MatchFileExtension.Match(attachment.Url).Value;
             if (extension.Length > 8) extension = "";
 
-            await File.WriteAllBytesAsync(@$"{dirPath}\file{++n}.{extension}", file);
+            await File.WriteAllBytesAsync(@$"{dirPath}/file{++n}.{extension}", file);
         }
     }
 
@@ -98,8 +98,8 @@ public class FileBackupService : IFileBackupService
     {
         return Task.Run(() =>
         {
-            if (!Directory.Exists($@"{Program.FileBackupPath}\{message.Channel.Id}"))
-                Directory.CreateDirectory($@"{Program.FileBackupPath}\{message.Channel.Id}");
+            if (!Directory.Exists($@"{Program.FileBackupPath}/{message.Channel.Id}"))
+                Directory.CreateDirectory($@"{Program.FileBackupPath}/{message.Channel.Id}");
         });
     }
 }

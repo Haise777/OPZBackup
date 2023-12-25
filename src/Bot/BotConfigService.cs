@@ -23,8 +23,8 @@ internal class BotConfigService
             WriteConfigFile(new BotConfig());
         }
 
-        if (!Directory.Exists(@$"{AppContext.BaseDirectory}\Backup"))
-            Directory.CreateDirectory(@$"{AppContext.BaseDirectory}\Backup");
+        if (!Directory.Exists(@$"{AppContext.BaseDirectory}/Backup"))
+            Directory.CreateDirectory(@$"{AppContext.BaseDirectory}/Backup");
 
 
         var startupConfig = GetConfigurations();

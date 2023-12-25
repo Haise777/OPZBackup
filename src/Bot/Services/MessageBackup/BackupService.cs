@@ -14,20 +14,14 @@ using OPZBot.Extensions;
 
 namespace OPZBot.Services.MessageBackup;
 
-public abstract class BackupService : IBackupService
+public abstract class BackupService(Mapper mapper, MyDbContext dataContext, IdCacheManager cache)
+    : IBackupService
 {
-    protected readonly IdCacheManager Cache;
-    protected readonly MyDbContext DataContext;
-    protected readonly Mapper Mapper;
+    protected readonly IdCacheManager Cache = cache;
+    protected readonly MyDbContext DataContext = dataContext;
+    protected readonly Mapper Mapper = mapper;
     protected BackupRegistry? BackupRegistry;
     protected SocketInteractionContext? InteractionContext;
-
-    protected BackupService(Mapper mapper, MyDbContext dataContext, IdCacheManager cache)
-    {
-        Mapper = mapper;
-        DataContext = dataContext;
-        Cache = cache;
-    }
 
     public async Task<TimeSpan> TimeFromLastBackupAsync(SocketInteractionContext context)
     {

@@ -75,9 +75,9 @@ public class BackupMessageService : BackupService, IBackupMessageService
             try
             {
                 var fetchedMessages = await FetchMessages(lastMessage);
-                if (!fetchedMessages.Any()) break;
+                if (fetchedMessages.Length == 0) break;
                 lastMessage = fetchedMessages.Last();
-
+                
                 var messageDataBatch =
                     await _messageProcessor.ProcessMessagesAsync(fetchedMessages, BackupRegistry!.Id);
                 if (IsEmptyBatch(messageDataBatch)) continue;
