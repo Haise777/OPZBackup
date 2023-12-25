@@ -37,7 +37,7 @@
   - Note it for later, **don't share it nor place it where anyone could see it.**  
 *Your bot's token can be used to gain total access to your bot user, thus having the possibility of making you the one responsible for any malicious content someone else is making it send*  
   - Scroll down to **Privillege Gateways Intents** section and then turn on all of the three intents.  
-[refer to this for the reason](https://discord.com/developers/docs/topics/gateway#gateway-intents)
+[refer to this for more information](https://discord.com/developers/docs/topics/gateway#gateway-intents)
   <br>
 * Go to **OAuth2** tab on the left, on the **URL Generator** option  
   - Check both the `bot` and `application.commands` checkboxes  
