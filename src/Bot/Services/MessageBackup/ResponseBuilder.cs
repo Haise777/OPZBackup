@@ -22,7 +22,7 @@ public class ResponseBuilder
     {
         var embedBuilder = ConstructEmbed();
         var t = StartTime.HasValue ? (DateTime.Now - StartTime).Value : TimeSpan.Zero;
-        var elapsed = $"{t.TotalHours:00}:{t:mm\\:ss}";
+        var elapsed = $"{t:hh\\:mm\\:ss}";
 
         switch (stage)
         {

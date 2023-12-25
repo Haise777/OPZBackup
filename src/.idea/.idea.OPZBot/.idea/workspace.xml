@@ -9,11 +9,8 @@
   <component name="ChangeListManager">
     <list default="true" id="42cf5f64-0284-42d2-8c25-9c5ff55382ad" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.OPZBot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.OPZBot/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Extensions/SocketClientExtension.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Modules/BackupInteractionModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Modules/BackupInteractionModule.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Program.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/IResponseHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/IResponseHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/ResponseHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/ResponseHandler.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/ResponseBuilder.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/ResponseBuilder.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageFetcher.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageFetcher.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -139,7 +136,7 @@
       <workItem from="1703021116344" duration="7754000" />
       <workItem from="1703098999600" duration="2821000" />
       <workItem from="1703188903958" duration="819000" />
-      <workItem from="1703524958504" duration="2018000" />
+      <workItem from="1703524958504" duration="3803000" />
     </task>
     <task id="LOCAL-00001" summary="implemented event handlers for the former 'InvalidBackupAttempt' event">
       <option name="closed" value="true" />
@@ -260,24 +257,5 @@
     <MESSAGE value="Fixed some code racing problems" />
     <MESSAGE value="Fixed bugs on the startup menu and added some nice features" />
     <option name="LAST_COMMIT_MESSAGE" value="Fixed bugs on the startup menu and added some nice features" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/Bot/Services/MessageBackup/ResponseHandler.cs</url>
-          <line>146</line>
-          <properties documentPath="E:\Source\Repos\OPZBot\src\Bot\Services\MessageBackup\ResponseHandler.cs" initialLine="146" containingFunctionPresentation="Method 'SendNotRightPermissionAsync'">
-            <startOffsets>
-              <option value="6125" />
-            </startOffsets>
-            <endOffsets>
-              <option value="6181" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="5" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
 </project>

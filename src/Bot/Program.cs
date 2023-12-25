@@ -21,7 +21,7 @@ namespace OPZBot;
 
 public class Program
 {
-    public const string APP_VER = "0.17";
+    public const string APP_VER = "0.18";
     public static DateTime SessionTime { get; } = DateTime.Now;
     public static string FileBackupPath { get; } = @$"{AppContext.BaseDirectory}Backup\Files";
     public static bool RunWithCooldowns { get; private set; }
