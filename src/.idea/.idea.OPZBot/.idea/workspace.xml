@@ -10,18 +10,7 @@
     <list default="true" id="42cf5f64-0284-42d2-8c25-9c5ff55382ad" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.OPZBot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.OPZBot/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Bot/Bot.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Bot.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/BotConfigService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/BotConfigService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/DataAccess/Caching/DataCache.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/DataAccess/Caching/DataCache.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/InteractionHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/InteractionHandler.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Bot/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Program.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/BackupEventArgs.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/BackupEventArgs.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/BackupMessageService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/BackupMessageService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/BackupService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/BackupService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/FileBackupService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/FileBackupService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/LoggingWrapper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/LoggingWrapper.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/MessageProcessor.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/MessageProcessor.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/ResponseHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/ResponseHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageFetcher.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageFetcher.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -79,7 +68,15 @@
     "ASKED_ADD_EXTERNAL_FILES": "true",
     "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "Publish to folder.Publish Bot to folder (1).executor": "Run",
+    "Publish to folder.Publish Bot to folder (2).executor": "Run",
+    "Publish to folder.Publish Bot to folder (3).executor": "Run",
+    "Publish to folder.Publish Bot to folder (4).executor": "Run",
+    "Publish to folder.Publish Bot to folder (5).executor": "Run",
+    "Publish to folder.Publish Bot to folder (6).executor": "Run",
     "Publish to folder.Publish Bot to folder.executor": "Run",
+    "Publish to folder.Publish OPZBot to folder (1).executor": "Run",
+    "Publish to folder.Publish OPZBot to folder (2).executor": "Run",
+    "Publish to folder.Publish OPZBot to folder.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "dev",
@@ -89,7 +86,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.sourceCode.C#",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
     "vue.rearranger.settings.migration": "true"
   },
   "keyToStringList": {
@@ -108,8 +105,40 @@
       <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="win-x86" self_contained="true" target_folder="$PROJECT_DIR$/Bot/bin/Release/net6.0/win-x86/publish" target_framework="net6.0" trim_unused_assemblies="true" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
       <method v="2" />
     </configuration>
+    <configuration name="Publish Bot to folder (2)" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="win-x64" self_contained="true" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/win-x64/publish" target_framework="net8.0" trim_unused_assemblies="true" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish Bot to folder (3)" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="win-x64" self_contained="true" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/win-x64/publish" target_framework="net8.0" trim_unused_assemblies="true" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish Bot to folder (4)" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" platform="Any CPU" runtime="Portable" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/publish" target_framework="net8.0" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish Bot to folder (5)" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="win-x64" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/win-x64/publish" target_framework="net8.0" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish Bot to folder (6)" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="linux-x64" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/linux-x64/publish" target_framework="net8.0" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
     <configuration name="Publish Bot to folder" type="DotNetFolderPublish" factoryName="Publish to folder">
       <riderPublish configuration="Release" platform="Any CPU" runtime="win-x86" self_contained="true" target_folder="$PROJECT_DIR$/Bot/bin/Release/net6.0/win-x86/publish" target_framework="net6.0" trim_unused_assemblies="true" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish OPZBot to folder (1)" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="win-x64" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/win-x64/publish" target_framework="net8.0" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish OPZBot to folder (2)" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="linux-x64" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/linux-x64/publish" target_framework="net8.0" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish OPZBot to folder" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="win-x64" self_contained="true" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/win-x64/publish" target_framework="net8.0" trim_unused_assemblies="true" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
       <method v="2" />
     </configuration>
     <configuration name="Bot" type="DotNetProject" factoryName=".NET Project">
@@ -148,7 +177,7 @@
       <workItem from="1703098999600" duration="2821000" />
       <workItem from="1703188903958" duration="819000" />
       <workItem from="1703524958504" duration="4230000" />
-      <workItem from="1703529326184" duration="3129000" />
+      <workItem from="1703529326184" duration="6462000" />
     </task>
     <task id="LOCAL-00001" summary="implemented event handlers for the former 'InvalidBackupAttempt' event">
       <option name="closed" value="true" />
