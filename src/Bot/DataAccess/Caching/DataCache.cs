@@ -8,7 +8,7 @@ namespace OPZBot.DataAccess.Caching;
 
 public class DataCache<T> : IDataCache<T>, IDisposable
 {
-    private readonly List<T> _cachedData = new();
+    private readonly List<T> _cachedData = [];
     private readonly SemaphoreSlim _lock = new(1, 1);
 
     public async Task<IDataCache<T>> AddAsync(T item)

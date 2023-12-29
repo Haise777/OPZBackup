@@ -10,6 +10,6 @@ namespace OPZBot.Services.MessageBackup;
 
 public interface IBackupService
 {
-    public Task<TimeSpan> TimeFromLastBackupAsync(SocketInteractionContext context);
-    public Task DeleteUserAsync(ulong userId);
+    public Task<TimeSpan> TimeFromLastBackupAsync(SocketInteractionContext interactionContext);
+    public Task DeleteUserAsync(SocketInteractionContext interactionContext);
 }

@@ -14,25 +14,19 @@ using OPZBot.Extensions;
 
 namespace OPZBot.Services.MessageBackup;
 
-public abstract class BackupService : IBackupService
+public abstract class BackupService(Mapper mapper, MyDbContext dataContext, IdCacheManager cache, FileCleaner fileCleaner)
+    : IBackupService
 {
-    protected readonly IdCacheManager Cache;
-    protected readonly MyDbContext DataContext;
-    protected readonly Mapper Mapper;
+    protected readonly IdCacheManager Cache = cache;
+    protected readonly MyDbContext DataContext = dataContext;
+    protected readonly Mapper Mapper = mapper;
     protected BackupRegistry? BackupRegistry;
     protected SocketInteractionContext? InteractionContext;
 
-    protected BackupService(Mapper mapper, MyDbContext dataContext, IdCacheManager cache)
-    {
-        Mapper = mapper;
-        DataContext = dataContext;
-        Cache = cache;
-    }
-
-    public async Task<TimeSpan> TimeFromLastBackupAsync(SocketInteractionContext context)
+    public async Task<TimeSpan> TimeFromLastBackupAsync(SocketInteractionContext interactionContext)
     {
         var lastBackupDate = await DataContext.BackupRegistries
-            .Where(b => b.ChannelId == context.Channel.Id)
+            .Where(b => b.ChannelId == interactionContext.Channel.Id)
             .OrderByDescending(b => b.Date)
             .Select(b => b.Date)
             .FirstOrDefaultAsync();
@@ -40,13 +34,22 @@ public abstract class BackupService : IBackupService
         return TimeSpan.FromDays(1) - (DateTime.Now - lastBackupDate);
     }
 
-    public virtual async Task DeleteUserAsync(ulong userId)
+    public virtual async Task DeleteUserAsync(SocketInteractionContext interactionContext)
     {
-        var user = await DataContext.Users.SingleOrDefaultAsync(u => u.Id == userId);
-        if (user is null) return;
+        var user = await DataContext.Users
+            .SingleOrDefaultAsync(u => u.Id == interactionContext.User.Id);
+        if (user is null)
+        {
+            user = Mapper.Map(interactionContext.User);
+            DataContext.Users.Add(user);
+        }
 
-        DataContext.Users.Remove(user);
+        user.IsBlackListed = true;
+
+        var messages = await DataContext.Messages.Where(m => m.AuthorId == user.Id).ToArrayAsync();
+        DataContext.Messages.RemoveRange(messages);
         await DataContext.SaveChangesAsync();
+        await fileCleaner.DeleteMessageFilesAsync(messages);
     }
 
     protected virtual async Task StartBackupAsync(SocketInteractionContext interactionContext)
@@ -67,7 +70,7 @@ public abstract class BackupService : IBackupService
 
         if (!await Cache.ChannelIds.ExistsAsync(channel.Id))
             DataContext.Channels.Add(channel);
-        if (!await Cache.UserIds.ExistsAsync(author.Id))
+        if (!await Cache.Users.ExistsAsync(author.Id))
             DataContext.Users.Add(author);
 
         DataContext.BackupRegistries.Add(BackupRegistry);

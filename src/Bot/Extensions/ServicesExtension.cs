@@ -30,7 +30,7 @@ public static class ServicesExtension
     {
         host.ConfigureServices((ctx, services) => services
             .AddDbContext<MyDbContext>(options
-                => options.UseSqlite(@$"Data Source={AppContext.BaseDirectory}Backup\discord_backup.db"))
+                => options.UseSqlite(@$"Data Source={AppContext.BaseDirectory}Backup/discord_backup.db"))
             .AddSingleton(_ => new DiscordSocketClient(new DiscordSocketConfig
             {
                 GatewayIntents = GatewayIntents.All,
@@ -50,9 +50,10 @@ public static class ServicesExtension
             .AddSingleton<IdCacheManager>()
             .AddSingleton<Mapper>()
             .AddSingleton<LoggingWrapper>()
+            .AddSingleton<FileCleaner>()
             .AddScoped<IMessageFetcher, MessageFetcher>()
             .AddScoped<IBackupMessageProcessor, MessageProcessor>()
-            .AddScoped<IBackupMessageService, BackupMessageService>()
+            .AddScoped<IMessageBackupService, MessageBackupService>()
             .AddScoped<IResponseHandler, ResponseHandler>()
             .AddScoped<IFileBackupService, FileBackupService>()
             .AddScoped<ResponseBuilder>()

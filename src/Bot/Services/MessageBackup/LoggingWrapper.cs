@@ -9,18 +9,11 @@ using OPZBot.Logging;
 
 namespace OPZBot.Services.MessageBackup;
 
-public class LoggingWrapper
+public class LoggingWrapper(ILogger<BackupService> logger)
 {
-    private readonly ILogger<BackupService> _logger;
-
-    public LoggingWrapper(ILogger<BackupService> logger)
-    {
-        _logger = logger;
-    }
-
     public Task LogStart(object? sender, BackupEventArgs e)
     {
-        return _logger.LogAsync(LogLevel.Information, null,
+        return logger.LogAsync(LogLevel.Information, null,
             "{service}: Backup {registryId} > Started backup process",
             nameof(BackupService),
             e.Registry.Id);
@@ -28,9 +21,9 @@ public class LoggingWrapper
 
     public Task LogBatchFinished(object? sender, BackupEventArgs e)
     {
-        var backupService = sender as BackupMessageService;
-        
-        return _logger.LogAsync(LogLevel.Information, null,
+        var backupService = sender as MessageBackupService;
+
+        return logger.LogAsync(LogLevel.Information, null,
             "{service}: Backup {registryId} > Finished batch {bNumber} with {messageCount} saved messages | {fileCount} saved files | {userCount} new users",
             nameof(BackupService),
             e.Registry.Id,
@@ -42,9 +35,9 @@ public class LoggingWrapper
 
     public Task LogCompleted(object? sender, BackupEventArgs e)
     {
-        var backupService = sender as BackupMessageService;
+        var backupService = sender as MessageBackupService;
 
-        return _logger.LogAsync(LogLevel.Information, null,
+        return logger.LogAsync(LogLevel.Information, null,
             "{service}: Backup {registryId} > completed at batch number {batchNumber} with {savedNumber} saved messages and {fileNumbers} saved files",
             nameof(BackupService),
             e.Registry.Id,
@@ -53,9 +46,15 @@ public class LoggingWrapper
             backupService.SavedFilesCount);
     }
 
-    public Task LogEmptyBackupAttempt(object? sender, BackupEventArgs args)
+    public Task LogEmptyMessageBackupAttempt(object? sender, BackupEventArgs args)
     {
-        return _logger.LogAsync(LogLevel.Information, null,
+        return logger.LogAsync(LogLevel.Information, null,
             "{service}: Invalid backup attempt > There was no valid message to backup", nameof(BackupService));
+    }
+
+    public Task LogBackupCancelled(object? sender, BackupEventArgs e)
+    {
+        return logger.LogAsync(LogLevel.Information, null,
+            "{service}: Backup {registryId} was cancelled", nameof(BackupService), e.Registry.Id);
     }
 }

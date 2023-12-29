@@ -21,9 +21,9 @@ namespace OPZBot;
 
 public class Program
 {
-    public const string APP_VER = "0.13";
+    public const string APP_VER = "1.0";
     public static DateTime SessionTime { get; } = DateTime.Now;
-    public static string FileBackupPath { get; } = @$"{AppContext.BaseDirectory}Backup\Files";
+    public static string FileBackupPath { get; } = $"{AppContext.BaseDirectory}Backup/Files";
     public static bool RunWithCooldowns { get; private set; }
     public static int TimezoneAdjust { get; private set; }
     public static ulong? MainAdminRoleId { get; private set; }
@@ -59,7 +59,7 @@ public class Program
             TimezoneAdjust = config.GetValue<int>("TimezoneAdjust");
             if (!RunWithCooldowns) Log.Warning("Running without cooldowns!");
 
-            using var host = Host.CreateDefaultBuilder()
+            using var host = Host.CreateDefaultBuilder(args)
                 .ConfigureBotServices(config)
                 .UseSerilog((_, _, cfg)
                         => cfg
@@ -76,7 +76,7 @@ public class Program
                 var context = serviceScope.ServiceProvider.GetRequiredService<MyDbContext>();
                 await context.Database.EnsureCreatedAsync();
             }
-            
+
             await RunAsync(host);
         }
         catch (HostAbortedException)
@@ -122,7 +122,6 @@ public class Program
             await sCommands.RegisterCommandsGloballyAsync();
 #endif
             BotUserId = client.CurrentUser.Id;
-            client.ValidateConfigIds(config);
         };
 
         await client.LoginAsync(TokenType.Bot, config["Token"]);

@@ -13,10 +13,11 @@ namespace OPZBot.Services.MessageBackup.FileBackup;
 
 public class FileBackupService : IFileBackupService
 {
-    private static readonly Regex MatchFileExtension = new(@"([^\.]+?)(?=\?ex)");
-    private readonly ILogger<FileBackupService> _logger;
-    private readonly SemaphoreSlim _downloadLimiter = new(50, 50);
+    private const int FileExtensionLimit = 8;
+    private static readonly Regex MatchFileExtension = new(@"\.([^\.]+?)(?=\?ex)");
     private readonly HttpClient _client;
+    private readonly SemaphoreSlim _downloadLimiter = new(50, 50);
+    private readonly ILogger<FileBackupService> _logger;
 
     public FileBackupService(HttpClient client, ILogger<FileBackupService> logger)
     {
@@ -41,22 +42,29 @@ public class FileBackupService : IFileBackupService
 
             var fileUrl = message.Attachments.First().Url;
             var extension = MatchFileExtension.Match(fileUrl).Value;
-            if (extension.Length > 6) extension = "";
+            if (extension.Length > FileExtensionLimit) extension = "";
 
             var file = await DownloadFile(fileUrl);
 
             await File.WriteAllBytesAsync(
-                $@"{Program.FileBackupPath}\{message.Channel.Id}\{message.Id}.{extension}", file);
+                $@"{Program.FileBackupPath}/{message.Channel.Id}/{message.Id}{extension}", file);
         }
         finally
         {
             _downloadLimiter.Release();
         }
     }
-    
+
+    public string GetExtension(IMessage message)
+    {
+        if (message.Attachments.Count > 1) return "";
+        var extension = MatchFileExtension.Match(message.Attachments.First().Url).Value;
+        return extension.Length > FileExtensionLimit ? "" : extension;
+    }
+
     private async Task BackupMultipleFiles(IMessage message)
     {
-        var dirPath = @$"{Program.FileBackupPath}\{message.Channel.Id}\{message.Id}";
+        var dirPath = @$"{Program.FileBackupPath}/{message.Channel.Id}/{message.Id}";
 
         if (!Directory.Exists(dirPath))
             Directory.CreateDirectory(dirPath);
@@ -66,9 +74,9 @@ public class FileBackupService : IFileBackupService
         {
             var file = await DownloadFile(attachment.Url);
             var extension = MatchFileExtension.Match(attachment.Url).Value;
-            if (extension.Length > 8) extension = "";
+            if (extension.Length > FileExtensionLimit) extension = "";
 
-            await File.WriteAllBytesAsync(@$"{dirPath}\file{++n}.{extension}", file);
+            await File.WriteAllBytesAsync(@$"{dirPath}/file{++n}{extension}", file);
         }
     }
 
@@ -93,13 +101,13 @@ public class FileBackupService : IFileBackupService
                 throw;
             }
     }
-    
+
     private Task CreateChannelDirIfNotExists(IMessage message)
     {
         return Task.Run(() =>
         {
-            if (!Directory.Exists($@"{Program.FileBackupPath}\{message.Channel.Id}"))
-                Directory.CreateDirectory($@"{Program.FileBackupPath}\{message.Channel.Id}");
+            if (!Directory.Exists($@"{Program.FileBackupPath}/{message.Channel.Id}"))
+                Directory.CreateDirectory($@"{Program.FileBackupPath}/{message.Channel.Id}");
         });
     }
 }

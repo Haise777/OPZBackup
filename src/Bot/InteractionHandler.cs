@@ -11,31 +11,20 @@ using Serilog;
 
 namespace OPZBot;
 
-public class InteractionHandler
+public class InteractionHandler(DiscordSocketClient client, InteractionService commands, IServiceProvider services)
 {
-    private readonly DiscordSocketClient _client;
-    private readonly InteractionService _commands;
-    private readonly IServiceProvider _services;
-
-    public InteractionHandler(DiscordSocketClient client, InteractionService commands, IServiceProvider services)
-    {
-        _client = client;
-        _commands = commands;
-        _services = services;
-    }
-
     public async Task InitializeAsync()
     {
-        await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
-        _client.InteractionCreated += HandleInteraction;
+        await commands.AddModulesAsync(Assembly.GetEntryAssembly(), services);
+        client.InteractionCreated += HandleInteraction;
     }
 
     private async Task HandleInteraction(SocketInteraction arg)
     {
         try
         {
-            var ctx = new SocketInteractionContext(_client, arg);
-            await _commands.ExecuteCommandAsync(ctx, _services);
+            var ctx = new SocketInteractionContext(client, arg);
+            await commands.ExecuteCommandAsync(ctx, services);
         }
         catch (Exception ex)
         {

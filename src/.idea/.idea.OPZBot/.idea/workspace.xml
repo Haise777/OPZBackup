@@ -9,8 +9,8 @@
   <component name="ChangeListManager">
     <list default="true" id="42cf5f64-0284-42d2-8c25-9c5ff55382ad" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.OPZBot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.OPZBot/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/FileBackupService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/FileBackupService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/MessageProcessor.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/MessageProcessor.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Modules/BackupInteractionModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Modules/BackupInteractionModule.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/ResponseHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/ResponseHandler.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,12 +37,15 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$USER_HOME$/AppData/Local/Symbols/src/dotnet/runtime/5535e31a712343a63f5d7d796cd874e563e5ac14/src/libraries/Microsoft.Extensions.DependencyInjection.Abstractions/src/ServiceCollectionServiceExtensions.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$USER_HOME$/AppData/Local/Symbols/src/dotnet/runtime/5535e31a712343a63f5d7d796cd874e563e5ac14/src/libraries/Microsoft.Extensions.DependencyInjection.Abstractions/src/ServiceDescriptor.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/AppData/Local/Symbols/src/dotnet/runtime/5535e31a712343a63f5d7d796cd874e563e5ac14/src/libraries/System.Private.CoreLib/src/System/IO/File.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/AppData/Local/Symbols/src/dotnet/runtime/5535e31a712343a63f5d7d796cd874e563e5ac14/src/libraries/System.Private.CoreLib/src/System/IO/FileSystem.Windows.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/ILViewer/b2e4ae2fb73b433ebd7bf20aae2e011820800/2b/419c3c44/02000021.il" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/33167b41fdf845bea0923a05c90bf33dd5600/b0/d26c01d8/SocketInteraction.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/b2e4ae2fb73b433ebd7bf20aae2e011820800/04/423f8d08/CommandService.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/cb8a430854124e0e950dfeb54e0000ea149200/5f/f006b2e6/RestUserMessage.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/cb8a430854124e0e950dfeb54e0000ea149200/9c/d649c40c/RestFollowupMessage.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/3a45b01ef4c8358457d425066b5e38a777e05cdfb4bbd8ee1ba95ec59b116d/MySqlConnection.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/575c31ecc35a636b6f962cb71d53992552941a18982aae1c8e6c16305cc3761b/ExceptionDispatchInfo.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/d6f95382468b317a172feb667db83ae826247df59838f7f780cef897689bd83/TaskAwaiter.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
@@ -67,7 +70,18 @@
     "ASKED_ADD_EXTERNAL_FILES": "true",
     "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "Publish to folder.Publish Bot to folder (1).executor": "Run",
+    "Publish to folder.Publish Bot to folder (2).executor": "Run",
+    "Publish to folder.Publish Bot to folder (3).executor": "Run",
+    "Publish to folder.Publish Bot to folder (4).executor": "Run",
+    "Publish to folder.Publish Bot to folder (5).executor": "Run",
+    "Publish to folder.Publish Bot to folder (6).executor": "Run",
     "Publish to folder.Publish Bot to folder.executor": "Run",
+    "Publish to folder.Publish OPZBot to folder (1).executor": "Run",
+    "Publish to folder.Publish OPZBot to folder (2).executor": "Run",
+    "Publish to folder.Publish OPZBot to folder (3).executor": "Run",
+    "Publish to folder.Publish OPZBot to folder (4).executor": "Run",
+    "Publish to folder.Publish OPZBot to folder (5).executor": "Run",
+    "Publish to folder.Publish OPZBot to folder.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "dev",
@@ -77,7 +91,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.sourceCode.C#",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
     "vue.rearranger.settings.migration": "true"
   },
   "keyToStringList": {
@@ -96,8 +110,52 @@
       <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="win-x86" self_contained="true" target_folder="$PROJECT_DIR$/Bot/bin/Release/net6.0/win-x86/publish" target_framework="net6.0" trim_unused_assemblies="true" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
       <method v="2" />
     </configuration>
+    <configuration name="Publish Bot to folder (2)" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="win-x64" self_contained="true" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/win-x64/publish" target_framework="net8.0" trim_unused_assemblies="true" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish Bot to folder (3)" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="win-x64" self_contained="true" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/win-x64/publish" target_framework="net8.0" trim_unused_assemblies="true" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish Bot to folder (4)" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" platform="Any CPU" runtime="Portable" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/publish" target_framework="net8.0" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish Bot to folder (5)" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="win-x64" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/win-x64/publish" target_framework="net8.0" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish Bot to folder (6)" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="linux-x64" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/linux-x64/publish" target_framework="net8.0" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
     <configuration name="Publish Bot to folder" type="DotNetFolderPublish" factoryName="Publish to folder">
       <riderPublish configuration="Release" platform="Any CPU" runtime="win-x86" self_contained="true" target_folder="$PROJECT_DIR$/Bot/bin/Release/net6.0/win-x86/publish" target_framework="net6.0" trim_unused_assemblies="true" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish OPZBot to folder (1)" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="win-x64" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/win-x64/publish" target_framework="net8.0" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish OPZBot to folder (2)" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="linux-x64" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/linux-x64/publish" target_framework="net8.0" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish OPZBot to folder (3)" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" delete_existing_files="true" platform="Any CPU" produce_single_file="true" runtime="win-x64" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/win-x64/publish" target_framework="net8.0" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish OPZBot to folder (4)" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" delete_existing_files="true" platform="Any CPU" produce_single_file="true" runtime="linux-x64" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/linux-x64/publish" target_framework="net8.0" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish OPZBot to folder (5)" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" delete_existing_files="true" platform="Any CPU" produce_single_file="true" runtime="linux-x64" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/linux-x64/publish" target_framework="net8.0" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish OPZBot to folder" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="win-x64" self_contained="true" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/win-x64/publish" target_framework="net8.0" trim_unused_assemblies="true" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
       <method v="2" />
     </configuration>
     <configuration name="Bot" type="DotNetProject" factoryName=".NET Project">
@@ -134,6 +192,14 @@
       <workItem from="1702958484862" duration="10811000" />
       <workItem from="1703021116344" duration="7754000" />
       <workItem from="1703098999600" duration="2821000" />
+      <workItem from="1703188903958" duration="819000" />
+      <workItem from="1703524958504" duration="4230000" />
+      <workItem from="1703529326184" duration="7569000" />
+      <workItem from="1703790084854" duration="29935000" />
+      <workItem from="1703871342585" duration="2883000" />
+      <workItem from="1703876401850" duration="218000" />
+      <workItem from="1703878304472" duration="1884000" />
+      <workItem from="1703881081537" duration="3188000" />
     </task>
     <task id="LOCAL-00001" summary="implemented event handlers for the former 'InvalidBackupAttempt' event">
       <option name="closed" value="true" />

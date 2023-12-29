@@ -11,4 +11,5 @@ namespace OPZBot.Services.MessageBackup.FileBackup;
 public interface IFileBackupService
 {
     Task BackupFilesAsync(IMessage message);
+    string GetExtension(IMessage message);
 }
