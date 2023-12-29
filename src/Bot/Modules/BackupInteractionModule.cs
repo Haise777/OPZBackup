@@ -46,7 +46,7 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
         _logger.LogCommandExecution(
             nameof(BackupService), Context.User.Username, Context.Channel.Name, nameof(MakeBackupCommand),
             choice.ToString());
-        await Context.Interaction.DeferAsync();
+        await DeferAsync();
 
         if (!await CheckForAdminRole()) return;
         if (await CheckIfBackupInProcess()) return;
@@ -77,6 +77,8 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
     {
         _logger.LogCommandExecution(
             nameof(BackupService), Context.User.Username, Context.Channel.Name, nameof(CancelBackupProcess));
+        
+        await DeferAsync();
         if (!await CheckForAdminRole()) return;
         if (_currentBackupService is null)
         {
@@ -122,7 +124,7 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
         {
             if (Lock.CurrentCount < 1)
             {
-                _ = _responseHandler.SendAlreadyInProgressAsync(Context);
+                await _responseHandler.SendAlreadyInProgressAsync(Context);
                 return true;
             }
 

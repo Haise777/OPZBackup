@@ -4,10 +4,13 @@
 // This source code is licensed under the BSD-style license found in the
 // LICENSE file in the root directory of this source tree.
 
+using System.Diagnostics.CodeAnalysis;
 using Discord;
 using Discord.Interactions;
 using Discord.Rest;
+using OPZBot.Logging;
 using OPZBot.Modules;
+using Serilog;
 
 namespace OPZBot.Services.MessageBackup;
 
@@ -75,7 +78,7 @@ public class ResponseHandler(ResponseBuilder responseBuilder) : IResponseHandler
 
         await context.Interaction.FollowupAsync("Tentativa de backup inválida" +
                                                 $"\n**{formattedTime}** restantes");
-        await DelayedDeleteInteraction(context);
+        DelayedDeleteInteraction(context);
     }
 
     public async Task SendDeleteConfirmationAsync(SocketInteractionContext context)
@@ -122,21 +125,22 @@ public class ResponseHandler(ResponseBuilder responseBuilder) : IResponseHandler
             m.Embed = null;
         });
 
-        await DelayedDeleteInteraction(args.InteractionContext);
+        DelayedDeleteInteraction(args.InteractionContext);
     }
 
     public async Task SendAlreadyInProgressAsync(SocketInteractionContext context)
     {
-        await context.Interaction.RespondAsync(
+        await context.Interaction.ModifyOriginalResponseAsync(m => m.Content =
             "*Por limitações do Discord, não é possivel efetuar mais de um processo de backup simutaneamente*");
 
-        await DelayedDeleteInteraction(context);
+        DelayedDeleteInteraction(context);
     }
 
     public async Task SendNotRightPermissionAsync(SocketInteractionContext context)
     {
-        await context.Interaction.RespondAsync("*Você não possui as permissões adequadas para este comando*");
-        await DelayedDeleteInteraction(context);
+        await context.Interaction.ModifyOriginalResponseAsync(m => m.Content =
+            "*Você não possui as permissões adequadas para este comando*");
+        DelayedDeleteInteraction(context);
     }
 
     public async Task SendProcessCancelledAsync(object? sender, BackupEventArgs e)
@@ -152,13 +156,15 @@ public class ResponseHandler(ResponseBuilder responseBuilder) : IResponseHandler
     {
         if (noCurrentBackup)
         {
-            await context.Interaction.RespondAsync("*Não há um backup em andamento para cancelar*");
-            await DelayedDeleteInteraction(context);
+            await context.Interaction.ModifyOriginalResponseAsync(m => m.Content =
+                "*Não há um backup em andamento para cancelar*");
+            DelayedDeleteInteraction(context);
             return;
         }
 
-        await context.Interaction.RespondAsync("*O processo de backup foi cancelado com sucesso*");
-        await DelayedDeleteInteraction(context);
+        await context.Interaction.ModifyOriginalResponseAsync(m => m.Content =
+            "*O processo de backup foi cancelado com sucesso*");
+        DelayedDeleteInteraction(context);
     }
 
     private async Task GhostPing(SocketInteractionContext context)
@@ -168,9 +174,20 @@ public class ResponseHandler(ResponseBuilder responseBuilder) : IResponseHandler
         await ping.DeleteAsync();
     }
 
-    private async Task DelayedDeleteInteraction(SocketInteractionContext context)
+    private void DelayedDeleteInteraction(SocketInteractionContext context)
     {
-        await Task.Delay(7000);
-        await context.Interaction.DeleteOriginalResponseAsync();
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(7000);
+                await context.Interaction.DeleteOriginalResponseAsync();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, ex.Message);
+                await LogFileWritter.LogError(ex, ex.Message);
+            }
+        });
     }
 }
