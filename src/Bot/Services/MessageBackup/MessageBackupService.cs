@@ -22,15 +22,17 @@ public class MessageBackupService : BackupService, IMessageBackupService
     private readonly ILogger<MessageBackupService> _logger;
     private readonly IMessageFetcher _messageFetcher;
     private readonly IBackupMessageProcessor _messageProcessor;
+    private readonly FileCleaner _fileCleaner;
     private bool _continueBackup = true;
 
     public MessageBackupService(IMessageFetcher messageFetcher, Mapper mapper, IBackupMessageProcessor messageProcessor,
-        MyDbContext dataContext, IdCacheManager cache, ILogger<MessageBackupService> logger)
-        : base(mapper, dataContext, cache)
+        MyDbContext dataContext, IdCacheManager cache, ILogger<MessageBackupService> logger, FileCleaner fileCleaner)
+        : base(mapper, dataContext, cache, fileCleaner)
     {
         _messageFetcher = messageFetcher;
         _messageProcessor = messageProcessor;
         _logger = logger;
+        _fileCleaner = fileCleaner;
         _messageProcessor.EndBackupProcess += StopBackup;
     }
 
@@ -164,7 +166,7 @@ public class MessageBackupService : BackupService, IMessageBackupService
         if (BackupRegistry is not null)
         {
             DataContext.BackupRegistries.Remove(BackupRegistry);
-            await FileCleaner.DeleteMessageFilesAsync(await DataContext.Messages
+            await _fileCleaner.DeleteMessageFilesAsync(await DataContext.Messages
                 .Where(m => m.BackupId == BackupRegistry.Id)
                 .ToArrayAsync());
             await DataContext.SaveChangesAsync();

@@ -50,6 +50,7 @@ public static class ServicesExtension
             .AddSingleton<IdCacheManager>()
             .AddSingleton<Mapper>()
             .AddSingleton<LoggingWrapper>()
+            .AddSingleton<FileCleaner>()
             .AddScoped<IMessageFetcher, MessageFetcher>()
             .AddScoped<IBackupMessageProcessor, MessageProcessor>()
             .AddScoped<IMessageBackupService, MessageBackupService>()

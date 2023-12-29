@@ -8,9 +8,9 @@ using OPZBot.DataAccess.Models;
 
 namespace OPZBot.DataAccess;
 
-public static class FileCleaner
+public class FileCleaner
 {
-    public static async Task DeleteMessageFilesAsync(IEnumerable<Message> messages)
+    public async Task DeleteMessageFilesAsync(IEnumerable<Message> messages)
     {
         var concurrentDeletion = new List<Task>();
         foreach (var message in messages) concurrentDeletion.Add(DeleteMessage(message));
@@ -27,7 +27,7 @@ public static class FileCleaner
         }
     }
 
-    private static Task DeleteMessage(Message message)
+    private Task DeleteMessage(Message message)
     {
         if (message.File is null) return Task.CompletedTask;
         var filePath = $"{AppContext.BaseDirectory}{message.File}";

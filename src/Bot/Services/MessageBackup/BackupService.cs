@@ -14,7 +14,7 @@ using OPZBot.Extensions;
 
 namespace OPZBot.Services.MessageBackup;
 
-public abstract class BackupService(Mapper mapper, MyDbContext dataContext, IdCacheManager cache)
+public abstract class BackupService(Mapper mapper, MyDbContext dataContext, IdCacheManager cache, FileCleaner fileCleaner)
     : IBackupService
 {
     protected readonly IdCacheManager Cache = cache;
@@ -49,7 +49,7 @@ public abstract class BackupService(Mapper mapper, MyDbContext dataContext, IdCa
         var messages = await DataContext.Messages.Where(m => m.AuthorId == user.Id).ToArrayAsync();
         DataContext.Messages.RemoveRange(messages);
         await DataContext.SaveChangesAsync();
-        await FileCleaner.DeleteMessageFilesAsync(messages);
+        await fileCleaner.DeleteMessageFilesAsync(messages);
     }
 
     protected virtual async Task StartBackupAsync(SocketInteractionContext interactionContext)

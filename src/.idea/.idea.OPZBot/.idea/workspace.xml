@@ -9,22 +9,10 @@
   <component name="ChangeListManager">
     <list default="true" id="42cf5f64-0284-42d2-8c25-9c5ff55382ad" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.OPZBot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.OPZBot/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Bot.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Bot.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/DataAccess/Context/MyDbContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/DataAccess/Context/MyDbContext.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Bot/DataAccess/FileCleaner.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/DataAccess/FileCleaner.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/DataAccess/Models/User.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/DataAccess/Models/User.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Bot/Extensions/ServicesExtension.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Extensions/ServicesExtension.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Modules/BackupInteractionModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Modules/BackupInteractionModule.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Modules/BlacklistInteractionModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Modules/BlacklistInteractionModule.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Program.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/BackupService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/BackupService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/FileBackupService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/FileBackupService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/IBackupMessageProcessor.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/IBackupMessageProcessor.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/LoggingWrapper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/LoggingWrapper.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/MessageBackupService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/MessageBackupService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/MessageProcessor.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/MessageProcessor.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/ResponseHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/ResponseHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageFetcher.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageFetcher.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,7 +68,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    ".NET Project.Bot.executor": "Run",
+    ".NET Project.Bot.executor": "Debug",
     "ASKED_ADD_EXTERNAL_FILES": "true",
     "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "Publish to folder.Publish Bot to folder (1).executor": "Run",
@@ -212,6 +200,7 @@
       <workItem from="1703790084854" duration="29935000" />
       <workItem from="1703871342585" duration="2883000" />
       <workItem from="1703876401850" duration="218000" />
+      <workItem from="1703878304472" duration="1506000" />
     </task>
     <task id="LOCAL-00001" summary="implemented event handlers for the former 'InvalidBackupAttempt' event">
       <option name="closed" value="true" />
