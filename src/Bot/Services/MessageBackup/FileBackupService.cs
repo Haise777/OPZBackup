@@ -14,7 +14,7 @@ namespace OPZBot.Services.MessageBackup.FileBackup;
 public class FileBackupService : IFileBackupService
 {
     private const int FileExtensionLimit = 8;
-    private static readonly Regex MatchFileExtension = new(@"([^\.]+?)(?=\?ex)");
+    private static readonly Regex MatchFileExtension = new(@"\.([^\.]+?)(?=\?ex)");
     private readonly HttpClient _client;
     private readonly SemaphoreSlim _downloadLimiter = new(50, 50);
     private readonly ILogger<FileBackupService> _logger;
@@ -47,7 +47,7 @@ public class FileBackupService : IFileBackupService
             var file = await DownloadFile(fileUrl);
 
             await File.WriteAllBytesAsync(
-                $@"{Program.FileBackupPath}/{message.Channel.Id}/{message.Id}.{extension}", file);
+                $@"{Program.FileBackupPath}/{message.Channel.Id}/{message.Id}{extension}", file);
         }
         finally
         {
@@ -58,7 +58,7 @@ public class FileBackupService : IFileBackupService
     public string GetExtension(IMessage message)
     {
         if (message.Attachments.Count > 1) return "";
-        var extension = '.' + MatchFileExtension.Match(message.Attachments.First().Url).Value;
+        var extension = MatchFileExtension.Match(message.Attachments.First().Url).Value;
         return extension.Length > FileExtensionLimit ? "" : extension;
     }
 
@@ -76,7 +76,7 @@ public class FileBackupService : IFileBackupService
             var extension = MatchFileExtension.Match(attachment.Url).Value;
             if (extension.Length > FileExtensionLimit) extension = "";
 
-            await File.WriteAllBytesAsync(@$"{dirPath}/file{++n}.{extension}", file);
+            await File.WriteAllBytesAsync(@$"{dirPath}/file{++n}{extension}", file);
         }
     }
 
