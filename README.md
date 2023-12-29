@@ -13,7 +13,7 @@
   <a href="#key-features">Key Features</a> •
   <a href="#how-to-use">How To Use</a> •
   <a href="#download">Download</a> •
-  <a href="#credits">Credits</a> •
+  <a href="#credits">Credits</a>
 </p>
 
 ## Key Features
@@ -68,7 +68,7 @@
 
 ## Download
 
-*Currently there's no stable version to download*
+[Download](https://github.com/Haise777/OPZBot/releases/tag/latest) the latest version of OPZBot for Windows and Linux. 
 
 ## Credits
 
@@ -78,7 +78,7 @@ This software uses the following open source packages:
 - [Serilog](https://github.com/serilog/serilog)
 
 ---
-> OPZBot is released under [BSD 3-Clause license](https://opensource.org/license/bsd-3-clause/)
+OPZBot is released under [BSD 3-Clause license](https://opensource.org/license/bsd-3-clause/)
 
 > *Contact me*\
 > *Email:* [gashimabucoro@proton.me](mailto:gashimabucoro@proton.me) &nbsp;&middot;&nbsp;
