@@ -21,6 +21,8 @@ public class BlacklistInteractionModule(
     ILogger<BlacklistInteractionModule> _logger)
     : InteractionModuleBase<SocketInteractionContext>
 {
+    public const string SERVICE_NAME = "Blacklist";
+    
     [SlashCommand("lista", "lista todos os usuarios inseridos na blacklist")]
     public async Task ListAll()
     {
@@ -64,7 +66,7 @@ public class BlacklistInteractionModule(
 
         if (user is null || !user.IsBlackListed)
         {
-            _logger.LogInformation("{service}: There was no matched user in the blacklist", "Backup");
+            _logger.LogInformation("{service}: There was no matched user in the blacklist", SERVICE_NAME);
             await ModifyOriginalResponseAsync(m =>
                 m.Content = "*Usuario não existente na blacklist*");
             await DelayedDeleteInteraction();
@@ -84,7 +86,7 @@ public class BlacklistInteractionModule(
             throw;
         }
 
-        _logger.LogInformation("{service}: User '{user}' was removed from blacklist", "Backup", user.Username);
+        _logger.LogInformation("{service}: User '{user}' was removed from blacklist", SERVICE_NAME, user.Username);
         await ModifyOriginalResponseAsync(m =>
             m.Content = $"*{user.Username} foi removido da blacklist*");
     }
@@ -107,7 +109,7 @@ public class BlacklistInteractionModule(
         }
         else if (user.IsBlackListed)
         {
-            _logger.LogInformation("{service}: User '{user}' was already added to blacklist", "Backup", user.Username);
+            _logger.LogInformation("{service}: User '{user}' was already added to blacklist", SERVICE_NAME, user.Username);
             await ModifyOriginalResponseAsync(m =>
                 m.Content = "*Usuario já adicionado à blacklist*");
             await DelayedDeleteInteraction();
@@ -127,7 +129,7 @@ public class BlacklistInteractionModule(
             throw;
         }
 
-        _logger.LogInformation("{service}: User '{user}' was added to blacklist", "Backup", user.Username);
+        _logger.LogInformation("{service}: User '{user}' was added to blacklist", SERVICE_NAME, user.Username);
         await ModifyOriginalResponseAsync(m =>
             m.Content = $"*{user.Username} foi adicionado(a) à blacklist*");
     }
@@ -155,7 +157,7 @@ public class BlacklistInteractionModule(
     {
         if (!BackupInteractionModule.IsBackupInProgress) return false;
 
-        _logger.LogInformation("{service}: Can't alter blacklist while a backup process is running", "Backup");
+        _logger.LogInformation("{service}: Can't alter blacklist while a backup process is running", SERVICE_NAME);
         await ModifyOriginalResponseAsync(m =>
             m.Content = "*Não é possivel alterar a blacklist enquanto há um backup em andamento*");
         await DelayedDeleteInteraction();
