@@ -74,7 +74,6 @@ public class MessageBackupService : BackupService, IMessageBackupService
         IMessage? lastMessage = null;
         var attemptsRemaining = 3;
         while (_continueBackup)
-        {
             try
             {
                 CancelSource.Token.ThrowIfCancellationRequested();
@@ -103,7 +102,6 @@ public class MessageBackupService : BackupService, IMessageBackupService
                     await BatchFailed(ex, attemptsRemaining--);
                 else throw;
             }
-        }
 
         if (await CheckIfBackupIsEmpty()) return;
         await CompletedBackupProcess.InvokeAsync(this, new BackupEventArgs(InteractionContext, BackupRegistry));
@@ -173,5 +171,8 @@ public class MessageBackupService : BackupService, IMessageBackupService
         }
     }
 
-    private void StopBackup() => _continueBackup = false;
+    private void StopBackup()
+    {
+        _continueBackup = false;
+    }
 }

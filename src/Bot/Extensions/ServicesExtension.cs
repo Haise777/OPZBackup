@@ -30,7 +30,7 @@ public static class ServicesExtension
     {
         host.ConfigureServices((ctx, services) => services
             .AddDbContext<MyDbContext>(options
-                => options.UseSqlite(@$"Data Source={AppContext.BaseDirectory}Backup\discord_backup.db"))
+                => options.UseSqlite(@$"Data Source={AppContext.BaseDirectory}Backup/discord_backup.db"))
             .AddSingleton(_ => new DiscordSocketClient(new DiscordSocketConfig
             {
                 GatewayIntents = GatewayIntents.All,

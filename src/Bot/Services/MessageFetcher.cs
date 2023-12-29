@@ -17,8 +17,8 @@ public class MessageFetcher : IMessageFetcher
         return x;
     }
 
-    public async Task<IEnumerable<IMessage>> FetchAsync(ISocketMessageChannel channel, ulong startFrom)
+    public Task<IEnumerable<IMessage>> FetchAsync(ISocketMessageChannel channel, ulong startFrom)
     {
-        return await channel.GetMessagesAsync(startFrom, Direction.Before, limit: 500).FlattenAsync();
+        return channel.GetMessagesAsync(startFrom, Direction.Before, 500).FlattenAsync();
     }
 }

@@ -13,10 +13,7 @@ public static class FileCleaner
     public static async Task DeleteMessageFilesAsync(IEnumerable<Message> messages)
     {
         var concurrentDeletion = new List<Task>();
-        foreach (var message in messages)
-        {
-            concurrentDeletion.Add(DeleteMessage(message));
-        }
+        foreach (var message in messages) concurrentDeletion.Add(DeleteMessage(message));
 
         var deletionInProgress = Task.WhenAll(concurrentDeletion);
         try
@@ -35,13 +32,11 @@ public static class FileCleaner
         if (message.File is null) return Task.CompletedTask;
         var filePath = $"{AppContext.BaseDirectory}{message.File}";
         if (Path.GetExtension(filePath) == string.Empty)
-        {
             if ((File.GetAttributes(filePath) & FileAttributes.Directory) == FileAttributes.Directory)
             {
                 Directory.Delete(filePath, true);
                 return Task.CompletedTask;
             }
-        }
 
         File.Delete(filePath);
         return Task.CompletedTask;

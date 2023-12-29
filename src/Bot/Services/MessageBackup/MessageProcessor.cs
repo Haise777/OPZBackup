@@ -24,7 +24,8 @@ public class MessageProcessor(
     public event Action? EndBackupProcess;
     public bool IsUntilLastBackup { get; set; }
 
-    public async Task<MessageDataBatchDto> ProcessMessagesAsync(IEnumerable<IMessage> messageBatch, uint registryId, CancellationToken cToken)
+    public async Task<MessageDataBatchDto> ProcessMessagesAsync(IEnumerable<IMessage> messageBatch, uint registryId,
+        CancellationToken cToken)
     {
         var existingMessageIds = await dataContext.Messages
             .Where(x => x.ChannelId == messageBatch.First().Channel.Id)
@@ -62,7 +63,8 @@ public class MessageProcessor(
                 if (message.Attachments.Any())
                 {
                     concurrentDownloads.Add(fileBackup.BackupFilesAsync(message));
-                    mappedMessage.File = $"Backup/Files/{message.Channel.Id}/{message.Id}{fileBackup.GetExtension(message)}";
+                    mappedMessage.File =
+                        $"Backup/Files/{message.Channel.Id}/{message.Id}{fileBackup.GetExtension(message)}";
                     fileCount += message.Attachments.Count;
                 }
 

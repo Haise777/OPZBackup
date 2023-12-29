@@ -26,9 +26,9 @@ public class BlacklistInteractionModule(
     {
         _logger.LogCommandExecution(
             "Blacklist", Context.User.Username, Context.Channel.Name, nameof(ListAll));
-        
+
         await DeferAsync();
-        
+
         var blacklisteds = await _dataContext.Users
             .Where(u => u.IsBlackListed == true)
             .Select(u => u.Username)
@@ -45,23 +45,20 @@ public class BlacklistInteractionModule(
 
         await ModifyOriginalResponseAsync(m =>
         {
-            foreach (var blacklisted in blacklisteds)
-            {
-                m.Content += $"- {blacklisted}\n";
-            }
+            foreach (var blacklisted in blacklisteds) m.Content += $"- {blacklisted}\n";
         });
     }
-    
+
     [SlashCommand("remover", "remove um usuario da blacklist")]
     public async Task RemoveFrom(SocketUser usuario)
     {
         _logger.LogCommandExecution(
             "Blacklist", Context.User.Username, Context.Channel.Name, nameof(RemoveFrom));
-        
+
         await DeferAsync();
         if (!await UserHasPermission()) return;
         if (await IsBackupInProgress()) return;
-        
+
         var user = await _dataContext.Users
             .SingleOrDefaultAsync(e => e.Id == usuario.Id);
 
@@ -73,7 +70,7 @@ public class BlacklistInteractionModule(
             await DelayedDeleteInteraction();
             return;
         }
-        
+
         try
         {
             user.IsBlackListed = false;
@@ -86,6 +83,7 @@ public class BlacklistInteractionModule(
             await DelayedDeleteInteraction();
             throw;
         }
+
         _logger.LogInformation("{service}: User '{user}' was removed from blacklist", "Backup", user.Username);
         await ModifyOriginalResponseAsync(m =>
             m.Content = $"*{user.Username} foi removido da blacklist*");
@@ -96,11 +94,11 @@ public class BlacklistInteractionModule(
     {
         _logger.LogCommandExecution(
             "Blacklist", Context.User.Username, Context.Channel.Name, nameof(AddToBlacklist));
-        
+
         await DeferAsync();
         if (!await UserHasPermission()) return;
         if (await IsBackupInProgress()) return;
-        
+
         var user = await _dataContext.Users.SingleOrDefaultAsync(u => u.Id == usuario.Id);
         if (user is null)
         {
@@ -139,7 +137,7 @@ public class BlacklistInteractionModule(
         await Task.Delay(7000);
         await DeleteOriginalResponseAsync();
     }
-    
+
     private async Task<bool> UserHasPermission()
     {
         var user = Context.User as SocketGuildUser;
@@ -152,11 +150,11 @@ public class BlacklistInteractionModule(
         await DelayedDeleteInteraction();
         return false;
     }
-    
+
     private async Task<bool> IsBackupInProgress()
     {
         if (!BackupInteractionModule.IsBackupInProgress) return false;
-        
+
         _logger.LogInformation("{service}: Can't alter blacklist while a backup process is running", "Backup");
         await ModifyOriginalResponseAsync(m =>
             m.Content = "*Não é possivel alterar a blacklist enquanto há um backup em andamento*");

@@ -43,13 +43,13 @@ public abstract class BackupService(Mapper mapper, MyDbContext dataContext, IdCa
             user = Mapper.Map(interactionContext.User);
             DataContext.Users.Add(user);
         }
+
         user.IsBlackListed = true;
 
         var messages = await DataContext.Messages.Where(m => m.AuthorId == user.Id).ToArrayAsync();
         DataContext.Messages.RemoveRange(messages);
-        await FileCleaner.DeleteMessageFilesAsync(messages);
-        
         await DataContext.SaveChangesAsync();
+        await FileCleaner.DeleteMessageFilesAsync(messages);
     }
 
     protected virtual async Task StartBackupAsync(SocketInteractionContext interactionContext)

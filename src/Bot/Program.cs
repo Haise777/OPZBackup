@@ -76,7 +76,7 @@ public class Program
                 var context = serviceScope.ServiceProvider.GetRequiredService<MyDbContext>();
                 await context.Database.EnsureCreatedAsync();
             }
-            
+
             await RunAsync(host);
         }
         catch (HostAbortedException)

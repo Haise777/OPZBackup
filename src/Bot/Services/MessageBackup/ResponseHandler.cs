@@ -21,7 +21,7 @@ public class ResponseHandler(ResponseBuilder responseBuilder) : IResponseHandler
         var backupService = sender as MessageBackupService;
         responseBuilder.Author = e.InteractionContext.User;
         responseBuilder.StartTime = DateTime.Now;
-        _interactionMessage = await e.InteractionContext.Interaction.FollowupAsync(embed: 
+        _interactionMessage = await e.InteractionContext.Interaction.FollowupAsync(embed:
             responseBuilder.Build(
                 backupService.BatchNumber, backupService.SavedMessagesCount, backupService.SavedFilesCount,
                 ProgressStage.Started));
@@ -30,9 +30,9 @@ public class ResponseHandler(ResponseBuilder responseBuilder) : IResponseHandler
     public async Task SendBatchFinishedAsync(object? sender, BackupEventArgs e)
     {
         var backupService = sender as MessageBackupService;
-        responseBuilder.StartMessage 
+        responseBuilder.StartMessage
             ??= await e.InteractionContext.Channel.GetMessageAsync(e.MessageBatch.Messages.First().Id);
-        
+
         var currentMessage = await e.InteractionContext.Channel.GetMessageAsync(e.MessageBatch.Messages.Last().Id);
         responseBuilder.CurrentMessage = currentMessage;
 

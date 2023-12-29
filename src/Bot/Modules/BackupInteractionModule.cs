@@ -17,16 +17,14 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
 {
     public const string CONFIRM_USER_DELETE_ID = "DLT_CONF_CONFIRM";
     public const string CANCEL_USER_DELETE_ID = "DLT_CONF_CANCEL";
-
-    public static bool IsBackupInProgress => Lock.CurrentCount < 1;
     private static IMessageBackupService? _currentBackupService;
 
     private static readonly SemaphoreSlim LockPreCommand = new(1, 1);
     private static readonly SemaphoreSlim Lock = new(1, 1);
-
-    private readonly IMessageBackupService _messageBackupService;
     private readonly ILogger<BackupInteractionModule> _logger;
     private readonly LoggingWrapper _loggingWrapper;
+
+    private readonly IMessageBackupService _messageBackupService;
     private readonly IResponseHandler _responseHandler;
 
     public BackupInteractionModule(IMessageBackupService messageBackupService, IResponseHandler responseHandler,
@@ -39,6 +37,8 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
 
         SubscribeEvents();
     }
+
+    public static bool IsBackupInProgress => Lock.CurrentCount < 1;
 
     [SlashCommand("fazer", "efetuar backup deste canal")]
     public async Task MakeBackupCommand([Choice("ate-ultimo", 0)] [Choice("total", 1)] int choice)
@@ -155,7 +155,7 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
         _messageBackupService.CompletedBackupProcess += _loggingWrapper.LogCompleted;
         _messageBackupService.ProcessFailed += _responseHandler.SendFailedAsync;
         _messageBackupService.EmptyBackupAttempt += _responseHandler.SendEmptyMessageBackupAsync;
-        _messageBackupService.EmptyBackupAttempt += _loggingWrapper.LogEmptyMessageBackupAttempt; 
+        _messageBackupService.EmptyBackupAttempt += _loggingWrapper.LogEmptyMessageBackupAttempt;
         _messageBackupService.ProcessCanceled += _responseHandler.SendProcessCancelledAsync;
         _messageBackupService.ProcessCanceled += _loggingWrapper.LogBackupCancelled;
     }

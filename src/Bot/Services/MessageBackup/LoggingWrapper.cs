@@ -22,7 +22,7 @@ public class LoggingWrapper(ILogger<BackupService> logger)
     public Task LogBatchFinished(object? sender, BackupEventArgs e)
     {
         var backupService = sender as MessageBackupService;
-        
+
         return logger.LogAsync(LogLevel.Information, null,
             "{service}: Backup {registryId} > Finished batch {bNumber} with {messageCount} saved messages | {fileCount} saved files | {userCount} new users",
             nameof(BackupService),

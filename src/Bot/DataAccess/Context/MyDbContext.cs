@@ -125,7 +125,7 @@ public partial class MyDbContext : DbContext
             entity.Property(e => e.IsBlackListed)
                 .HasColumnName("is_blacklisted");
         });
-        
+
         OnModelCreatingPartial(modelBuilder);
     }
 
