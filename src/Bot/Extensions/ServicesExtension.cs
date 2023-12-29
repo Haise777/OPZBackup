@@ -52,7 +52,7 @@ public static class ServicesExtension
             .AddSingleton<LoggingWrapper>()
             .AddScoped<IMessageFetcher, MessageFetcher>()
             .AddScoped<IBackupMessageProcessor, MessageProcessor>()
-            .AddScoped<IBackupMessageService, BackupMessageService>()
+            .AddScoped<IMessageBackupService, MessageBackupService>()
             .AddScoped<IResponseHandler, ResponseHandler>()
             .AddScoped<IFileBackupService, FileBackupService>()
             .AddScoped<ResponseBuilder>()

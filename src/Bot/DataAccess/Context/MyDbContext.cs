@@ -122,8 +122,10 @@ public partial class MyDbContext : DbContext
             entity.Property(e => e.Username)
                 .HasMaxLength(35)
                 .HasColumnName("username");
+            entity.Property(e => e.IsBlackListed)
+                .HasColumnName("is_blacklisted");
         });
-
+        
         OnModelCreatingPartial(modelBuilder);
     }
 

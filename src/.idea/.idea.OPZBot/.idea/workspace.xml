@@ -8,9 +8,27 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="42cf5f64-0284-42d2-8c25-9c5ff55382ad" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Bot/DataAccess/FileCleaner.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Bot/Modules/BlacklistInteractionModule.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.OPZBot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.OPZBot/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Bot.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Bot.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/DataAccess/Caching/IdCacheManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/DataAccess/Caching/IdCacheManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/DataAccess/Context/MyDbContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/DataAccess/Context/MyDbContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/DataAccess/Models/User.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/DataAccess/Models/User.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Extensions/CacheManagerExtension.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Extensions/CacheManagerExtension.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Extensions/ServicesExtension.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Extensions/ServicesExtension.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Modules/BackupInteractionModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Modules/BackupInteractionModule.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Bot/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/BackupMessageService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/MessageBackupService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/BackupService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/BackupService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/FileBackupService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/FileBackupService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/IBackupMessageProcessor.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/IBackupMessageProcessor.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/IBackupMessageService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/IMessageBackupService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/IBackupService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/IBackupService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/IFileBackupService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/IFileBackupService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/IResponseHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/IResponseHandler.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/LoggingWrapper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/LoggingWrapper.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/MessageProcessor.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/MessageProcessor.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/ResponseHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/ResponseHandler.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,6 +55,8 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$USER_HOME$/AppData/Local/Symbols/src/dotnet/runtime/5535e31a712343a63f5d7d796cd874e563e5ac14/src/libraries/Microsoft.Extensions.DependencyInjection.Abstractions/src/ServiceCollectionServiceExtensions.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$USER_HOME$/AppData/Local/Symbols/src/dotnet/runtime/5535e31a712343a63f5d7d796cd874e563e5ac14/src/libraries/Microsoft.Extensions.DependencyInjection.Abstractions/src/ServiceDescriptor.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/AppData/Local/Symbols/src/dotnet/runtime/5535e31a712343a63f5d7d796cd874e563e5ac14/src/libraries/System.Private.CoreLib/src/System/IO/File.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/AppData/Local/Symbols/src/dotnet/runtime/5535e31a712343a63f5d7d796cd874e563e5ac14/src/libraries/System.Private.CoreLib/src/System/IO/FileSystem.Windows.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/ILViewer/b2e4ae2fb73b433ebd7bf20aae2e011820800/2b/419c3c44/02000021.il" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/33167b41fdf845bea0923a05c90bf33dd5600/b0/d26c01d8/SocketInteraction.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/b2e4ae2fb73b433ebd7bf20aae2e011820800/04/423f8d08/CommandService.cs" root0="SKIP_HIGHLIGHTING" />
@@ -177,7 +197,8 @@
       <workItem from="1703098999600" duration="2821000" />
       <workItem from="1703188903958" duration="819000" />
       <workItem from="1703524958504" duration="4230000" />
-      <workItem from="1703529326184" duration="6462000" />
+      <workItem from="1703529326184" duration="7569000" />
+      <workItem from="1703790084854" duration="29299000" />
     </task>
     <task id="LOCAL-00001" summary="implemented event handlers for the former 'InvalidBackupAttempt' event">
       <option name="closed" value="true" />

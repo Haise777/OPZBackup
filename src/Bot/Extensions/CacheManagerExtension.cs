@@ -18,7 +18,7 @@ public static class CacheManagerExtension
         Log.Information("{service} Cache has been synchronized", "Cache:");
         await cacheManager.ChannelIds.UpdateRangeAsync(
             await context.Channels.Select(c => c.Id).ToArrayAsync());
-        await cacheManager.UserIds.UpdateRangeAsync(
+        await cacheManager.Users.UpdateRangeAsync(
             await context.Users.Select(u => u.Id).ToArrayAsync());
     }
 }

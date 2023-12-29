@@ -8,9 +8,9 @@ namespace OPZBot.DataAccess.Caching;
 
 public class IdCacheManager
 {
-    public IdCacheManager(IDataCache<ulong> userIds, IDataCache<ulong> channelIds, IDataCache<uint> backupRegistryIds)
+    public IdCacheManager(IDataCache<ulong> users, IDataCache<ulong> channelIds, IDataCache<uint> backupRegistryIds)
     {
-        UserIds = userIds;
+        Users = users;
         ChannelIds = channelIds;
         BackupRegistryIds = backupRegistryIds;
     }
@@ -18,11 +18,11 @@ public class IdCacheManager
     public IdCacheManager()
     {
         BackupRegistryIds = new DataCache<uint>();
-        UserIds = new DataCache<ulong>();
+        Users = new DataCache<ulong>();
         ChannelIds = new DataCache<ulong>();
     }
 
-    public IDataCache<ulong> UserIds { get; }
+    public IDataCache<ulong> Users { get; }
     public IDataCache<ulong> ChannelIds { get; }
     public IDataCache<uint> BackupRegistryIds { get; } //TODO Only worth in a multiple parallel backup scenario
 }

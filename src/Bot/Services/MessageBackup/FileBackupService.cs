@@ -53,7 +53,14 @@ public class FileBackupService : IFileBackupService
             _downloadLimiter.Release();
         }
     }
-    
+
+    public string GetExtension(IMessage message)
+    {
+        if (message.Attachments.Count > 1) return "";
+        var extension = '.' + MatchFileExtension.Match(message.Attachments.First().Url).Value;
+        return extension.Length > 6 ? "" : extension;
+    }
+
     private async Task BackupMultipleFiles(IMessage message)
     {
         var dirPath = @$"{Program.FileBackupPath}/{message.Channel.Id}/{message.Id}";
@@ -66,7 +73,7 @@ public class FileBackupService : IFileBackupService
         {
             var file = await DownloadFile(attachment.Url);
             var extension = MatchFileExtension.Match(attachment.Url).Value;
-            if (extension.Length > 8) extension = "";
+            if (extension.Length > 6) extension = "";
 
             await File.WriteAllBytesAsync(@$"{dirPath}/file{++n}.{extension}", file);
         }

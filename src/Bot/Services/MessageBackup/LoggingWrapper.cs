@@ -21,7 +21,7 @@ public class LoggingWrapper(ILogger<BackupService> logger)
 
     public Task LogBatchFinished(object? sender, BackupEventArgs e)
     {
-        var backupService = sender as BackupMessageService;
+        var backupService = sender as MessageBackupService;
         
         return logger.LogAsync(LogLevel.Information, null,
             "{service}: Backup {registryId} > Finished batch {bNumber} with {messageCount} saved messages | {fileCount} saved files | {userCount} new users",
@@ -35,7 +35,7 @@ public class LoggingWrapper(ILogger<BackupService> logger)
 
     public Task LogCompleted(object? sender, BackupEventArgs e)
     {
-        var backupService = sender as BackupMessageService;
+        var backupService = sender as MessageBackupService;
 
         return logger.LogAsync(LogLevel.Information, null,
             "{service}: Backup {registryId} > completed at batch number {batchNumber} with {savedNumber} saved messages and {fileNumbers} saved files",
@@ -46,9 +46,15 @@ public class LoggingWrapper(ILogger<BackupService> logger)
             backupService.SavedFilesCount);
     }
 
-    public Task LogEmptyBackupAttempt(object? sender, BackupEventArgs args)
+    public Task LogEmptyMessageBackupAttempt(object? sender, BackupEventArgs args)
     {
         return logger.LogAsync(LogLevel.Information, null,
             "{service}: Invalid backup attempt > There was no valid message to backup", nameof(BackupService));
+    }
+
+    public Task LogBackupCancelled(object? sender, BackupEventArgs e)
+    {
+        return logger.LogAsync(LogLevel.Information, null,
+            "{service}: Backup {registryId} was cancelled", nameof(BackupService), e.Registry.Id);
     }
 }

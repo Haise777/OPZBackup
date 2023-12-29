@@ -24,11 +24,15 @@ public class MessageProcessor(
     public event Action? EndBackupProcess;
     public bool IsUntilLastBackup { get; set; }
 
-    public async Task<MessageDataBatchDto> ProcessMessagesAsync(IEnumerable<IMessage> messageBatch, uint registryId)
+    public async Task<MessageDataBatchDto> ProcessMessagesAsync(IEnumerable<IMessage> messageBatch, uint registryId, CancellationToken cToken)
     {
         var existingMessageIds = await dataContext.Messages
             .Where(x => x.ChannelId == messageBatch.First().Channel.Id)
             .Select(m => m.Id)
+            .ToArrayAsync();
+        var blacklistedUsers = await dataContext.Users
+            .Where(u => u.IsBlackListed == true)
+            .Select(u => u.Id)
             .ToArrayAsync();
 
         var users = new List<User>();
@@ -36,34 +40,42 @@ public class MessageProcessor(
         var fileCount = 0;
         var concurrentDownloads = new List<Task>();
 
-        foreach (var message in messageBatch)
+        try
         {
-            if (message.Content == "" && message.Author.Id == Program.BotUserId) continue;
-            if (existingMessageIds.Any(m => m == message.Id))
+            foreach (var message in messageBatch)
             {
-                if (IsUntilLastBackup)
+                cToken.ThrowIfCancellationRequested();
+                if (message.Content == "" && message.Author.Id == Program.BotUserId) continue;
+                if (blacklistedUsers.Any(u => u == message.Author.Id)) continue;
+                if (existingMessageIds.Any(m => m == message.Id))
                 {
-                    EndBackupProcess?.Invoke();
-                    break;
+                    if (IsUntilLastBackup)
+                    {
+                        EndBackupProcess?.Invoke();
+                        break;
+                    }
+
+                    continue;
                 }
 
-                continue;
-            }
+                var mappedMessage = mapper.Map(message, registryId);
+                if (message.Attachments.Any())
+                {
+                    concurrentDownloads.Add(fileBackup.BackupFilesAsync(message));
+                    mappedMessage.File = $"Backup/Files/{message.Channel.Id}/{message.Id}{fileBackup.GetExtension(message)}";
+                    fileCount += message.Attachments.Count;
+                }
 
-            var mappedMessage = mapper.Map(message, registryId);
-            if (message.Attachments.Any())
-            {
-                concurrentDownloads.Add(fileBackup.BackupFilesAsync(message));
-                mappedMessage.File = @$"Backup\{message.Channel.Id}\{message.Id}";
-                fileCount += message.Attachments.Count;
+                if (!await cache.Users.ExistsAsync(message.Author.Id))
+                    users.Add(mapper.Map(message.Author));
+                messages.Add(mappedMessage);
             }
-
-            if (!await cache.UserIds.ExistsAsync(message.Author.Id))
-                users.Add(mapper.Map(message.Author));
-            messages.Add(mappedMessage);
+        }
+        finally
+        {
+            await Task.WhenAll(concurrentDownloads);
         }
 
-        await Task.WhenAll(concurrentDownloads);
         return new MessageDataBatchDto(users, messages, fileCount);
     }
 }

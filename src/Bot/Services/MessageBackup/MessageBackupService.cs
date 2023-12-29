@@ -17,15 +17,15 @@ using OPZBot.Utilities;
 
 namespace OPZBot.Services.MessageBackup;
 
-public class BackupMessageService : BackupService, IBackupMessageService
+public class MessageBackupService : BackupService, IMessageBackupService
 {
-    private readonly ILogger<BackupMessageService> _logger;
+    private readonly ILogger<MessageBackupService> _logger;
     private readonly IMessageFetcher _messageFetcher;
     private readonly IBackupMessageProcessor _messageProcessor;
     private bool _continueBackup = true;
 
-    public BackupMessageService(IMessageFetcher messageFetcher, Mapper mapper, IBackupMessageProcessor messageProcessor,
-        MyDbContext dataContext, IdCacheManager cache, ILogger<BackupMessageService> logger)
+    public MessageBackupService(IMessageFetcher messageFetcher, Mapper mapper, IBackupMessageProcessor messageProcessor,
+        MyDbContext dataContext, IdCacheManager cache, ILogger<MessageBackupService> logger)
         : base(mapper, dataContext, cache)
     {
         _messageFetcher = messageFetcher;
@@ -34,6 +34,7 @@ public class BackupMessageService : BackupService, IBackupMessageService
         _messageProcessor.EndBackupProcess += StopBackup;
     }
 
+    public CancellationTokenSource CancelSource { get; } = new();
     public int BatchNumber { get; private set; }
     public int SavedMessagesCount { get; private set; }
     public int SavedFilesCount { get; private set; }
@@ -41,8 +42,9 @@ public class BackupMessageService : BackupService, IBackupMessageService
     public event AsyncEventHandler<BackupEventArgs>? StartedBackupProcess;
     public event AsyncEventHandler<BackupEventArgs>? FinishedBatch;
     public event AsyncEventHandler<BackupEventArgs>? CompletedBackupProcess;
-    public event AsyncEventHandler<BackupEventArgs>? ProcessHasFailed;
+    public event AsyncEventHandler<BackupEventArgs>? ProcessFailed;
     public event AsyncEventHandler<BackupEventArgs>? EmptyBackupAttempt;
+    public event AsyncEventHandler<BackupEventArgs>? ProcessCanceled;
 
     public async Task StartBackupAsync(SocketInteractionContext context, bool isUntilLastBackup)
     {
@@ -54,15 +56,15 @@ public class BackupMessageService : BackupService, IBackupMessageService
             await StartedBackupProcess.InvokeAsync(this, new BackupEventArgs(context, BackupRegistry));
             await StartBackupMessages();
         }
+        catch (OperationCanceledException)
+        {
+            await ProcessCanceled.InvokeAsync(this, new BackupEventArgs(InteractionContext, BackupRegistry));
+            await CleanupBackupLeftovers();
+        }
         catch (Exception)
         {
-            if (BackupRegistry is not null)
-            {
-                DataContext.BackupRegistries.Remove(BackupRegistry);
-                await DataContext.SaveChangesAsync();
-            }
-
-            await ProcessHasFailed.InvokeAsync(this, new BackupEventArgs(InteractionContext, BackupRegistry));
+            await ProcessFailed.InvokeAsync(this, new BackupEventArgs(InteractionContext, BackupRegistry));
+            await CleanupBackupLeftovers();
             throw;
         }
     }
@@ -72,22 +74,28 @@ public class BackupMessageService : BackupService, IBackupMessageService
         IMessage? lastMessage = null;
         var attemptsRemaining = 3;
         while (_continueBackup)
+        {
             try
             {
+                CancelSource.Token.ThrowIfCancellationRequested();
                 var fetchedMessages = await FetchMessages(lastMessage);
                 if (fetchedMessages.Length == 0) break;
                 lastMessage = fetchedMessages.Last();
-                
-                var messageDataBatch =
-                    await _messageProcessor.ProcessMessagesAsync(fetchedMessages, BackupRegistry!.Id);
+
+                var messageDataBatch = await _messageProcessor.ProcessMessagesAsync(
+                    fetchedMessages, BackupRegistry!.Id, CancelSource.Token);
                 if (IsEmptyBatch(messageDataBatch)) continue;
 
                 await SaveBatch(messageDataBatch);
+                UpdateStatistics(messageDataBatch);
                 await FinishedBatch.InvokeAsync(this,
                     new BackupEventArgs(InteractionContext, BackupRegistry, messageDataBatch));
 
-                UpdateStatistics(messageDataBatch);
                 attemptsRemaining = 3;
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -95,6 +103,7 @@ public class BackupMessageService : BackupService, IBackupMessageService
                     await BatchFailed(ex, attemptsRemaining--);
                 else throw;
             }
+        }
 
         if (await CheckIfBackupIsEmpty()) return;
         await CompletedBackupProcess.InvokeAsync(this, new BackupEventArgs(InteractionContext, BackupRegistry));
@@ -150,6 +159,18 @@ public class BackupMessageService : BackupService, IBackupMessageService
         await DataContext.SaveChangesAsync();
         await EmptyBackupAttempt.InvokeAsync(this, new BackupEventArgs(InteractionContext, BackupRegistry));
         return true;
+    }
+
+    private async Task CleanupBackupLeftovers()
+    {
+        if (BackupRegistry is not null)
+        {
+            DataContext.BackupRegistries.Remove(BackupRegistry);
+            await FileCleaner.DeleteMessageFilesAsync(await DataContext.Messages
+                .Where(m => m.BackupId == BackupRegistry.Id)
+                .ToArrayAsync());
+            await DataContext.SaveChangesAsync();
+        }
     }
 
     private void StopBackup() => _continueBackup = false;
