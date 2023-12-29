@@ -77,7 +77,7 @@ public class ResponseHandler(ResponseBuilder responseBuilder) : IResponseHandler
             : $"{cooldownTime.Minutes} minutos e {cooldownTime.Seconds} segundos";
 
         await context.Interaction.FollowupAsync("Tentativa de backup inválida" +
-                                                $"\n**{formattedTime}** restantes");
+                                                $"\n**{formattedTime}** restantes para poder efetuar o próximo backup");
         DelayedDeleteInteraction(context);
     }
 
