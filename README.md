@@ -30,6 +30,7 @@
 * Backup of text channels to a database file
   - All of channel's messages.
   - Full file backup support without any file type limitations.
+  - Blacklist specified users from being saved on the backup.
 
 ## How To Use
 
