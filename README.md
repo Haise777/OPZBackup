@@ -34,6 +34,14 @@
 
 ## How To Use
 
+<h3>Requirements</h3>  
+
+* You need to have [.NET Runtime version 8.0](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) or higher installed on your machine
+* A Discord user account
+* Have admin privileges on at least one Discord server
+
+---
+
 <h3>Prior to bot initialization</h3>  
 <h4>Creating a Discord Bot User</h4>
 
