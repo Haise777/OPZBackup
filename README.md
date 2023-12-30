@@ -9,6 +9,15 @@
 
 <h4 align="center">A multipurpose Discord Bot for my server, built using <a href="https://github.com/discord-net/Discord.Net" target="_blank">Discord.Net</a>.</h4>
 
+<div align="center">
+  
+  <a href="">![Static Badge](https://img.shields.io/badge/.NET-8.0-%233502b8?style=flat-square)</a>
+  <a href="">![Static Badge](https://img.shields.io/badge/discord.net-3.13.0-%237c00ad?style=flat-square)</a>
+  <a href="">![GitHub release (with filter)](https://img.shields.io/github/v/release/Haise777/OPZBot?display_name=release&style=flat-square)</a>
+  <a href="">![GitHub License](https://img.shields.io/github/license/Haise777/OPZBot?style=flat-square&color=%23a38802)</a>
+  
+</div>
+
 <p align="center">
   <a href="#key-features">Key Features</a> •
   <a href="#how-to-use">How To Use</a> •
@@ -68,13 +77,14 @@
 
 ## Download
 
-[Download](https://github.com/Haise777/OPZBot/releases/tag/latest) the latest version of OPZBot for Windows and Linux. 
+[Download](https://github.com/Haise777/OPZBot/releases/tag/latest) the latest version of OPZBot for Windows or Linux. 
 
 ## Credits
 
 This software uses the following open source packages:
 
 - [Discord.Net](https://github.com/discord-net/Discord.Net)
+- [EF Core](https://github.com/dotnet/efcore)
 - [Serilog](https://github.com/serilog/serilog)
 
 ---
