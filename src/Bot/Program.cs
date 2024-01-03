@@ -21,7 +21,7 @@ namespace OPZBot;
 
 public class Program
 {
-    public const string APP_VER = "1.0";
+    public const string APP_VER = "1.0.1";
     public static DateTime SessionTime { get; } = DateTime.Now;
     public static string FileBackupPath { get; } = $"{AppContext.BaseDirectory}Backup/Files";
     public static bool RunWithCooldowns { get; private set; }
@@ -34,49 +34,27 @@ public class Program
         return new Program().MainAsync(args);
     }
 
-    private async Task MainAsync(string[] args)
+    public async Task MainAsync(string[] args)
     {
         new StartupConfigMenu().Initialize();
-
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Information()
-            .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-            .Enrich.FromLogContext()
-            .WriteTo.Console()
-            .CreateLogger();
-
+        ConfigureStaticLogger();
+        
         try
         {
             Log.Information("Starting host");
-
-            var config = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile(BotConfigService.CONFIG_FILE_NAME)
-                .Build();
-
-            MainAdminRoleId = config.GetValue<ulong?>("MainAdminRoleId");
-            RunWithCooldowns = config.GetValue<bool>("RunWithCooldowns");
-            TimezoneAdjust = config.GetValue<int>("TimezoneAdjust");
-            if (!RunWithCooldowns) Log.Warning("Running without cooldowns!");
-
-            using var host = Host.CreateDefaultBuilder(args)
-                .ConfigureBotServices(config)
+            
+            var hostBuilder = Host.CreateDefaultBuilder(args)
                 .UseSerilog((_, _, cfg)
                         => cfg
                             .Enrich.FromLogContext()
                             .MinimumLevel.Information()
                             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                            .WriteTo.Console(),
-                    true
-                )
-                .Build();
-
-            using (var serviceScope = host.Services.CreateScope())
-            {
-                var context = serviceScope.ServiceProvider.GetRequiredService<MyDbContext>();
-                await context.Database.EnsureCreatedAsync();
-            }
-
+                            .WriteTo.Console(), preserveStaticLogger: true
+                );
+            
+            SetStartupBotValues(hostBuilder);
+            using var host = hostBuilder.Build();
+            await CreateDbFileIfNotExists(host);
             await RunAsync(host);
         }
         catch (HostAbortedException)
@@ -127,5 +105,37 @@ public class Program
         await client.LoginAsync(TokenType.Bot, config["Token"]);
         await client.StartAsync();
         await Task.Delay(-1);
+    }
+    
+    private Task CreateDbFileIfNotExists(IHost host)
+    {
+        using var serviceScope = host.Services.CreateScope();
+        var context = serviceScope.ServiceProvider.GetRequiredService<MyDbContext>();
+        return context.Database.EnsureCreatedAsync();
+    }
+
+    private void SetStartupBotValues(IHostBuilder hostBuilder)
+    {
+        var config = new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile(BotConfigService.CONFIG_FILE_NAME)
+            .Build();
+
+        MainAdminRoleId = config.GetValue<ulong?>("MainAdminRoleId");
+        RunWithCooldowns = config.GetValue<bool>("RunWithCooldowns");
+        TimezoneAdjust = config.GetValue<int>("TimezoneAdjust");
+        if (!RunWithCooldowns) Log.Warning("Running without cooldowns!");
+
+        hostBuilder.ConfigureBotServices(config);
+    }
+
+    private void ConfigureStaticLogger()
+    {
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Information()
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+            .Enrich.FromLogContext()
+            .WriteTo.Console()
+            .CreateLogger();
     }
 }
