@@ -5,10 +5,11 @@
 // LICENSE file in the root directory of this source tree.
 
 using Discord.Interactions;
+using OPZBot.Utilities;
 
 namespace OPZBot.Services.MessageBackup;
 
-public interface IResponseHandler
+public interface IBackupResponseHandler : IResponseHandler
 {
     Task SendStartNotificationAsync(object? sender, BackupEventArgs e);
     Task SendBatchFinishedAsync(object? sender, BackupEventArgs e);
@@ -20,6 +21,5 @@ public interface IResponseHandler
     Task SendUserDeletionResultAsync(SocketInteractionContext context, bool wasDeleted);
     Task SendEmptyMessageBackupAsync(object? sender, BackupEventArgs args);
     Task SendAlreadyInProgressAsync(SocketInteractionContext context);
-    Task SendNotRightPermissionAsync(SocketInteractionContext context);
     Task SendProcessToCancelAsync(SocketInteractionContext context, bool noCurrentBackup = false);
 }

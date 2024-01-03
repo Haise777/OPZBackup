@@ -25,12 +25,12 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
     private readonly LoggingWrapper _loggingWrapper;
 
     private readonly IMessageBackupService _messageBackupService;
-    private readonly IResponseHandler _responseHandler;
+    private readonly IBackupResponseHandler _backupResponseHandler;
 
-    public BackupInteractionModule(IMessageBackupService messageBackupService, IResponseHandler responseHandler,
+    public BackupInteractionModule(IMessageBackupService messageBackupService, IBackupResponseHandler backupResponseHandler,
         ILogger<BackupInteractionModule> logger, LoggingWrapper loggingWrapper)
     {
-        _responseHandler = responseHandler;
+        _backupResponseHandler = backupResponseHandler;
         _messageBackupService = messageBackupService;
         _logger = logger;
         _loggingWrapper = loggingWrapper;
@@ -59,7 +59,7 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
             {
                 _logger.LogInformation(
                     "{service}: Backup is still in cooldown for this channel", nameof(BackupService));
-                await _responseHandler.SendInvalidAttemptAsync(Context, tm);
+                await _backupResponseHandler.SendInvalidAttemptAsync(Context, tm);
                 return;
             }
 
@@ -82,12 +82,12 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
         if (!await CheckForAdminRole()) return;
         if (_currentBackupService is null)
         {
-            await _responseHandler.SendProcessToCancelAsync(Context, true);
+            await _backupResponseHandler.SendProcessToCancelAsync(Context, true);
             return;
         }
 
         await _currentBackupService.CancelSource.CancelAsync();
-        await _responseHandler.SendProcessToCancelAsync(Context);
+        await _backupResponseHandler.SendProcessToCancelAsync(Context);
     }
 
     [SlashCommand("deletar-proprio",
@@ -96,7 +96,7 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
     {
         _logger.LogCommandExecution(
             nameof(BackupService), Context.User.Username, Context.Channel.Name, nameof(DeleteUserInBackupCommand));
-        await _responseHandler.SendDeleteConfirmationAsync(Context);
+        await _backupResponseHandler.SendDeleteConfirmationAsync(Context);
     }
 
     //DeleteUserInBackupCommand() Confirmation button interaction handlers
@@ -107,14 +107,14 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
         _logger.LogInformation(
             "{service}: {user} was deleted from the backup registry", nameof(BackupService), Context.User.Username);
 
-        await _responseHandler.SendUserDeletionResultAsync(Context, true);
+        await _backupResponseHandler.SendUserDeletionResultAsync(Context, true);
     }
 
     [ComponentInteraction(CANCEL_USER_DELETE_ID, true)]
     public async Task DeleteUserCancel()
     {
         _logger.LogInformation("{service}: {user} aborted deletion", nameof(BackupService), Context.User.Username);
-        await _responseHandler.SendUserDeletionResultAsync(Context, false);
+        await _backupResponseHandler.SendUserDeletionResultAsync(Context, false);
     }
 
     private async Task<bool> CheckIfBackupInProcess()
@@ -122,9 +122,9 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
         await LockPreCommand.WaitAsync();
         try
         {
-            if (Lock.CurrentCount < 1)
+            if (IsBackupInProgress)
             {
-                await _responseHandler.SendAlreadyInProgressAsync(Context);
+                await _backupResponseHandler.SendAlreadyInProgressAsync(Context);
                 return true;
             }
 
@@ -143,22 +143,22 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
 
         if (user!.Roles.Any(x => x.Id == Program.MainAdminRoleId)) return true;
 
-        await _responseHandler.SendNotRightPermissionAsync(Context);
+        await _backupResponseHandler.SendNotRightPermissionAsync(Context);
         return false;
     }
 
     private void SubscribeEvents()
     {
-        _messageBackupService.StartedBackupProcess += _responseHandler.SendStartNotificationAsync;
+        _messageBackupService.StartedBackupProcess += _backupResponseHandler.SendStartNotificationAsync;
         _messageBackupService.StartedBackupProcess += _loggingWrapper.LogStart;
-        _messageBackupService.FinishedBatch += _responseHandler.SendBatchFinishedAsync;
+        _messageBackupService.FinishedBatch += _backupResponseHandler.SendBatchFinishedAsync;
         _messageBackupService.FinishedBatch += _loggingWrapper.LogBatchFinished;
-        _messageBackupService.CompletedBackupProcess += _responseHandler.SendCompletedAsync;
+        _messageBackupService.CompletedBackupProcess += _backupResponseHandler.SendCompletedAsync;
         _messageBackupService.CompletedBackupProcess += _loggingWrapper.LogCompleted;
-        _messageBackupService.ProcessFailed += _responseHandler.SendFailedAsync;
-        _messageBackupService.EmptyBackupAttempt += _responseHandler.SendEmptyMessageBackupAsync;
+        _messageBackupService.ProcessFailed += _backupResponseHandler.SendFailedAsync;
+        _messageBackupService.EmptyBackupAttempt += _backupResponseHandler.SendEmptyMessageBackupAsync;
         _messageBackupService.EmptyBackupAttempt += _loggingWrapper.LogEmptyMessageBackupAttempt;
-        _messageBackupService.ProcessCanceled += _responseHandler.SendProcessCancelledAsync;
+        _messageBackupService.ProcessCanceled += _backupResponseHandler.SendProcessCancelledAsync;
         _messageBackupService.ProcessCanceled += _loggingWrapper.LogBackupCancelled;
     }
 }
