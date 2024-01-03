@@ -18,6 +18,7 @@ using OPZBot.DataAccess;
 using OPZBot.DataAccess.Caching;
 using OPZBot.DataAccess.Context;
 using OPZBot.Services;
+using OPZBot.Services.Blacklist;
 using OPZBot.Services.MessageBackup;
 using OPZBot.Services.MessageBackup.FileBackup;
 using RunMode = Discord.Interactions.RunMode;
@@ -51,11 +52,13 @@ public static class ServicesExtension
             .AddSingleton<Mapper>()
             .AddSingleton<LoggingWrapper>()
             .AddSingleton<FileCleaner>()
+            .AddSingleton<IBlacklistResponseHandler, BlacklistResponseHandler>()
             .AddScoped<IMessageFetcher, MessageFetcher>()
             .AddScoped<IBackupMessageProcessor, MessageProcessor>()
             .AddScoped<IMessageBackupService, MessageBackupService>()
-            .AddScoped<IResponseHandler, ResponseHandler>()
+            .AddScoped<IBackupResponseHandler, BackupResponseHandler>()
             .AddScoped<IFileBackupService, FileBackupService>()
+            .AddScoped<IBlacklistService, BlacklistService>()
             .AddScoped<ResponseBuilder>()
             .AddHttpClient()
             .RemoveAll<IHttpMessageHandlerBuilderFilter>()

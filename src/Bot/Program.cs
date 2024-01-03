@@ -73,6 +73,7 @@ public class Program
         }
     }
 
+    //Start running the bot asynchronously
     private async Task RunAsync(IHost host)
     {
         using var serviceScope = host.Services.CreateScope();

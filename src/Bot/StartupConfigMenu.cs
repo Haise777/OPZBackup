@@ -118,6 +118,7 @@ internal class StartupConfigMenu : BotConfigService
         }
     }
 
+    //Print the screen to get user's input
     private string? WriteInput(string option)
     {
         Console.Clear();
