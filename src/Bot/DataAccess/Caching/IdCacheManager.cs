@@ -12,17 +12,14 @@ public class IdCacheManager
     {
         Users = users;
         ChannelIds = channelIds;
-        BackupRegistryIds = backupRegistryIds;
     }
 
     public IdCacheManager()
     {
-        BackupRegistryIds = new DataCache<uint>();
         Users = new DataCache<ulong>();
         ChannelIds = new DataCache<ulong>();
     }
 
     public IDataCache<ulong> Users { get; }
     public IDataCache<ulong> ChannelIds { get; }
-    public IDataCache<uint> BackupRegistryIds { get; } //TODO Only worth in a multiple parallel backup scenario
 }

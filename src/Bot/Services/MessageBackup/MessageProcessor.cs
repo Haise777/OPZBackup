@@ -24,7 +24,7 @@ public class MessageProcessor(
     public event Action? EndBackupProcess;
     public bool IsUntilLastBackup { get; set; }
 
-    public async Task<MessageDataBatchDto> ProcessMessagesAsync(IEnumerable<IMessage> messageBatch, uint registryId,
+    public async Task<MessageBatchData> ProcessMessagesAsync(IEnumerable<IMessage> messageBatch, uint registryId,
         CancellationToken cToken)
     {
         var existingMessageIds = await dataContext.Messages
@@ -78,6 +78,6 @@ public class MessageProcessor(
             await Task.WhenAll(concurrentDownloads);
         }
 
-        return new MessageDataBatchDto(users, messages, fileCount);
+        return new MessageBatchData(users, messages, fileCount);
     }
 }

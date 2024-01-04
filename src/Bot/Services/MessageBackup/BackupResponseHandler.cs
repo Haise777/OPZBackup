@@ -4,17 +4,17 @@
 // This source code is licensed under the BSD-style license found in the
 // LICENSE file in the root directory of this source tree.
 
-using System.Diagnostics.CodeAnalysis;
 using Discord;
 using Discord.Interactions;
 using Discord.Rest;
-using OPZBot.Logging;
 using OPZBot.Modules;
-using Serilog;
+
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8604 // Possible null reference argument.
 
 namespace OPZBot.Services.MessageBackup;
 
-public class ResponseHandler(ResponseBuilder responseBuilder) : IResponseHandler
+public class BackupResponseHandler(ResponseBuilder responseBuilder) : BaseResponseHandler, IBackupResponseHandler
 {
     private RestFollowupMessage? _interactionMessage;
     private IMessage? _lastMessage;
@@ -39,8 +39,8 @@ public class ResponseHandler(ResponseBuilder responseBuilder) : IResponseHandler
         var currentMessage = await e.InteractionContext.Channel.GetMessageAsync(e.MessageBatch.Messages.Last().Id);
         responseBuilder.CurrentMessage = currentMessage;
 
-        await _interactionMessage!.ModifyAsync(m =>
-            m.Embed = responseBuilder.Build(
+        await _interactionMessage.ModifyAsync(
+            m => m.Embed = responseBuilder.Build(
                 backupService.BatchNumber, backupService.SavedMessagesCount, backupService.SavedFilesCount,
                 ProgressStage.InProgress));
         _lastMessage = currentMessage;
@@ -52,8 +52,8 @@ public class ResponseHandler(ResponseBuilder responseBuilder) : IResponseHandler
         responseBuilder.EndTime = DateTime.Now;
         responseBuilder.LastMessage = _lastMessage;
 
-        await _interactionMessage!.ModifyAsync(m =>
-            m.Embed = responseBuilder.Build(
+        await _interactionMessage.ModifyAsync(
+            m => m.Embed = responseBuilder.Build(
                 backupService.BatchNumber, backupService.SavedMessagesCount, backupService.SavedFilesCount,
                 ProgressStage.Finished));
         await GhostPing(e.InteractionContext);
@@ -63,8 +63,8 @@ public class ResponseHandler(ResponseBuilder responseBuilder) : IResponseHandler
     {
         var backupService = sender as MessageBackupService;
 
-        await e.InteractionContext.Channel.ModifyMessageAsync(_interactionMessage!.Id, m =>
-            m.Embed = responseBuilder.Build(
+        await _interactionMessage.ModifyAsync(
+            m => m.Embed = responseBuilder.Build(
                 backupService.BatchNumber, backupService.SavedMessagesCount, backupService.SavedFilesCount,
                 ProgressStage.Failed));
         await GhostPing(e.InteractionContext);
@@ -78,7 +78,7 @@ public class ResponseHandler(ResponseBuilder responseBuilder) : IResponseHandler
 
         await context.Interaction.FollowupAsync("Tentativa de backup inválida" +
                                                 $"\n**{formattedTime}** restantes para poder efetuar o próximo backup");
-        DelayedDeleteInteraction(context);
+        DelayedDeleteInteraction(context.Interaction);
     }
 
     public async Task SendDeleteConfirmationAsync(SocketInteractionContext context)
@@ -96,7 +96,7 @@ public class ResponseHandler(ResponseBuilder responseBuilder) : IResponseHandler
             .WithButton(button)
             .WithButton(buttonCancel)
             .Build();
-
+        
         await context.Interaction.RespondAsync(ephemeral: true, text:
             "**Todas as suas mensagens** junto de seu usuario serão apagados dos registros de backup permanentemente" +
             "\nDeseja prosseguir?", components: components);
@@ -119,13 +119,13 @@ public class ResponseHandler(ResponseBuilder responseBuilder) : IResponseHandler
 
     public async Task SendEmptyMessageBackupAsync(object? sender, BackupEventArgs args)
     {
-        await _interactionMessage!.ModifyAsync(m =>
+        await _interactionMessage.ModifyAsync(m =>
         {
             m.Content = "*Tentativa de backup inválida: Não havia mensagens válidas para serem salvas*";
             m.Embed = null;
         });
 
-        DelayedDeleteInteraction(args.InteractionContext);
+        DelayedDeleteInteraction(args.InteractionContext.Interaction);
     }
 
     public async Task SendAlreadyInProgressAsync(SocketInteractionContext context)
@@ -133,19 +133,12 @@ public class ResponseHandler(ResponseBuilder responseBuilder) : IResponseHandler
         await context.Interaction.ModifyOriginalResponseAsync(m => m.Content =
             "*Por limitações do Discord, não é possivel efetuar mais de um processo de backup simutaneamente*");
 
-        DelayedDeleteInteraction(context);
-    }
-
-    public async Task SendNotRightPermissionAsync(SocketInteractionContext context)
-    {
-        await context.Interaction.ModifyOriginalResponseAsync(m => m.Content =
-            "*Você não possui as permissões adequadas para este comando*");
-        DelayedDeleteInteraction(context);
+        DelayedDeleteInteraction(context.Interaction);
     }
 
     public async Task SendProcessCancelledAsync(object? sender, BackupEventArgs e)
     {
-        await _interactionMessage!.ModifyAsync(m =>
+        await _interactionMessage.ModifyAsync(m =>
         {
             m.Content = "*O processo de backup foi cancelado*";
             m.Embed = null;
@@ -158,13 +151,13 @@ public class ResponseHandler(ResponseBuilder responseBuilder) : IResponseHandler
         {
             await context.Interaction.ModifyOriginalResponseAsync(m => m.Content =
                 "*Não há um backup em andamento para cancelar*");
-            DelayedDeleteInteraction(context);
+            DelayedDeleteInteraction(context.Interaction);
             return;
         }
 
         await context.Interaction.ModifyOriginalResponseAsync(m => m.Content =
             "*O processo de backup foi cancelado com sucesso*");
-        DelayedDeleteInteraction(context);
+        DelayedDeleteInteraction(context.Interaction);
     }
 
     private async Task GhostPing(SocketInteractionContext context)
@@ -172,22 +165,5 @@ public class ResponseHandler(ResponseBuilder responseBuilder) : IResponseHandler
         var ping = await context.Channel.SendMessageAsync($"<@{context.User.Id}>");
         await Task.Delay(2000);
         await ping.DeleteAsync();
-    }
-
-    private void DelayedDeleteInteraction(SocketInteractionContext context)
-    {
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await Task.Delay(7000);
-                await context.Interaction.DeleteOriginalResponseAsync();
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                await LogFileWritter.LogError(ex, ex.Message);
-            }
-        });
     }
 }

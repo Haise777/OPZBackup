@@ -12,10 +12,10 @@ namespace OPZBot.Services.MessageBackup;
 public class BackupEventArgs(
     SocketInteractionContext? context = null,
     BackupRegistry? registry = null,
-    MessageDataBatchDto? messageBatch = null)
+    MessageBatchData? messageBatch = null)
     : EventArgs
 {
     public SocketInteractionContext? InteractionContext { get; set; } = context;
     public BackupRegistry? Registry { get; set; } = registry;
-    public MessageDataBatchDto? MessageBatch { get; set; } = messageBatch;
+    public MessageBatchData? MessageBatch { get; set; } = messageBatch;
 }

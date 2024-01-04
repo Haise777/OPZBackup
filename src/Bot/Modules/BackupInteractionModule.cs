@@ -25,9 +25,9 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
     private readonly LoggingWrapper _loggingWrapper;
 
     private readonly IMessageBackupService _messageBackupService;
-    private readonly IResponseHandler _responseHandler;
+    private readonly IBackupResponseHandler _responseHandler;
 
-    public BackupInteractionModule(IMessageBackupService messageBackupService, IResponseHandler responseHandler,
+    public BackupInteractionModule(IMessageBackupService messageBackupService, IBackupResponseHandler responseHandler,
         ILogger<BackupInteractionModule> logger, LoggingWrapper loggingWrapper)
     {
         _responseHandler = responseHandler;
@@ -41,11 +41,10 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
     public static bool IsBackupInProgress => Lock.CurrentCount < 1;
 
     [SlashCommand("fazer", "efetuar backup deste canal")]
-    public async Task MakeBackupCommand([Choice("ate-ultimo", 0)] [Choice("total", 1)] int choice)
+    public async Task MakeBackup([Choice("ate-ultimo", 0)] [Choice("total", 1)] int choice)
     {
         _logger.LogCommandExecution(
-            nameof(BackupService), Context.User.Username, Context.Channel.Name, nameof(MakeBackupCommand),
-            choice.ToString());
+            nameof(BackupService), Context.User.Username, Context.Channel.Name, nameof(MakeBackup), choice.ToString());
         await DeferAsync();
 
         if (!await CheckForAdminRole()) return;
@@ -77,8 +76,8 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
     {
         _logger.LogCommandExecution(
             nameof(BackupService), Context.User.Username, Context.Channel.Name, nameof(CancelBackupProcess));
-        
         await DeferAsync();
+
         if (!await CheckForAdminRole()) return;
         if (_currentBackupService is null)
         {
@@ -92,10 +91,11 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
 
     [SlashCommand("deletar-proprio",
         "DELETAR todas as informações presentes no backup relacionadas ao usuario PERMANENTEMENTE")]
-    public async Task DeleteUserInBackupCommand()
+    public async Task DeleteUserInBackup()
     {
         _logger.LogCommandExecution(
-            nameof(BackupService), Context.User.Username, Context.Channel.Name, nameof(DeleteUserInBackupCommand));
+            nameof(BackupService), Context.User.Username, Context.Channel.Name, nameof(DeleteUserInBackup));
+        
         await _responseHandler.SendDeleteConfirmationAsync(Context);
     }
 
@@ -122,7 +122,7 @@ public class BackupInteractionModule : InteractionModuleBase<SocketInteractionCo
         await LockPreCommand.WaitAsync();
         try
         {
-            if (Lock.CurrentCount < 1)
+            if (IsBackupInProgress)
             {
                 await _responseHandler.SendAlreadyInProgressAsync(Context);
                 return true;

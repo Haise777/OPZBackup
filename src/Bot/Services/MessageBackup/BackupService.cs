@@ -14,7 +14,11 @@ using OPZBot.Extensions;
 
 namespace OPZBot.Services.MessageBackup;
 
-public abstract class BackupService(Mapper mapper, MyDbContext dataContext, IdCacheManager cache, FileCleaner fileCleaner)
+public abstract class BackupService(
+    Mapper mapper,
+    MyDbContext dataContext,
+    IdCacheManager cache,
+    FileCleaner fileCleaner)
     : IBackupService
 {
     protected readonly IdCacheManager Cache = cache;
@@ -68,23 +72,26 @@ public abstract class BackupService(Mapper mapper, MyDbContext dataContext, IdCa
             Date = DateTime.Now
         };
 
-        if (!await Cache.ChannelIds.ExistsAsync(channel.Id))
-            DataContext.Channels.Add(channel);
-        if (!await Cache.Users.ExistsAsync(author.Id))
-            DataContext.Users.Add(author);
-
+        await AddIfNotExists(channel, author);
         DataContext.BackupRegistries.Add(BackupRegistry);
         await DataContext.SaveChangesAsync();
     }
 
+    private async Task AddIfNotExists(Channel channel, User author)
+    {
+        if (!await Cache.ChannelIds.ExistsAsync(channel.Id))
+            DataContext.Channels.Add(channel);
+        if (!await Cache.Users.ExistsAsync(author.Id))
+            DataContext.Users.Add(author);
+    }
+
     private async Task<uint> GetIncrementedRegistryId()
     {
-        var registryId = await DataContext.BackupRegistries.AnyAsync()
+        return await DataContext.BackupRegistries.AnyAsync()
             ? await DataContext.BackupRegistries
                 .OrderByDescending(b => b.Id)
                 .Select(x => x.Id)
                 .FirstAsync() + 1
             : 1;
-        return registryId;
     }
 }

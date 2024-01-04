@@ -17,25 +17,16 @@ internal class BotConfigService
 
     public BotConfigService()
     {
-        if (!File.Exists($"{AppContext.BaseDirectory}{CONFIG_FILE_NAME}"))
-        {
-            File.Create($"{AppContext.BaseDirectory}{CONFIG_FILE_NAME}").Dispose();
-            WriteConfigFile(new BotConfig());
-        }
-
-        if (!Directory.Exists(@$"{AppContext.BaseDirectory}/Backup"))
-            Directory.CreateDirectory(@$"{AppContext.BaseDirectory}/Backup");
-
-
-        var startupConfig = GetConfigurations();
+        CreateFilesIfNotExists();
+        var config = GetConfigFile();
 
         Config = new BotConfig
         {
-            Token = startupConfig.GetValue<string?>("Token", null),
-            MainAdminRoleId = startupConfig.GetValue<ulong?>("MainAdminRoleId", null),
-            RunWithCooldowns = startupConfig.GetValue("RunWithCooldowns", true),
-            TestGuildId = startupConfig.GetValue<ulong?>("TestGuildId", null),
-            TimezoneAdjust = startupConfig.GetValue<int?>("TimezoneAdjust", null)
+            Token = config.GetValue<string?>("Token", null),
+            MainAdminRoleId = config.GetValue<ulong?>("MainAdminRoleId", null),
+            RunWithCooldowns = config.GetValue("RunWithCooldowns", true),
+            TestGuildId = config.GetValue<ulong?>("TestGuildId", null),
+            TimezoneAdjust = config.GetValue<int?>("TimezoneAdjust", null)
         };
     }
 
@@ -47,7 +38,7 @@ internal class BotConfigService
         File.WriteAllText($"{AppContext.BaseDirectory}{CONFIG_FILE_NAME}", jsonString);
     }
 
-    public IConfigurationRoot GetConfigurations()
+    public IConfigurationRoot GetConfigFile()
     {
         try
         {
@@ -58,7 +49,7 @@ internal class BotConfigService
         }
         catch (InvalidDataException)
         {
-            Console.WriteLine("ERROR: Config file is corrupted\nCreating a new file");
+            Console.WriteLine("ERROR: Config file is corrupted\nCreating a new config file");
             Console.WriteLine("[press any key]");
             Console.ReadKey();
             WriteConfigFile(new BotConfig());
@@ -68,5 +59,17 @@ internal class BotConfigService
                 .AddJsonFile(CONFIG_FILE_NAME)
                 .Build();
         }
+    }
+
+    private void CreateFilesIfNotExists()
+    {
+        if (!File.Exists($"{AppContext.BaseDirectory}{CONFIG_FILE_NAME}"))
+        {
+            File.Create($"{AppContext.BaseDirectory}{CONFIG_FILE_NAME}").Dispose();
+            WriteConfigFile(new BotConfig());
+        }
+
+        if (!Directory.Exists(@$"{AppContext.BaseDirectory}/Backup"))
+            Directory.CreateDirectory(@$"{AppContext.BaseDirectory}/Backup");
     }
 }

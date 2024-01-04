@@ -11,6 +11,7 @@ namespace OPZBot.Logging;
 
 public static class LogUtil
 {
+    //Parse Discord.Net LogSeverity to Microsoft.Logging's LogLevel enum
     public static LogLevel ParseLogLevel(LogSeverity logSeverity)
     {
         return logSeverity switch
@@ -25,6 +26,7 @@ public static class LogUtil
         };
     }
 
+    //Standard logging with rich error logging capabilities
     public static async Task RichLogAsync<T>
         (this ILogger<T> logger, LogLevel logLevel, Exception? exception, string? message, params object?[] args)
     {
@@ -37,6 +39,7 @@ public static class LogUtil
         logger.Log(logLevel, exception, message, args);
     }
 
+    //Error logging with log-to-file capabilities
     public static async Task RichLogErrorAsync<T>(this ILogger<T> logger, Exception ex, string? message,
         params object?[] args)
     {
@@ -44,13 +47,16 @@ public static class LogUtil
         await LogFileWritter.LogError(ex, message);
     }
 
-    public static void LogCommandExecution<T>
-        (this ILogger<T> logger, string service, string author, string channel, string command, string commandArg = "")
+    //Log wrapper to log command executions
+    public static void LogCommandExecution<T>(
+        this ILogger<T> logger, string service, string author, string channel, string command, string commandArg = "")
     {
         logger.LogInformation(
-            "{service}: {author} > {channel} > {command} {commandArg}", service, author, channel, command, commandArg);
+            "{service}: {author} > {channel} > {command} {commandArg}", 
+            service, author, channel, command, commandArg);
     }
 
+    //Async log wrapper
     public static Task LogAsync<T>
         (this ILogger<T> logger, LogLevel logLevel, Exception? exception, string? message, params object?[] args)
     {

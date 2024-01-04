@@ -58,7 +58,7 @@ internal class StartupConfigMenu : BotConfigService
                 $"OPZBot - ver{Program.APP_VER} \n" +
                 $"Set bot startup values \n" +
                 $"\n" +
-                $"[B] Bot token > {Config.Token?[^7..]?.Insert(0, "xxxxxx...")}\n" +
+                $"[B] Bot token > {CensorText(Config.Token)}\n" +
                 $"[A] Main admin role id > {Config.MainAdminRoleId}\n" +
                 $"[T] Timezone adjust value > {Config.TimezoneAdjust}\n" +
                 $"[C] General cooldowns > {Config.RunWithCooldowns}\n" +
@@ -67,52 +67,13 @@ internal class StartupConfigMenu : BotConfigService
 #if DEBUG
             Console.WriteLine($"[D] DEBUG: Test guild id > {Config.TestGuildId}\n");
 #endif
-            var input = "";
-            switch (Console.ReadKey().KeyChar)
-            {
-                case 'B':
-                case 'b':
-                    input = WriteInput("Bot token");
-                    if (ConfirmChanges(Config.Token, input, true))
-                        Config.Token = input;
-                    break;
-                case 'A':
-                case 'a':
-                    input = WriteInput("Main admin role id");
-                    if (ConfirmChanges(Config.MainAdminRoleId.ToString(), input))
-                        Config.MainAdminRoleId =
-                            ulong.TryParse(input, out var adminRoleId) ? adminRoleId : null;
-                    break;
-                case 'T':
-                case 't':
-                    input = WriteInput("Timezone adjust value");
-                    Config.TimezoneAdjust = int.TryParse(input, out var timezoneAdjust) ? timezoneAdjust : null;
-
-                    break;
-                case 'C':
-                case 'c':
-                    Config.RunWithCooldowns = !Config.RunWithCooldowns;
-
-                    break;
-                case 'X':
-                case 'x':
-                    return;
-#if DEBUG
-                case 'D':
-                case 'd':
-                    input = WriteInput("DEBUG: Test guild id");
-                    if (ConfirmChanges(Config.TestGuildId.ToString(), input))
-                        Config.TestGuildId = ulong.TryParse(input, out var testGuildId) ? testGuildId : null;
-                    break;
-#endif
-                default:
-                    Console.WriteLine(" is not a valid input");
-                    Console.ReadKey();
-                    break;
-            }
+            var inputOption = Console.ReadKey().KeyChar;
+            if (inputOption is 'x' or 'X') break;
+            ConfigMenuSwitchOptions(inputOption);
         }
     }
-
+    
+    //Print the screen to get user's input
     private string? WriteInput(string option)
     {
         Console.Clear();
@@ -127,7 +88,7 @@ internal class StartupConfigMenu : BotConfigService
             Console.Clear();
             Console.WriteLine(
                 "Confirm changes\n" +
-                $"old: {(shouldCensor ? oldValues?[^7..]?.Insert(0, "xxxxxx...") : oldValues)}\n" +
+                $"old: {(shouldCensor ? CensorText(oldValues) : oldValues)}\n" +
                 $"new: {newValues}");
 
             Console.WriteLine("\n [y] / [n]");
@@ -146,5 +107,57 @@ internal class StartupConfigMenu : BotConfigService
                     continue;
             }
         }
+    }
+
+    private void ConfigMenuSwitchOptions(char inputOption)
+    {
+        string? input;
+        switch (inputOption)
+        {
+            case 'B':
+            case 'b':
+                input = WriteInput("Bot token");
+                if (ConfirmChanges(Config.Token, input, true))
+                    Config.Token = input;
+                break;
+
+            case 'A':
+            case 'a':
+                input = WriteInput("Main admin role id");
+                if (ConfirmChanges(Config.MainAdminRoleId.ToString(), input))
+                    Config.MainAdminRoleId =
+                        ulong.TryParse(input, out var adminRoleId) ? adminRoleId : null;
+                break;
+
+            case 'T':
+            case 't':
+                input = WriteInput("Timezone adjust value");
+                Config.TimezoneAdjust = int.TryParse(input, out var timezoneAdjust) ? timezoneAdjust : null;
+                break;
+
+            case 'C':
+            case 'c':
+                Config.RunWithCooldowns = !Config.RunWithCooldowns;
+                break;
+#if DEBUG
+            case 'D':
+            case 'd':
+                input = WriteInput("DEBUG: Test guild id");
+                if (ConfirmChanges(Config.TestGuildId.ToString(), input))
+                    Config.TestGuildId = ulong.TryParse(input, out var testGuildId) ? testGuildId : null;
+                break;
+#endif
+            default:
+                Console.WriteLine(" is not a valid input");
+                Console.ReadKey();
+                break;
+        }
+    }
+    
+    private string? CensorText(string? text)
+    {
+        return text?.Length > 6 
+            ? text[^7..].Insert(0, "xxxxxx...") 
+            : text;
     }
 }

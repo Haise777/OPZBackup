@@ -19,6 +19,7 @@ public class InteractionHandler(DiscordSocketClient client, InteractionService c
         client.InteractionCreated += HandleInteraction;
     }
 
+    //Redirect the client's 'interaction' to its appropriate handler
     private async Task HandleInteraction(SocketInteraction arg)
     {
         try
