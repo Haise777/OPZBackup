@@ -86,7 +86,7 @@
 
 ## Download
 
-[Download](https://github.com/Haise777/OPZBot/releases/tag/latest) the latest version of OPZBot for Windows or Linux. 
+[Download](https://github.com/Haise777/OPZBot/releases/latest) the latest version of OPZBot for Windows or Linux. 
 
 ## Credits
 
