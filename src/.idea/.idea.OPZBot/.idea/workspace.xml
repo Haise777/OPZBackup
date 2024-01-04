@@ -7,37 +7,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42cf5f64-0284-42d2-8c25-9c5ff55382ad" name="Changes" comment="Reworked Response handling classes">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.OPZBot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.OPZBot/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/BotConfigService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/BotConfigService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/DataAccess/Caching/IdCacheManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/DataAccess/Caching/IdCacheManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/DataAccess/FileCleaner.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/DataAccess/FileCleaner.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Extensions/CacheManagerExtension.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Extensions/CacheManagerExtension.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Extensions/DiscordMessageExtension.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Extensions/DiscordMessageExtension.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Extensions/EnumerableExtension.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Extensions/EnumerableExtension.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Logging/LogUtil.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Logging/LogUtil.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Modules/BackupInteractionModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Modules/BackupInteractionModule.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Modules/BlacklistInteractionModule.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Modules/BlacklistInteractionModule.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Program.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/Blacklist/BlacklistResponseHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/Blacklist/BlacklistResponseHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/Blacklist/BlacklistService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/Blacklist/BlacklistService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/BackupEventArgs.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/BackupEventArgs.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/BackupResponseHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/BackupResponseHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/BackupService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/BackupService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/FileBackupService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/FileBackupService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/IBackupMessageProcessor.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/IBackupMessageProcessor.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/IBackupService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/IBackupService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/IMessageBackupService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/IMessageBackupService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/LoggingWrapper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/LoggingWrapper.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/MessageBackupService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/MessageBackupService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/MessageDataBatchDto.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/MessageBatchData.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/MessageProcessor.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/MessageProcessor.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageBackup/ResponseBuilder.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageBackup/ResponseBuilder.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Services/MessageFetcher.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/MessageFetcher.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/StartupConfigMenu.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/StartupConfigMenu.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Utilities/BaseResponseHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/BaseResponseHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Utilities/IResponseHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Services/IResponseHandler.cs" afterDir="false" />
-    </list>
+    <list default="true" id="42cf5f64-0284-42d2-8c25-9c5ff55382ad" name="Changes" comment="fixed bug and some refactoring" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -80,8 +50,13 @@
     <setting file="mock://E:/Source/Repos/OPZBot/src/Bot/Modules/BackupInteractionModule.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://E:/Source/Repos/OPZBot/src/Bot/Modules/BackupInteractionModule.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://E:/Source/Repos/OPZBot/src/Bot/Modules/BackupInteractionModule.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://E:/Source/Repos/OPZBot/src/Bot/Modules/BackupInteractionModule.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://E:/Source/Repos/OPZBot/src/Bot/Modules/BlacklistInteractionModule.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://E:/Source/Repos/OPZBot/src/Bot/Program.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://E:/Source/Repos/OPZBot/src/Bot/Program.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://E:/Source/Repos/OPZBot/src/Bot/Services/MessageBackup/BackupEventArgs.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://E:/Source/Repos/OPZBot/src/Bot/StartupConfigMenu.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://E:/Source/Repos/OPZBot/src/Bot/StartupConfigMenu.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://E:/Source/Repos/OPZBot/src/Bot/StartupConfigMenu.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock://E:/Source/Repos/OPZBot/src/Bot/StartupConfigMenu.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
@@ -103,7 +78,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    ".NET Project.Bot.executor": "Debug",
+    ".NET Project.Bot.executor": "Run",
     "ASKED_ADD_EXTERNAL_FILES": "true",
     "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "Publish to folder.Publish Bot to folder (1).executor": "Run",
@@ -191,6 +166,14 @@
       <riderPublish configuration="Release" delete_existing_files="true" platform="Any CPU" produce_single_file="true" runtime="linux-x64" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/linux-x64/publish" target_framework="net8.0" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
       <method v="2" />
     </configuration>
+    <configuration name="Publish OPZBot to folder (6)" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="win-x64" target_folder="$USER_HOME$/OneDrive/Área de Trabalho/OPZB/w64" target_framework="net8.0" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish OPZBot to folder (7)" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="linux-x64" target_folder="$USER_HOME$/OneDrive/Área de Trabalho/OPZB/l64" target_framework="net8.0" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
     <configuration name="Publish OPZBot to folder" type="DotNetFolderPublish" factoryName="Publish to folder">
       <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="win-x64" self_contained="true" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/win-x64/publish" target_framework="net8.0" trim_unused_assemblies="true" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
       <method v="2" />
@@ -237,7 +220,7 @@
       <workItem from="1703876401850" duration="218000" />
       <workItem from="1703878304472" duration="1884000" />
       <workItem from="1703881081537" duration="3188000" />
-      <workItem from="1704312636882" duration="19896000" />
+      <workItem from="1704312636882" duration="23491000" />
     </task>
     <task id="LOCAL-00001" summary="implemented event handlers for the former 'InvalidBackupAttempt' event">
       <option name="closed" value="true" />
@@ -367,7 +350,23 @@
       <option name="project" value="LOCAL" />
       <updated>1704321120252</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="code refactoring and cleaning">
+      <option name="closed" value="true" />
+      <created>1704335029559</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1704335029559</updated>
+    </task>
+    <task id="LOCAL-00018" summary="fixed bug and some refactoring">
+      <option name="closed" value="true" />
+      <created>1704335061571</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1704335061571</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -400,6 +399,8 @@
     <MESSAGE value="Added comments" />
     <MESSAGE value="Separated multi responsibilities module into their own classes" />
     <MESSAGE value="Reworked Response handling classes" />
-    <option name="LAST_COMMIT_MESSAGE" value="Reworked Response handling classes" />
+    <MESSAGE value="code refactoring and cleaning" />
+    <MESSAGE value="fixed bug and some refactoring" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed bug and some refactoring" />
   </component>
 </project>

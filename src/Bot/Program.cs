@@ -41,7 +41,7 @@ public class Program
 
         try
         {
-            Log.Information("Starting host");
+            Log.Information($"OPZBot - v{APP_VER} \n"+ "Starting host");
 
             var hostBuilder = Host.CreateDefaultBuilder(args)
                 .UseSerilog((_, _, cfg)
