@@ -97,7 +97,7 @@ This software uses the following open source packages:
 - [Serilog](https://github.com/serilog/serilog)
 
 ---
-OPZBot is released under [BSD 3-Clause license](https://opensource.org/license/bsd-3-clause/)
+*OPZBot is released under [BSD 3-Clause license](https://opensource.org/license/bsd-3-clause/)*
 
 > *Contact me*\
 > *Email:* [gashimabucoro@proton.me](mailto:gashimabucoro@proton.me) &nbsp;&middot;&nbsp;
