@@ -9,7 +9,7 @@ using Discord.WebSocket;
 using OPZBot.Logging;
 using Serilog;
 
-namespace OPZBot.Utilities;
+namespace OPZBot.Services;
 
 public abstract class BaseResponseHandler : IResponseHandler
 {
@@ -19,7 +19,7 @@ public abstract class BaseResponseHandler : IResponseHandler
             "*Você não possui as permissões adequadas para este comando*");
         DelayedDeleteInteraction(context.Interaction);
     }
-    
+
     protected void DelayedDeleteInteraction(SocketInteraction interaction)
     {
         _ = Task.Run(async () =>

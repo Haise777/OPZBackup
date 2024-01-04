@@ -34,6 +34,7 @@ public class FileBackupService : IFileBackupService
         {
             if (!message.Attachments.Any()) return;
             await CreateChannelDirIfNotExists(message);
+
             if (message.Attachments.Count > 1)
             {
                 await BackupMultipleFiles(message);
@@ -41,13 +42,14 @@ public class FileBackupService : IFileBackupService
             }
 
             var fileUrl = message.Attachments.First().Url;
-            var extension = MatchFileExtension.Match(fileUrl).Value;
-            if (extension.Length > FileExtensionLimit) extension = "";
+            var extension = GetExtension(message);
+            // var extension = MatchFileExtension.Match(fileUrl).Value;
+            // if (extension.Length > FileExtensionLimit) extension = "";
 
             var file = await DownloadFile(fileUrl);
 
             await File.WriteAllBytesAsync(
-                $@"{Program.FileBackupPath}/{message.Channel.Id}/{message.Id}{extension}", file);
+                $"{Program.FileBackupPath}/{message.Channel.Id}/{message.Id}{extension}", file);
         }
         finally
         {
@@ -58,14 +60,14 @@ public class FileBackupService : IFileBackupService
     public string GetExtension(IMessage message)
     {
         if (message.Attachments.Count > 1) return "";
+
         var extension = MatchFileExtension.Match(message.Attachments.First().Url).Value;
         return extension.Length > FileExtensionLimit ? "" : extension;
     }
 
     private async Task BackupMultipleFiles(IMessage message)
     {
-        var dirPath = @$"{Program.FileBackupPath}/{message.Channel.Id}/{message.Id}";
-
+        var dirPath = $"{Program.FileBackupPath}/{message.Channel.Id}/{message.Id}";
         if (!Directory.Exists(dirPath))
             Directory.CreateDirectory(dirPath);
 
@@ -76,7 +78,7 @@ public class FileBackupService : IFileBackupService
             var extension = MatchFileExtension.Match(attachment.Url).Value;
             if (extension.Length > FileExtensionLimit) extension = "";
 
-            await File.WriteAllBytesAsync(@$"{dirPath}/file{++n}{extension}", file);
+            await File.WriteAllBytesAsync($"{dirPath}/file{++n}{extension}", file);
         }
     }
 
@@ -91,14 +93,10 @@ public class FileBackupService : IFileBackupService
             }
             catch (HttpRequestException ex)
             {
-                if (attempts++ < 3)
-                {
-                    await _logger.RichLogErrorAsync(ex, "{service}: ", nameof(FileBackupService));
-                    await Task.Delay(5000);
-                    continue;
-                }
+                if (++attempts > 3) throw;
 
-                throw;
+                await _logger.RichLogErrorAsync(ex, "{service}: ", nameof(FileBackupService));
+                await Task.Delay(5000);
             }
     }
 
@@ -106,8 +104,8 @@ public class FileBackupService : IFileBackupService
     {
         return Task.Run(() =>
         {
-            if (!Directory.Exists($@"{Program.FileBackupPath}/{message.Channel.Id}"))
-                Directory.CreateDirectory($@"{Program.FileBackupPath}/{message.Channel.Id}");
+            if (!Directory.Exists($"{Program.FileBackupPath}/{message.Channel.Id}"))
+                Directory.CreateDirectory($"{Program.FileBackupPath}/{message.Channel.Id}");
         });
     }
 }

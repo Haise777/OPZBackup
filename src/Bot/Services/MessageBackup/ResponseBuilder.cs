@@ -6,6 +6,9 @@
 
 using Discord;
 using OPZBot.Extensions;
+//Aliases for named tuples
+using ParsedValues = (string StartMessage, string LastMessage, string StartTime, string EndTime);
+using EmbedData = (int BatchNumber, int NumberOfMessages, int NumberOfFiles, string Elapsed);
 
 namespace OPZBot.Services.MessageBackup;
 
@@ -22,83 +25,108 @@ public class ResponseBuilder
     {
         var embedBuilder = ConstructEmbed();
         var t = StartTime.HasValue ? (DateTime.Now - StartTime).Value : TimeSpan.Zero;
-        var elapsed = $"{t:hh\\:mm\\:ss}";
+        var elapsed = $"{t:hh\\:mm\\:ss}"; //DO NOT use verbatim string, it causes error in the API
+        var embedData = new EmbedData(batchNumber, numberOfMessages, numberOfFiles, elapsed);
 
+        AddStage(stage, embedBuilder, embedData);
+        return embedBuilder.Build();
+    }
+
+    private void AddStage(ProgressStage stage, EmbedBuilder embedBuilder, EmbedData embedData)
+    {
         switch (stage)
         {
             case ProgressStage.Started:
-                embedBuilder
-                    .WithTitle("Em progresso...")
-                    .WithColor(Color.Gold)
-                    .AddField("progresso:",
-                        $"Decorrido: {elapsed}\n" +
-                        $"N de mensagens: {numberOfMessages}\n" +
-                        $"N de arquivos: {numberOfFiles}\n" +
-                        $"Ciclos realizados: {batchNumber}\n" +
-                        "Atual: ...");
+                AddStartedStage(embedBuilder, embedData);
                 break;
 
             case ProgressStage.InProgress:
                 if (CurrentMessage is null)
                     throw new InvalidOperationException(
                         "'CurrentMessage' property is not optional when 'InProgress' is set on Builder");
-                embedBuilder
-                    .WithTitle("Em progresso...")
-                    .WithColor(Color.Gold)
-                    .AddField("Progresso:",
-                        $"Decorrido: {elapsed}\n" +
-                        $"N de mensagens: {numberOfMessages}\n" +
-                        $"N de arquivos: {numberOfFiles}\n" +
-                        $"Ciclos realizados: {batchNumber}\n" +
-                        $"Atual: {CurrentMessage.Author} {CurrentMessage.TimestampWithFixedTimezone().ToShortDateString()} {CurrentMessage.Timestamp.DateTime.ToShortTimeString()}" +
-                        $"\n{CurrentMessage.Content}");
+                AddInProgressStage(embedBuilder, embedData);
                 break;
 
             case ProgressStage.Finished:
-                embedBuilder
-                    .WithTitle("Backup finalizado")
-                    .WithColor(Color.Green)
-                    .AddField("Estatisticas:",
-                        $"Tempo decorrido: {elapsed}\n" +
-                        $"N de mensagens: {numberOfMessages}\n" +
-                        $"N de arquivos: {numberOfFiles}\n" +
-                        $"Ciclos realizados: {batchNumber}");
+                AddFinishedStage(embedBuilder, embedData);
                 break;
 
             case ProgressStage.Failed:
-                embedBuilder
-                    .WithTitle("Falhou")
-                    .WithColor(Color.Red)
-                    .AddField("Estatisticas:",
-                        $"Tempo decorrido: {elapsed}\n" +
-                        $"N de mensagens: {numberOfMessages}\n" +
-                        $"N de arquivos: {numberOfFiles}\n" +
-                        $"Ciclos realizados: {batchNumber}");
+                AddFailedStage(embedBuilder, embedData);
                 break;
         }
-
-        return embedBuilder.Build();
     }
 
-    private string[] ParseValuesToStrings()
+    private void AddFailedStage(EmbedBuilder embedBuilder, EmbedData data)
     {
-        var parsedValues = new string[4];
-        parsedValues[0] = StartMessage is not null
+        embedBuilder
+            .WithTitle("Falhou")
+            .WithColor(Color.Red)
+            .AddField("Estatisticas:",
+                $"Tempo decorrido: {data.Elapsed}\n" +
+                $"N de mensagens: {data.NumberOfMessages}\n" +
+                $"N de arquivos: {data.NumberOfFiles}\n" +
+                $"Ciclos realizados: {data.BatchNumber}");
+    }
+
+    private void AddFinishedStage(EmbedBuilder embedBuilder, EmbedData data)
+    {
+        embedBuilder
+            .WithTitle("Backup finalizado")
+            .WithColor(Color.Green)
+            .AddField("Estatisticas:",
+                $"Tempo decorrido: {data.Elapsed}\n" +
+                $"N de mensagens: {data.NumberOfMessages}\n" +
+                $"N de arquivos: {data.NumberOfFiles}\n" +
+                $"Ciclos realizados: {data.BatchNumber}");
+    }
+
+    private void AddInProgressStage(EmbedBuilder embedBuilder, EmbedData data)
+    {
+        embedBuilder
+            .WithTitle("Em progresso...")
+            .WithColor(Color.Gold)
+            .AddField("Progresso:",
+                $"Decorrido: {data.Elapsed}\n" +
+                $"N de mensagens: {data.NumberOfMessages}\n" +
+                $"N de arquivos: {data.NumberOfFiles}\n" +
+                $"Ciclos realizados: {data.BatchNumber}\n" +
+                $"Atual: {CurrentMessage.Author} {CurrentMessage.TimestampWithFixedTimezone().ToShortDateString()} {CurrentMessage.Timestamp.DateTime.ToShortTimeString()}" +
+                $"\n{CurrentMessage.Content}");
+    }
+
+    private void AddStartedStage(EmbedBuilder embedBuilder, EmbedData data)
+    {
+        embedBuilder
+            .WithTitle("Em progresso...")
+            .WithColor(Color.Gold)
+            .AddField("progresso:",
+                $"Decorrido: {data.Elapsed}\n" +
+                $"N de mensagens: {data.NumberOfMessages}\n" +
+                $"N de arquivos: {data.NumberOfFiles}\n" +
+                $"Ciclos realizados: {data.BatchNumber}\n" +
+                "Atual: ...");
+    }
+
+    private ParsedValues ParseValuesToStrings()
+    {
+        var parsedToString = new string[4];
+        parsedToString[0] = StartMessage is not null
             ? $"{StartMessage.Author.Username} {StartMessage.TimestampWithFixedTimezone().ToShortDateString()} {StartMessage.TimestampWithFixedTimezone().ToShortTimeString()}" +
               $"\n{StartMessage.Content}"
             : "...";
-        parsedValues[1] = LastMessage is not null
+        parsedToString[1] = LastMessage is not null
             ? $"{LastMessage.Author.Username} {LastMessage.TimestampWithFixedTimezone().ToShortDateString()} {LastMessage.TimestampWithFixedTimezone().ToShortTimeString()}" +
               $"\n{LastMessage.Content}"
             : "...";
-        parsedValues[2] = StartTime.HasValue
+        parsedToString[2] = StartTime.HasValue
             ? StartTime.Value.ToLongTimeString()
             : "...";
-        parsedValues[3] = EndTime.HasValue
+        parsedToString[3] = EndTime.HasValue
             ? EndTime.Value.ToLongTimeString()
             : "...";
 
-        return parsedValues;
+        return new ParsedValues(parsedToString[0], parsedToString[1], parsedToString[2], parsedToString[3]);
     }
 
     private EmbedBuilder ConstructEmbed()
@@ -107,20 +135,20 @@ public class ResponseBuilder
 
         var firstMessageFieldEmbed = new EmbedFieldBuilder()
             .WithName("De:")
-            .WithValue(values[0])
+            .WithValue(values.StartMessage)
             .WithIsInline(false);
         var lastMessageFieldEmbed = new EmbedFieldBuilder()
             .WithName("Até:")
-            .WithValue(values[1])
+            .WithValue(values.LastMessage)
             .WithIsInline(false);
 
         var startTimeEmbed = new EmbedFieldBuilder()
             .WithName("Iniciado:")
-            .WithValue(values[2])
+            .WithValue(values.StartTime)
             .WithIsInline(true);
         var endTimeEmbed = new EmbedFieldBuilder()
             .WithName("Terminado:")
-            .WithValue(values[3])
+            .WithValue(values.EndTime)
             .WithIsInline(true);
 
         var embedBuilder = new EmbedBuilder()

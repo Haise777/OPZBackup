@@ -13,13 +13,13 @@ using OPZBot.DataAccess.Context;
 namespace OPZBot.Services.Blacklist;
 
 public class BlacklistService(
-    MyDbContext dataContext, 
+    MyDbContext dataContext,
     IBlacklistResponseHandler responseHandler,
-    ILogger<BlacklistService> logger, 
+    ILogger<BlacklistService> logger,
     Mapper mapper) : IBlacklistService
 {
     public const string SERVICE_NAME = "Blacklist";
-    
+
     public async Task ListAllAsync(SocketInteraction interaction)
     {
         var blacklisteds = await dataContext.Users
@@ -73,7 +73,8 @@ public class BlacklistService(
         }
         else if (user.IsBlackListed)
         {
-            logger.LogInformation("{service}: User '{user}' was already added to blacklist", SERVICE_NAME, user.Username);
+            logger.LogInformation("{service}: User '{user}' was already added to blacklist", SERVICE_NAME,
+                user.Username);
             await responseHandler.SendUserAlreadyAddedAsync(interaction);
             return;
         }

@@ -10,6 +10,10 @@ using Discord.Rest;
 using OPZBot.Modules;
 using OPZBot.Utilities;
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8604
+// Possible null reference argument.
+
 namespace OPZBot.Services.MessageBackup;
 
 public class BackupResponseHandler(ResponseBuilder responseBuilder) : BaseResponseHandler, IBackupResponseHandler
@@ -37,8 +41,8 @@ public class BackupResponseHandler(ResponseBuilder responseBuilder) : BaseRespon
         var currentMessage = await e.InteractionContext.Channel.GetMessageAsync(e.MessageBatch.Messages.Last().Id);
         responseBuilder.CurrentMessage = currentMessage;
 
-        await _interactionMessage!.ModifyAsync(m =>
-            m.Embed = responseBuilder.Build(
+        await _interactionMessage.ModifyAsync(
+            m => m.Embed = responseBuilder.Build(
                 backupService.BatchNumber, backupService.SavedMessagesCount, backupService.SavedFilesCount,
                 ProgressStage.InProgress));
         _lastMessage = currentMessage;
@@ -50,8 +54,8 @@ public class BackupResponseHandler(ResponseBuilder responseBuilder) : BaseRespon
         responseBuilder.EndTime = DateTime.Now;
         responseBuilder.LastMessage = _lastMessage;
 
-        await _interactionMessage!.ModifyAsync(m =>
-            m.Embed = responseBuilder.Build(
+        await _interactionMessage.ModifyAsync(
+            m => m.Embed = responseBuilder.Build(
                 backupService.BatchNumber, backupService.SavedMessagesCount, backupService.SavedFilesCount,
                 ProgressStage.Finished));
         await GhostPing(e.InteractionContext);
@@ -61,8 +65,8 @@ public class BackupResponseHandler(ResponseBuilder responseBuilder) : BaseRespon
     {
         var backupService = sender as MessageBackupService;
 
-        await e.InteractionContext.Channel.ModifyMessageAsync(_interactionMessage!.Id, m =>
-            m.Embed = responseBuilder.Build(
+        await _interactionMessage.ModifyAsync(
+            m => m.Embed = responseBuilder.Build(
                 backupService.BatchNumber, backupService.SavedMessagesCount, backupService.SavedFilesCount,
                 ProgressStage.Failed));
         await GhostPing(e.InteractionContext);
@@ -94,7 +98,7 @@ public class BackupResponseHandler(ResponseBuilder responseBuilder) : BaseRespon
             .WithButton(button)
             .WithButton(buttonCancel)
             .Build();
-
+        
         await context.Interaction.RespondAsync(ephemeral: true, text:
             "**Todas as suas mensagens** junto de seu usuario serão apagados dos registros de backup permanentemente" +
             "\nDeseja prosseguir?", components: components);
@@ -117,7 +121,7 @@ public class BackupResponseHandler(ResponseBuilder responseBuilder) : BaseRespon
 
     public async Task SendEmptyMessageBackupAsync(object? sender, BackupEventArgs args)
     {
-        await _interactionMessage!.ModifyAsync(m =>
+        await _interactionMessage.ModifyAsync(m =>
         {
             m.Content = "*Tentativa de backup inválida: Não havia mensagens válidas para serem salvas*";
             m.Embed = null;
@@ -133,10 +137,10 @@ public class BackupResponseHandler(ResponseBuilder responseBuilder) : BaseRespon
 
         DelayedDeleteInteraction(context.Interaction);
     }
-    
+
     public async Task SendProcessCancelledAsync(object? sender, BackupEventArgs e)
     {
-        await _interactionMessage!.ModifyAsync(m =>
+        await _interactionMessage.ModifyAsync(m =>
         {
             m.Content = "*O processo de backup foi cancelado*";
             m.Embed = null;

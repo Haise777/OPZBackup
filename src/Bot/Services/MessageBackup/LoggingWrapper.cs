@@ -7,6 +7,9 @@
 using Microsoft.Extensions.Logging;
 using OPZBot.Logging;
 
+#pragma warning disable CS8602
+// Dereference of a possibly null reference.
+
 namespace OPZBot.Services.MessageBackup;
 
 public class LoggingWrapper(ILogger<BackupService> logger)

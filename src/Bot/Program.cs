@@ -38,11 +38,11 @@ public class Program
     {
         new StartupConfigMenu().Initialize();
         ConfigureStaticLogger();
-        
+
         try
         {
             Log.Information("Starting host");
-            
+
             var hostBuilder = Host.CreateDefaultBuilder(args)
                 .UseSerilog((_, _, cfg)
                         => cfg
@@ -51,7 +51,7 @@ public class Program
                             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                             .WriteTo.Console(), preserveStaticLogger: true
                 );
-            
+
             SetStartupBotValues(hostBuilder);
             using var host = hostBuilder.Build();
             await CreateDbFileIfNotExists(host);
@@ -107,7 +107,7 @@ public class Program
         await client.StartAsync();
         await Task.Delay(-1);
     }
-    
+
     private Task CreateDbFileIfNotExists(IHost host)
     {
         using var serviceScope = host.Services.CreateScope();

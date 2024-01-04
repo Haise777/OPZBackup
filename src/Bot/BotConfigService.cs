@@ -29,7 +29,7 @@ internal class BotConfigService
             TimezoneAdjust = config.GetValue<int?>("TimezoneAdjust", null)
         };
     }
-    
+
     public void WriteConfigFile(BotConfig config)
     {
         var serializerOptions = new JsonSerializerOptions
@@ -60,7 +60,7 @@ internal class BotConfigService
                 .Build();
         }
     }
-    
+
     private void CreateFilesIfNotExists()
     {
         if (!File.Exists($"{AppContext.BaseDirectory}{CONFIG_FILE_NAME}"))

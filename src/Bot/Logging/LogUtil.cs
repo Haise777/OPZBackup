@@ -48,11 +48,12 @@ public static class LogUtil
     }
 
     //Log wrapper to log command executions
-    public static void LogCommandExecution<T>
-        (this ILogger<T> logger, string service, string author, string channel, string command, string commandArg = "")
+    public static void LogCommandExecution<T>(
+        this ILogger<T> logger, string service, string author, string channel, string command, string commandArg = "")
     {
         logger.LogInformation(
-            "{service}: {author} > {channel} > {command} {commandArg}", service, author, channel, command, commandArg);
+            "{service}: {author} > {channel} > {command} {commandArg}", 
+            service, author, channel, command, commandArg);
     }
 
     //Async log wrapper

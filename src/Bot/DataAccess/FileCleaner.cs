@@ -13,9 +13,10 @@ public class FileCleaner
     public async Task DeleteMessageFilesAsync(IEnumerable<Message> messages)
     {
         var concurrentDeletion = new List<Task>();
-        foreach (var message in messages) concurrentDeletion.Add(DeleteMessage(message));
-
+        foreach (var message in messages) concurrentDeletion.Add(DeleteFiles(message));
+        
         var deletionInProgress = Task.WhenAll(concurrentDeletion);
+
         try
         {
             await deletionInProgress;
@@ -27,7 +28,7 @@ public class FileCleaner
         }
     }
 
-    private Task DeleteMessage(Message message)
+    private Task DeleteFiles(Message message)
     {
         if (message.File is null) return Task.CompletedTask;
         var filePath = $"{AppContext.BaseDirectory}{message.File}";

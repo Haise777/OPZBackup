@@ -6,7 +6,7 @@
 
 using Discord.Interactions;
 
-namespace OPZBot.Utilities;
+namespace OPZBot.Services;
 
 public interface IResponseHandler
 {

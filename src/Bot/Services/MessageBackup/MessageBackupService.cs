@@ -19,10 +19,10 @@ namespace OPZBot.Services.MessageBackup;
 
 public class MessageBackupService : BackupService, IMessageBackupService
 {
+    private readonly FileCleaner _fileCleaner;
     private readonly ILogger<MessageBackupService> _logger;
     private readonly IMessageFetcher _messageFetcher;
     private readonly IBackupMessageProcessor _messageProcessor;
-    private readonly FileCleaner _fileCleaner;
     private bool _continueBackup = true;
 
     public MessageBackupService(IMessageFetcher messageFetcher, Mapper mapper, IBackupMessageProcessor messageProcessor,
@@ -36,10 +36,11 @@ public class MessageBackupService : BackupService, IMessageBackupService
         _messageProcessor.EndBackupProcess += StopBackup;
     }
 
-    public CancellationTokenSource CancelSource { get; } = new();
     public int BatchNumber { get; private set; }
     public int SavedMessagesCount { get; private set; }
     public int SavedFilesCount { get; private set; }
+
+    public CancellationTokenSource CancelSource { get; } = new();
 
     public event AsyncEventHandler<BackupEventArgs>? StartedBackupProcess;
     public event AsyncEventHandler<BackupEventArgs>? FinishedBatch;
@@ -74,7 +75,7 @@ public class MessageBackupService : BackupService, IMessageBackupService
     private async Task StartBackupMessages()
     {
         IMessage? lastMessage = null;
-        var attemptsRemaining = 3;
+        var attempts = 0;
         while (_continueBackup)
             try
             {
@@ -92,7 +93,7 @@ public class MessageBackupService : BackupService, IMessageBackupService
                 await FinishedBatch.InvokeAsync(this,
                     new BackupEventArgs(InteractionContext, BackupRegistry, messageDataBatch));
 
-                attemptsRemaining = 3;
+                attempts = 0;
             }
             catch (OperationCanceledException)
             {
@@ -100,9 +101,8 @@ public class MessageBackupService : BackupService, IMessageBackupService
             }
             catch (Exception ex)
             {
-                if (attemptsRemaining > 0)
-                    await BatchFailed(ex, attemptsRemaining--);
-                else throw;
+                if (++attempts > 3) throw;
+                await BatchFailed(ex, attempts - 4);
             }
 
         if (await CheckIfBackupIsEmpty()) return;
@@ -116,7 +116,7 @@ public class MessageBackupService : BackupService, IMessageBackupService
             : (await _messageFetcher.FetchAsync(InteractionContext!.Channel)).ExcludeFirst().ToArray();
     }
 
-    private bool IsEmptyBatch(MessageDataBatchDto batch)
+    private bool IsEmptyBatch(MessageBatchData batch)
     {
         if (batch.Messages.Any()) return false;
 
@@ -126,18 +126,18 @@ public class MessageBackupService : BackupService, IMessageBackupService
         return true;
     }
 
-    private async Task SaveBatch(MessageDataBatchDto messageDataBatchDto)
+    private async Task SaveBatch(MessageBatchData messageBatchData)
     {
-        DataContext.Users.AddRange(messageDataBatchDto.Users);
-        DataContext.Messages.AddRange(messageDataBatchDto.Messages);
+        DataContext.Users.AddRange(messageBatchData.Users);
+        DataContext.Messages.AddRange(messageBatchData.Messages);
 
         await DataContext.SaveChangesAsync();
     }
 
-    private void UpdateStatistics(MessageDataBatchDto dataBatch)
+    private void UpdateStatistics(MessageBatchData batchDataBatch)
     {
-        SavedMessagesCount += dataBatch.Messages.Count();
-        SavedFilesCount += dataBatch.FileCount;
+        SavedMessagesCount += batchDataBatch.Messages.Count();
+        SavedFilesCount += batchDataBatch.FileCount;
         BatchNumber++;
     }
 
@@ -173,8 +173,5 @@ public class MessageBackupService : BackupService, IMessageBackupService
         }
     }
 
-    private void StopBackup()
-    {
-        _continueBackup = false;
-    }
+    private void StopBackup() => _continueBackup = false;
 }
