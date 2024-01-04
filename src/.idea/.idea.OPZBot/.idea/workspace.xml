@@ -7,7 +7,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42cf5f64-0284-42d2-8c25-9c5ff55382ad" name="Changes" comment="fixed bug and some refactoring" />
+    <list default="true" id="42cf5f64-0284-42d2-8c25-9c5ff55382ad" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.OPZBot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.OPZBot/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -93,10 +95,12 @@
     "Publish to folder.Publish OPZBot to folder (3).executor": "Run",
     "Publish to folder.Publish OPZBot to folder (4).executor": "Run",
     "Publish to folder.Publish OPZBot to folder (5).executor": "Run",
+    "Publish to folder.Publish OPZBot to folder (8).executor": "Run",
+    "Publish to folder.Publish OPZBot to folder (9).executor": "Run",
     "Publish to folder.Publish OPZBot to folder.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "dev",
+    "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -174,6 +178,14 @@
       <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="linux-x64" target_folder="$USER_HOME$/OneDrive/Área de Trabalho/OPZB/l64" target_framework="net8.0" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
       <method v="2" />
     </configuration>
+    <configuration name="Publish OPZBot to folder (8)" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="win-x64" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/win-x64/publish" target_framework="net8.0" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish OPZBot to folder (9)" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="linux-x64" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/linux-x64/publish" target_framework="net8.0" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
+      <method v="2" />
+    </configuration>
     <configuration name="Publish OPZBot to folder" type="DotNetFolderPublish" factoryName="Publish to folder">
       <riderPublish configuration="Release" platform="Any CPU" produce_single_file="true" runtime="win-x64" self_contained="true" target_folder="$PROJECT_DIR$/Bot/bin/Release/net8.0/win-x64/publish" target_framework="net8.0" trim_unused_assemblies="true" uuid_high="3549330734412614882" uuid_low="-8075094881896206993" />
       <method v="2" />
@@ -221,6 +233,7 @@
       <workItem from="1703878304472" duration="1884000" />
       <workItem from="1703881081537" duration="3188000" />
       <workItem from="1704312636882" duration="23491000" />
+      <workItem from="1704338729558" duration="978000" />
     </task>
     <task id="LOCAL-00001" summary="implemented event handlers for the former 'InvalidBackupAttempt' event">
       <option name="closed" value="true" />

@@ -29,10 +29,8 @@ public class Program
     public static ulong? MainAdminRoleId { get; private set; }
     public static ulong BotUserId { get; private set; }
 
-    public static Task Main(string[] args)
-    {
-        return new Program().MainAsync(args);
-    }
+    public static Task Main(string[] args) 
+        => new Program().MainAsync(args);
 
     public async Task MainAsync(string[] args)
     {
