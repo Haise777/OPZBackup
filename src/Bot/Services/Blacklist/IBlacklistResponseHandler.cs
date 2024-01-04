@@ -5,7 +5,6 @@
 // LICENSE file in the root directory of this source tree.
 
 using Discord.WebSocket;
-using OPZBot.Utilities;
 
 namespace OPZBot.Services.Blacklist;
 

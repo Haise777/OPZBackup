@@ -8,11 +8,9 @@ using Discord;
 using Discord.Interactions;
 using Discord.Rest;
 using OPZBot.Modules;
-using OPZBot.Utilities;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
-#pragma warning disable CS8604
-// Possible null reference argument.
+#pragma warning disable CS8604 // Possible null reference argument.
 
 namespace OPZBot.Services.MessageBackup;
 
