@@ -9,20 +9,38 @@
 
 <h4 align="center">A multipurpose Discord Bot for my server, built using <a href="https://github.com/discord-net/Discord.Net" target="_blank">Discord.Net</a>.</h4>
 
+<div align="center">
+  
+  <a href="">![Static Badge](https://img.shields.io/badge/.NET-8.0-%233502b8?style=flat-square)</a>
+  <a href="">![Static Badge](https://img.shields.io/badge/discord.net-3.13.0-%237c00ad?style=flat-square)</a>
+  <a href="">![GitHub release (with filter)](https://img.shields.io/github/v/release/Haise777/OPZBot?display_name=release&style=flat-square)</a>
+  <a href="">![GitHub License](https://img.shields.io/github/license/Haise777/OPZBot?style=flat-square&color=%23a38802)</a>
+  
+</div>
+
 <p align="center">
   <a href="#key-features">Key Features</a> •
   <a href="#how-to-use">How To Use</a> •
   <a href="#download">Download</a> •
-  <a href="#credits">Credits</a> •
+  <a href="#credits">Credits</a>
 </p>
 
 ## Key Features
 
-* Backup of text channels
+* Backup of text channels to a database file
   - All of channel's messages.
   - Full file backup support without any file type limitations.
+  - Blacklist specified users from being saved on the backup.
 
 ## How To Use
+
+<h3>Requirements</h3>  
+
+* You need to have [.NET Runtime version 8.0](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) or higher installed on your machine
+* A Discord user account
+* Have admin privileges on at least one Discord server
+
+---
 
 <h3>Prior to bot initialization</h3>  
 <h4>Creating a Discord Bot User</h4>
@@ -37,14 +55,13 @@
   - Note it for later, **don't share it nor place it where anyone could see it.**  
 *Your bot's token can be used to gain total access to your bot user, thus having the possibility of making you the one responsible for any malicious content someone else is making it send*  
   - Scroll down to **Privillege Gateways Intents** section and then turn on all of the three intents.  
-[refer to this for the reason](https://discord.com/developers/docs/topics/gateway#gateway-intents)
+[refer to this for more information](https://discord.com/developers/docs/topics/gateway#gateway-intents)
   <br>
 * Go to **OAuth2** tab on the left, on the **URL Generator** option  
   - Check both the `bot` and `application.commands` checkboxes  
   - Now mark these checkboxes so that the bot have the necessary permissions  
     <img src=".github/checkboxes.png" alt="checkboxesinfo" width="700">
-    > Note: You can just mark the **'Administrator'** checkbox for possible channel permission [issues](https://10scopes.com/discord-channels-not-showing/#why-cant-you-see-channels-on-discord)
-    <br>
+    > *Note: You can just mark the **'Administrator'** checkbox for possible channel permission [issues](https://10scopes.com/discord-channels-not-showing/#why-cant-you-see-channels-on-discord)*
   - Copy the Generated Url link on the bottom and paste it on your browser
   - Now select the desired server to invite de bot and authorize it  
 ***Done creating the bot user***  
@@ -69,18 +86,19 @@
 
 ## Download
 
-*Currently there's no stable version to download*
+[Download](https://github.com/Haise777/OPZBot/releases/tag/latest) the latest version of OPZBot for Windows or Linux. 
 
 ## Credits
 
 This software uses the following open source packages:
 
 - [Discord.Net](https://github.com/discord-net/Discord.Net)
+- [EF Core](https://github.com/dotnet/efcore)
 - [Serilog](https://github.com/serilog/serilog)
 
 ---
-> OPZBot is released under [BSD 3-Clause license](https://opensource.org/license/bsd-3-clause/)
->
+OPZBot is released under [BSD 3-Clause license](https://opensource.org/license/bsd-3-clause/)
+
 > *Contact me*\
 > *Email:* [gashimabucoro@proton.me](mailto:gashimabucoro@proton.me) &nbsp;&middot;&nbsp;
 > *Discord:* [@.haise_san](https://discord.com/users/374337303897702401)
