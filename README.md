@@ -60,8 +60,8 @@
 * Go to **OAuth2** tab on the left, on the **URL Generator** option  
   - Check both the `bot` and `application.commands` checkboxes  
   - Now mark these checkboxes so that the bot have the necessary permissions  
-    <img src=".github/checkboxes.png" alt="checkboxesinfo" width="700">  
-    <br>
+    <img src=".github/checkboxes.png" alt="checkboxesinfo" width="700">
+    > *Note: You can just mark the **'Administrator'** checkbox for possible channel permission [issues](https://10scopes.com/discord-channels-not-showing/#why-cant-you-see-channels-on-discord)*
   - Copy the Generated Url link on the bottom and paste it on your browser
   - Now select the desired server to invite de bot and authorize it  
 ***Done creating the bot user***  
