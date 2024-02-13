@@ -25,22 +25,22 @@
   <a href="#credits">Credits</a>
 </p>
 
-## Key Features
+Key Features
+----
 
 * Backup of text channels to a database file
   - All of channel's messages.
   - Full file backup support without any file type limitations.
   - Blacklist specified users from being saved on the backup.
 
-## How To Use
+Setting up
+----
 
 <h3>Requirements</h3>  
 
 * You need to have [.NET Runtime version 8.0](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) or higher installed on your machine
 * A Discord user account
 * Have admin privileges on at least one Discord server
-
----
 
 <h3>Prior to bot initialization</h3>  
 <h4>Creating a Discord Bot User</h4>
@@ -75,7 +75,7 @@
   - The general cooldown refers to limiting if you can make more than one backup per channel per day, it is recommended to leave it on `True`
   <br>
 * You can then return and select the `[R] Run` option  
----
+
 <h3>After the bot is running</h3>  
 
 * You can use [slash commands](https://support.discord.com/hc/en-us/articles/1500000368501-Slash-Commands-FAQ) to interact with the bot
