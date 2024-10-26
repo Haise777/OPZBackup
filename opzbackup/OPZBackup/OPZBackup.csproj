@@ -7,7 +7,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>12</LangVersion>
         <DebugType>embedded</DebugType>
-        <RootNamespace>Bot</RootNamespace>
+        <RootNamespace>OPZBackup</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
