@@ -4,15 +4,13 @@
 // This source code is licensed under the BSD-style license found in the
 // LICENSE file in the root directory of this source tree.
 
-namespace OPZBackup.DataAccess.Models;
+namespace OPZBackup.Data.Models;
 
-public class User
+public class Channel
 {
     public ulong Id { get; set; }
 
-    public string Username { get; set; } = null!;
-
-    public virtual bool IsBlackListed { get; set; } = false;
+    public string Name { get; set; } = null!;
 
     public virtual ICollection<BackupRegistry> BackupRegistries { get; set; } = new List<BackupRegistry>();
 

@@ -5,9 +5,9 @@
 // LICENSE file in the root directory of this source tree.
 
 using Microsoft.EntityFrameworkCore;
-using OPZBackup.DataAccess.Models;
+using OPZBackup.Data.Models;
 
-namespace OPZBackup.DataAccess.Context;
+namespace OPZBackup.Data;
 
 public partial class MyDbContext : DbContext
 {

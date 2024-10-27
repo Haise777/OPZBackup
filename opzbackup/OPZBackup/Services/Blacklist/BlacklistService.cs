@@ -7,8 +7,8 @@
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using OPZBackup.DataAccess;
-using OPZBackup.DataAccess.Context;
+using OPZBackup.Data;
+using OPZBackup.Data.Context;
 
 namespace OPZBackup.Services.Blacklist;
 

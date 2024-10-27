@@ -6,10 +6,10 @@
 
 using Discord;
 using Discord.WebSocket;
-using OPZBackup.DataAccess.Models;
+using OPZBackup.Data.Models;
 using OPZBackup.Extensions;
 
-namespace OPZBackup.DataAccess;
+namespace OPZBackup.Data;
 
 public class Mapper
 {

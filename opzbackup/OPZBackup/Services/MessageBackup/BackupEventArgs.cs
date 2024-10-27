@@ -5,7 +5,7 @@
 // LICENSE file in the root directory of this source tree.
 
 using Discord.Interactions;
-using OPZBackup.DataAccess.Models;
+using OPZBackup.Data.Models;
 
 namespace OPZBackup.Services.MessageBackup;
 
