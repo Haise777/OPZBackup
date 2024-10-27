@@ -18,9 +18,8 @@ public class Program : StartupBase
     public static Task Main(string[] args)
         => MainAsync(args);
 
-    static async Task MainAsync(string[] args)
+    private static async Task MainAsync(string[] args)
     {
-        new StartupConfigMenu().Initialize();
         ConfigureStaticLogger();
 
         try

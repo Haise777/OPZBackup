@@ -46,16 +46,18 @@ public abstract class StartupBase
             services.GetRequiredService<ILogger<Program>>()
         );
     }
-    
+
     protected static void ConfigureApplication(StartupServices services)
     {
-        services.SocketClient.Log += msg
-            => services.Logger.RichLogAsync(LogUtil.ParseLogLevel(msg.Severity), msg.Exception, "{subject} " + msg.Message,
+        //TODO Refactor this 
+        services.SocketClient.Log += msg =>
+            services.Logger.RichLogAsync(LogUtil.ParseLogLevel(msg.Severity), msg.Exception, "{subject} " + msg.Message,
                 "BOT:");
 
-        services.Commands.Log += msg
-            => services.Logger.RichLogAsync(LogUtil.ParseLogLevel(msg.Severity), msg.Exception, "{subject} " + msg.Message,
-                "COMMAND:");
+        services.Commands.Log += msg => 
+            services.Logger.RichLogAsync(LogUtil.ParseLogLevel(msg.Severity), msg.Exception,
+            "{subject} " + msg.Message,
+            "COMMAND:");
 
         services.SocketClient.Ready += async () =>
         {
