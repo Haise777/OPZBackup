@@ -1,11 +1,10 @@
-﻿using System.Collections.Frozen;
-using System.Text.RegularExpressions;
-using Discord;
-using OPZBackup.Services.Utils;
+﻿using Discord;
+using OPZBackup.Data.Dto;
+using Attachment = OPZBackup.Data.Dto.Attachment;
 
-namespace OPZBackup.Services;
+namespace OPZBackup.FileManagement;
 
-using Attachment = Utils.Attachment;
+using Attachment = Attachment;
 
 public class Downloadable
 {

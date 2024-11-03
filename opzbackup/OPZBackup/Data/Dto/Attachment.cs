@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace OPZBackup.Services.Utils;
+namespace OPZBackup.Data.Dto;
 
 public class Attachment
 {

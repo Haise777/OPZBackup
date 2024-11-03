@@ -1,4 +1,4 @@
-﻿namespace OPZBackup.Services;
+﻿namespace OPZBackup.Exceptions;
 
 public class BackupCanceledException : Exception
 {

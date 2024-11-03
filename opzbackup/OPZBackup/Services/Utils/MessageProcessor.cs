@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using OPZBackup.Data;
 using OPZBackup.Data.Models;
+using OPZBackup.FileManagement;
 
 namespace OPZBackup.Services.Utils;
 
@@ -11,7 +12,7 @@ public class MessageProcessor
     private readonly MyDbContext _dbContext;
     private readonly Mapper _mapper;
 
-    public MessageProcessor(MyDbContext dbContext, Mapper mapper, AttachmentDownloader downloader)
+    public MessageProcessor(MyDbContext dbContext, Mapper mapper)
     {
         _dbContext = dbContext;
         _mapper = mapper;

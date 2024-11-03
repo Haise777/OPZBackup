@@ -9,7 +9,7 @@ using OPZBot.Extensions;
 //Aliases for named tuples
 using ParsedValues = (string StartMessage, string LastMessage, string StartTime, string EndTime);
 
-namespace OPZBackup.Services;
+namespace OPZBackup.ResponseHandlers;
 
 public class EmbedResponseBuilder
 {

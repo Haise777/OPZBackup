@@ -26,13 +26,17 @@ public static class AppInfo
     public static ulong? MainAdminRoleId { get; private set; } =
         Configuration.GetValue<ulong?>($"{_configPrefix}:{nameof(MainAdminRoleId)}");
 
-    public static ulong TestGuildId { get; set; } =
+    public static ulong TestGuildId { get; private set; } =
         Configuration.GetValue<ulong>($"{_configPrefix}:{nameof(TestGuildId)}");
 
-    public static string Token { get; set; } =
+    public static string Token { get; private set; } =
         Configuration.GetValue<string>($"{_configPrefix}:{nameof(Token)}");
+    
+    public static int MaxMessagesPerBatch { get; private set; } =
+        Configuration.GetValue<int>($"{_configPrefix}:{nameof(MaxMessagesPerBatch)}");
 
     public static ulong BotUserId { get; private set; }
+    
 
     public static void SetBotUserId(ulong botUserId)
     {

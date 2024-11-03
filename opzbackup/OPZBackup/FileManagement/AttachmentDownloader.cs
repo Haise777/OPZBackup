@@ -1,8 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using Discord;
-using Microsoft.Extensions.Logging;
-
-namespace OPZBackup.Services.Utils;
+﻿namespace OPZBackup.FileManagement;
 
 public class AttachmentDownloader
 {

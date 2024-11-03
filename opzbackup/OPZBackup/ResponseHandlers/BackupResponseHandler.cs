@@ -7,8 +7,9 @@
 using Discord;
 using Discord.Interactions;
 using Discord.Rest;
+using OPZBackup.Services;
 
-namespace OPZBackup.Services;
+namespace OPZBackup.ResponseHandlers;
 
 public class BackupResponseHandler
 {
