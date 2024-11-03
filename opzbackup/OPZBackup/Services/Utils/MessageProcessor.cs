@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using OPZBackup.Data;
 using OPZBackup.Data.Models;
-using OPZBackup.Services.MessageBackup;
 
 namespace OPZBackup.Services.Utils;
 
@@ -54,7 +53,7 @@ public class MessageProcessor
             if (message.Attachments.Any())
                 GetAttachmentsAsDownloadable(message, toDownload, mappedMessage);
             
-            //If the author of this message needs to be saved
+            //TODO If the author of this message needs to be saved
             if (!existingUserIds.Contains(message.Author.Id))
                 if (users.Any(u => u.Id == message.Author.Id))
                     users.Add(_mapper.Map(message.Author));

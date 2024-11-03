@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OPZBackup.Data;
-using OPZBackup.Logging;
 using Serilog;
 using Serilog.Events;
 
@@ -54,10 +53,10 @@ public abstract class StartupBase
             services.Logger.RichLogAsync(LogUtil.ParseLogLevel(msg.Severity), msg.Exception, "{subject} " + msg.Message,
                 "BOT:");
 
-        services.Commands.Log += msg => 
+        services.Commands.Log += msg =>
             services.Logger.RichLogAsync(LogUtil.ParseLogLevel(msg.Severity), msg.Exception,
-            "{subject} " + msg.Message,
-            "COMMAND:");
+                "{subject} " + msg.Message,
+                "COMMAND:");
 
         services.SocketClient.Ready += async () =>
         {

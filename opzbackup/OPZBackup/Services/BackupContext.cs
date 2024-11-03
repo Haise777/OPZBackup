@@ -2,25 +2,34 @@
 using Microsoft.EntityFrameworkCore;
 using OPZBackup.Data;
 using OPZBackup.Data.Models;
-using OPZBackup.Services.Utils;
 
 namespace OPZBackup.Services;
 
 public class BackupContext
 {
-    public BackupRegistry BackupRegistry { get; set; }
+    public BackupRegistry BackupRegistry { get; private set; }
+    public bool IsStopped { get; private set; }
     public int MessageCount { get; set; }
     public int FileCount { get; set; }
-    public bool IsStopped { get; private set; }
+    public bool IsUntilLastBackup { get; }
+    public int BatchNumber { get; private set; }
 
     private readonly MyDbContext _dbContext;
-    public readonly bool IsUntilLastBackup;
 
     private BackupContext(MyDbContext dbContext, bool isUntilLastBackup)
     {
         _dbContext = dbContext;
         IsUntilLastBackup = isUntilLastBackup;
     }
+    
+    public async Task RollbackAsync()
+    {
+        IsStopped = true;
+        _dbContext.BackupRegistries.Remove(BackupRegistry);
+        await _dbContext.SaveChangesAsync();
+    }
+    
+    public void Stop() => IsStopped = true;
 
     [Obsolete(message: $"Use {nameof(BackupContextFactory)}.{nameof(BackupContextFactory.RegisterNewBackup)} instead.")]
     public static async Task<BackupContext> CreateInstanceAsync(Channel channel, User author, bool isUntilLastBackup,
@@ -31,10 +40,7 @@ public class BackupContext
 
         return backupContext;
     }
-
-
-    public void Stop() => IsStopped = true;
-
+    
     private async Task RegisterNewBackup(Channel channel, User author)
     {
         var backupRegistry = new BackupRegistry
@@ -51,5 +57,7 @@ public class BackupContext
 
         _dbContext.BackupRegistries.Add(backupRegistry);
         await _dbContext.SaveChangesAsync();
+        
+        BackupRegistry = backupRegistry;
     }
 }

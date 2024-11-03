@@ -2,9 +2,10 @@
 using System.Text.RegularExpressions;
 using Discord;
 using OPZBackup.Services.Utils;
-using Attachment = OPZBackup.Services.Utils.Attachment;
 
 namespace OPZBackup.Services;
+
+using Attachment = Utils.Attachment;
 
 public class Downloadable
 {

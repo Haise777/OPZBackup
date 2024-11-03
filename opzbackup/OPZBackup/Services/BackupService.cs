@@ -2,25 +2,25 @@
 using Discord.Interactions;
 using Discord.WebSocket;
 using OPZBackup.Data;
-using OPZBackup.Data.Models;
 using OPZBackup.Services.Utils;
 
 namespace OPZBackup.Services;
 
 public class BackupService
 {
-    private readonly Utils.MessageFetcher _messageFetcher;
+    private readonly MessageFetcher _messageFetcher;
     private readonly MessageProcessor _messageProcessor;
     private readonly BackupContextFactory _contextFactory;
     private readonly AttachmentDownloader _attachmentDownloader;
     private readonly MyDbContext _dbContext;
+    private readonly BackupResponseHandler _responseHandler;
     private readonly Mapper _mapper;
     private BackupContext _context;
     private bool _forcedStop;
 
-    public BackupService(Utils.MessageFetcher messageFetcher, MessageProcessor messageProcessor,
+    public BackupService(MessageFetcher messageFetcher, MessageProcessor messageProcessor,
         BackupContextFactory contextFactory, MyDbContext dbContext, AttachmentDownloader attachmentDownloader,
-        Mapper mapper)
+        Mapper mapper, BackupResponseHandler responseHandler)
     {
         _messageFetcher = messageFetcher;
         _messageProcessor = messageProcessor;
@@ -28,40 +28,46 @@ public class BackupService
         _dbContext = dbContext;
         _attachmentDownloader = attachmentDownloader;
         _mapper = mapper;
+        _responseHandler = responseHandler;
     }
 
-    public async Task StartBackupAsync(SocketInteractionContext context, int choice)
+    public async Task StartBackupAsync(SocketInteractionContext interactionContext, bool isUntilLast)
     {
-        var channel = _mapper.Map(context.Channel);
-        var author = _mapper.Map(context.User);
+        var channel = _mapper.Map(interactionContext.Channel);
+        var author = _mapper.Map(interactionContext.User);
 
-        _context = await _contextFactory.RegisterNewBackup(channel, author, choice == 1);
+        _context = await _contextFactory.RegisterNewBackup(channel, author, isUntilLast);
 
         try
         {
-            await BackupMessages(context);
+            await _responseHandler.SendStartNotificationAsync(interactionContext, _context);
+            await BackupMessages(interactionContext);
         }
         catch (Exception ex)
         {
-            //TODO Revert the transaction, cancel and cleanup the whole operation
+            await _responseHandler.SendFailedAsync(interactionContext, _context);
+            await _context.RollbackAsync();
+            throw;
+            //TODO Deletes all stored files from this backup
         }
+
+        await _responseHandler.SendCompletedAsync(interactionContext, _context);
     }
 
-    private async Task BackupMessages(SocketInteractionContext context)
+    private async Task BackupMessages(SocketInteractionContext interactionContext)
     {
         ulong lastMessageId = 0;
-        var continueLoop = true;
 
-        while (continueLoop)
+        while (true)
         {
-            if (_context.IsStopped)
-                break;
-            else if (_forcedStop)
+            if (_forcedStop)
                 throw new BackupCanceledException();
+            if (_context.IsStopped) //Reached the last backuped message
+                break;
 
-            var fetchedMessages = await FetchMessages(context.Channel, lastMessageId);
+            var fetchedMessages = await FetchMessages(interactionContext.Channel, lastMessageId);
 
-            if (!fetchedMessages.Any())
+            if (!fetchedMessages.Any()) //Reached the end of channel
                 break;
 
             lastMessageId = fetchedMessages.Last().Id;
@@ -73,6 +79,7 @@ public class BackupService
 
             await SaveBatch(backupBatch);
             _context.MessageCount += backupBatch.Messages.Count();
+            await _responseHandler.SendBatchFinishedAsync(interactionContext, _context);
         }
     }
 
@@ -92,7 +99,10 @@ public class BackupService
     private async Task DownloadMessageAttachments(IEnumerable<Downloadable> toDownload)
     {
         foreach (var downloadable in toDownload)
+        {
             _context.FileCount += downloadable.Attachments.Count();
+            //TODO add to BackupContext all of the filePaths of the new files for later processing
+        }
 
         await _attachmentDownloader.DownloadAsync(toDownload);
     }
@@ -105,13 +115,8 @@ public class BackupService
             return await _messageFetcher.FetchAsync(channelContext, lastMessageId);
     }
 
-    public async Task CancelAsync(ISocketMessageChannel contextChannel)
+    public void Cancel()
     {
-        if (_context.BackupRegistry.Channel.Id == contextChannel.Id)
-            _forcedStop = true;
-        else
-        {
-            //TODO Do something
-        }
+        _forcedStop = true;
     }
 }

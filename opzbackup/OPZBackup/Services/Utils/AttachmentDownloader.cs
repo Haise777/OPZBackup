@@ -1,7 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using Discord;
 using Microsoft.Extensions.Logging;
-using OPZBackup.Logging;
 
 namespace OPZBackup.Services.Utils;
 

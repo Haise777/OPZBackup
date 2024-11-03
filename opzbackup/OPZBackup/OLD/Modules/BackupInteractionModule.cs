@@ -7,13 +7,13 @@
 using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
-using OPZBackup.Services.MessageBackup;
-using OPZBackup.Logging;
+using OPZBot.Logging;
+using OPZBot.Services.MessageBackup;
 
-namespace OPZBackup.Modules;
+namespace OPZBot.Modules;
 
 [Group("backup", "utilizar a função de backup")]
-public class ackupInteractionModule : InteractionModuleBase<SocketInteractionContext>
+public class BackupInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     public const string CONFIRM_USER_DELETE_ID = "DLT_CONF_CONFIRM";
     public const string CANCEL_USER_DELETE_ID = "DLT_CONF_CANCEL";

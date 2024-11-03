@@ -7,7 +7,6 @@
 using Discord;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OPZBackup.Logging;
 using Serilog;
 using Serilog.Events;
 
