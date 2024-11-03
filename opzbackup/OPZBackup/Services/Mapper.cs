@@ -9,7 +9,7 @@ using Discord.WebSocket;
 using OPZBackup.Data.Models;
 using OPZBackup.Extensions;
 
-namespace OPZBackup.Data;
+namespace OPZBackup.Services;
 
 public class Mapper
 {

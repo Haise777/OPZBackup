@@ -38,7 +38,7 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
         //Checagem de Ja ter backup em progresso
         
         //TODO Cancel backup
-        await _backupService.CancelAsync(Context);
+        await _backupService.CancelAsync(Context.Channel);
     }
 
     [SlashCommand("deletar-proprio",
