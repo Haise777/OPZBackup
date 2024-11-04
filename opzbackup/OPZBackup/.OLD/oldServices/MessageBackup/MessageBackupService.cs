@@ -166,7 +166,7 @@ public class MessageBackupService : BackupService, IMessageBackupService
         if (BackupRegistry is not null)
         {
             DataContext.BackupRegistries.Remove(BackupRegistry);
-            await _fileCleaner.DeleteMessageFilesAsync(await DataContext.Messages
+            await _fileCleaner.DeleteFilesAsync(await DataContext.Messages
                 .Where(m => m.BackupId == BackupRegistry.Id)
                 .ToArrayAsync());
             await DataContext.SaveChangesAsync();

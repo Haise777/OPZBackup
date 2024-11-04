@@ -7,6 +7,7 @@
 using Discord;
 using Discord.WebSocket;
 using OPZBackup.Data.Models;
+using OPZBackup.Extensions;
 
 namespace OPZBackup.Services;
 

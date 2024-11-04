@@ -1,5 +1,7 @@
 ﻿using Discord.Interactions;
 using Discord.WebSocket;
+using Microsoft.Extensions.Logging;
+using OPZBackup.Logger;
 using OPZBackup.ResponseHandlers;
 using OPZBackup.Services;
 using BackupService = OPZBackup.Services.BackupService;
@@ -11,28 +13,32 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly BackupService _backupService;
     private readonly BackupResponseHandler _backupResponseHandler;
+    private readonly ILogger<BackupModule> _logger;
     private static BackupService? _currentBackup;
     private static readonly SemaphoreSlim CommandLock = new(1, 1);
 
-    public BackupModule(BackupService backupService, BackupResponseHandler backupResponseHandler)
+    public BackupModule(BackupService backupService, BackupResponseHandler backupResponseHandler,
+        ILogger<BackupModule> logger)
     {
         _backupService = backupService;
         _backupResponseHandler = backupResponseHandler;
+        _logger = logger;
     }
 
     [SlashCommand("fazer", "efetuar backup deste canal")]
     public async Task MakeBackup([Choice("ate-ultimo", 0)] [Choice("ate-inicio", 1)] int choice)
     {
-        //TODO LogCommandExecution
+        _logger.LogCommandExecution(Context, nameof(MakeBackup), choice.ToString());
 
-        if (!await CheckForAdminRole())
+        if (!IsInAdminRole())
         {
-            await _backupResponseHandler.SendForbiddenAsync(Context);
+            await ForbiddenAsync(nameof(MakeBackup));
             return;
         }
 
         if (CommandLock.CurrentCount < 1)
         {
+            _logger.LogInformation("There is already a backup in progress.");
             await _backupResponseHandler.SendAlreadyInProgressAsync(Context);
             return;
         }
@@ -55,16 +61,17 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("cancelar", "Cancela o processo de backup atual")]
     public async Task CancelBackupProcess()
     {
-        //LogCommandExecution
+        _logger.LogCommandExecution(Context, nameof(CancelBackupProcess));
 
-        if (!await CheckForAdminRole())
+        if (!IsInAdminRole())
         {
-            await _backupResponseHandler.SendForbiddenAsync(Context);
+            await ForbiddenAsync(nameof(CancelBackupProcess));
             return;
         }
 
         if (!(CommandLock.CurrentCount < 1) || _currentBackup == null)
         {
+            _logger.LogInformation("There is no backup in progress.");
             await _backupResponseHandler.SendNoBackupInProgressAsync(Context);
             return;
         }
@@ -73,13 +80,22 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
     }
 
     [SlashCommand("deletar-proprio",
-        "DELETAR todas as informações presentes no backup relacionadas ao usuario PERMANENTEMENTE")]
-    public async Task DeleteUserInBackup()
+        "DELETAR todas as informações presentes no armazenamento relacionadas ao usuario PERMANENTEMENTE")]
+    public async Task DeleteUserInStorage()
     {
+        //TODO-3 Implement DeleteUserInStorage
         throw new NotImplementedException();
     }
 
-    private async Task<bool> CheckForAdminRole()
+    private async Task ForbiddenAsync(string commandName)
+    {
+        _logger.LogInformation(
+            "{User} does not have permission to execute {command}", Context.User.Username, commandName);
+        
+        await _backupResponseHandler.SendForbiddenAsync(Context);
+    } 
+
+    private bool IsInAdminRole()
     {
         var user = Context.User as SocketGuildUser;
 

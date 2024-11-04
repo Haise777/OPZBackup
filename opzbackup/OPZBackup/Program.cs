@@ -7,6 +7,7 @@
 using Discord;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OPZBackup.Logger;
 using Serilog;
 using Serilog.Events;
 
@@ -23,7 +24,7 @@ public class Program : StartupBase
 
         try
         {
-            Log.Information($"OPZBot - v{AppInfo.APP_VER} \n"+ "Starting host");
+            Log.Information($"OPZBot - v{AppInfo.Version} \n"+ "Starting host");
 
             var hostBuilder = Host.CreateDefaultBuilder(args)
                 .UseSerilog((_, _, cfg)
@@ -49,7 +50,7 @@ public class Program : StartupBase
         catch (Exception ex)
         {
             Log.Fatal(ex, "Host terminated unexpectedly");
-            await LogFileWritter.LogHostCrash(ex);
+            await LogWritter.LogHostCrash(ex);
         }
         finally
         {

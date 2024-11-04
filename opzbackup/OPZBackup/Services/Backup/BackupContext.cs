@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using OPZBackup.Data;
 using OPZBackup.Data.Models;
+using OPZBackup.FileManagement;
 
 namespace OPZBackup.Services;
 
@@ -12,7 +13,8 @@ public class BackupContext
     public int MessageCount { get; set; }
     public int FileCount { get; set; }
     public bool IsUntilLastBackup { get; }
-    public int BatchNumber { get; private set; }
+    public int BatchNumber { get; set; }
+    public List<string> SavedFilePaths { get; } = new();
 
     private readonly MyDbContext _dbContext;
 
@@ -21,14 +23,16 @@ public class BackupContext
         _dbContext = dbContext;
         IsUntilLastBackup = isUntilLastBackup;
     }
-    
+
     public async Task RollbackAsync()
     {
         IsStopped = true;
         _dbContext.BackupRegistries.Remove(BackupRegistry);
         await _dbContext.SaveChangesAsync();
+        
+        await FileCleaner.DeleteFilesAsync(SavedFilePaths);
     }
-    
+
     public void Stop() => IsStopped = true;
 
     [Obsolete(message: $"Use {nameof(BackupContextFactory)}.{nameof(BackupContextFactory.RegisterNewBackup)} instead.")]
@@ -40,7 +44,7 @@ public class BackupContext
 
         return backupContext;
     }
-    
+
     private async Task RegisterNewBackup(Channel channel, User author)
     {
         var backupRegistry = new BackupRegistry
@@ -57,7 +61,7 @@ public class BackupContext
 
         _dbContext.BackupRegistries.Add(backupRegistry);
         await _dbContext.SaveChangesAsync();
-        
+
         BackupRegistry = backupRegistry;
     }
 }

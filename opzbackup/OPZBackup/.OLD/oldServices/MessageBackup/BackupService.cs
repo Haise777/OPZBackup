@@ -53,7 +53,7 @@ public abstract class BackupService(
         var messages = await DataContext.Messages.Where(m => m.AuthorId == user.Id).ToArrayAsync();
         DataContext.Messages.RemoveRange(messages);
         await DataContext.SaveChangesAsync();
-        await fileCleaner.DeleteMessageFilesAsync(messages);
+        await fileCleaner.DeleteFilesAsync(messages);
     }
 
     protected virtual async Task StartBackupAsync(SocketInteractionContext interactionContext)

@@ -1,21 +1,13 @@
-// Copyright (c) 2023, Gabriel Shimabucoro
-// All rights reserved.
-// 
-// This source code is licensed under the BSD-style license found in the
-// LICENSE file in the root directory of this source tree.
-
-using OPZBot.Data.Models;
-
-namespace OPZBot.Data;
+﻿namespace OPZBackup.FileManagement;
 
 public static class FileCleaner
 {
-    public static async Task DeleteFilesAsync(IEnumerable<Message> messages)
+    public static async Task DeleteFilesAsync(IEnumerable<string> filePaths)
     {
         var concurrentDeletion = new List<Task>();
-        foreach (var message in messages) 
-            concurrentDeletion.Add(DeleteFiles(message));
-        
+        foreach (var path in filePaths)
+            concurrentDeletion.Add(DeleteFiles(path));
+
         var deletionInProgress = Task.WhenAll(concurrentDeletion);
 
         try
@@ -29,10 +21,8 @@ public static class FileCleaner
         }
     }
 
-    private static Task DeleteFiles(Message message)
+    private static Task DeleteFiles(string filePath)
     {
-        if (message.File is null) return Task.CompletedTask;
-        var filePath = $"{AppContext.BaseDirectory}{message.File}";
         if (Path.GetExtension(filePath) == string.Empty)
             if ((File.GetAttributes(filePath) & FileAttributes.Directory) == FileAttributes.Directory)
             {

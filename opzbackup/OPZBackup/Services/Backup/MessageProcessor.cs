@@ -20,7 +20,7 @@ public class MessageProcessor
 
     public async Task<BackupBatch> ProcessAsync(IEnumerable<IMessage> fetchedMessages, BackupContext context)
     {
-        //TODO Separate this to get its 'needed values' from some sort of 'caching system'
+        //TODO-3 Separate this to get its 'needed values' from some sort of 'caching system'
         var existingMessageIds = await _dbContext.Messages
             .Where(x => x.ChannelId == fetchedMessages.First().Channel.Id)
             .Select(m => m.Id)
@@ -54,7 +54,7 @@ public class MessageProcessor
             if (message.Attachments.Any())
                 GetAttachmentsAsDownloadable(message, toDownload, mappedMessage);
             
-            //TODO If the author of this message needs to be saved
+            //TODO-4 If the author of this message needs to be saved
             if (!existingUserIds.Contains(message.Author.Id))
                 if (users.Any(u => u.Id == message.Author.Id))
                     users.Add(_mapper.Map(message.Author));

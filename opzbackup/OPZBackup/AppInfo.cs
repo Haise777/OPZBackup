@@ -13,7 +13,7 @@ public static class AppInfo
     }
 
 
-    public const string APP_VER = "2.0.0-alpha1";
+    public const string Version = "0.1.0";
     public static DateTime SessionTime { get; } = DateTime.Now;
     public static string FileBackupPath { get; } = $"{AppContext.BaseDirectory}Backup/Files";
 

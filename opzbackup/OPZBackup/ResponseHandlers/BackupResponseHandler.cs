@@ -7,7 +7,12 @@
 using Discord;
 using Discord.Interactions;
 using Discord.Rest;
+using Discord.WebSocket;
 using OPZBackup.Services;
+using OPZBot.Logging;
+using OPZBot.Modules;
+using OPZBot.Services.MessageBackup;
+using Serilog;
 
 namespace OPZBackup.ResponseHandlers;
 
@@ -16,6 +21,9 @@ public class BackupResponseHandler
     private RestFollowupMessage? _interactionMessage;
     private IMessage? _lastMessage;
     private EmbedResponseBuilder? _responseBuilder;
+    
+    //TODO-3 Make it so that it stores the SocketInteractionContext from the BackupModule
+    //TODO-3 Add a method that gives a object that separates all of the EmbedResponse methods from the rest
 
     public async Task SendStartNotificationAsync(SocketInteractionContext interactionContext, BackupContext context)
     {
@@ -31,14 +39,15 @@ public class BackupResponseHandler
 
         _interactionMessage = await interactionContext.Interaction.FollowupAsync(embed: embedResponse);
     }
-    
-    public async Task SendBatchFinishedAsync(SocketInteractionContext interactionContext, BackupContext context)
+
+    public async Task SendBatchFinishedAsync(SocketInteractionContext interactionContext, BackupContext context, BackupBatch batch)
     {
         if (_responseBuilder.StartMessage == null)
             _responseBuilder.SetStartMessage(
-                await interactionContext.Channel.GetMessageAsync(e.MessageBatch.Messages.First().Id));
+                await interactionContext.Channel.GetMessageAsync(batch.Messages.First().Id));
 
-        var currentMessage = await interactionContext.Channel.GetMessageAsync(e.MessageBatch.Messages.Last().Id);
+        var currentMessage = await interactionContext.Channel.GetMessageAsync(batch.Messages.Last().Id);
+        
         var embedResponse = _responseBuilder
             .SetCurrentMessage(currentMessage)
             .SetBatchNumber(context.BatchNumber)
@@ -169,5 +178,29 @@ public class BackupResponseHandler
         await context.Interaction.ModifyOriginalResponseAsync(m => m.Content =
             "*Não há um backup em andamento para cancelar*");
         DelayedDeleteInteraction(context.Interaction);
+    }
+
+    public async Task SendForbiddenAsync(SocketInteractionContext context)
+    {
+        await context.Interaction.ModifyOriginalResponseAsync(m => m.Content =
+            "*Você não possui as permissões adequadas para este comando*");
+        DelayedDeleteInteraction(context.Interaction);
+    }
+
+    private void DelayedDeleteInteraction(SocketInteraction interaction)
+    {
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(7000);
+                await interaction.DeleteOriginalResponseAsync();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, ex.Message);
+                await LogFileWritter.LogError(ex, ex.Message);
+            }
+        });
     }
 }

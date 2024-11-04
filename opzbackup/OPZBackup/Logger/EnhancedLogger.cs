@@ -1,15 +1,11 @@
-﻿// Copyright (c) 2023, Gabriel Shimabucoro
-// All rights reserved.
-// 
-// This source code is licensed under the BSD-style license found in the
-// LICENSE file in the root directory of this source tree.
-
-using Discord;
+﻿using Discord;
+using Discord.Interactions;
 using Microsoft.Extensions.Logging;
+using OPZBot.Logging;
 
-namespace OPZBot.Logging;
+namespace OPZBackup.Logger;
 
-public static class LogUtil
+public static class EnhancedLogger
 {
     //Parse Discord.Net LogSeverity to Microsoft.Logging's LogLevel
     public static LogLevel ParseLogLevel(LogSeverity logSeverity)
@@ -49,11 +45,12 @@ public static class LogUtil
 
     //Log wrapper to log command executions
     public static void LogCommandExecution<T>(
-        this ILogger<T> logger, string service, string author, string channel, string command, string commandArg = "")
+        this ILogger<T> logger, SocketInteractionContext context, string command, string commandArg = "")
     {
         logger.LogInformation(
-            "{service}: {author} > {channel} > {command} {commandArg}", 
-            service, author, channel, command, commandArg);
+            "{author} > {channel} > {command} {commandArg}",
+            context.User.Username, context.Channel.Name, command, commandArg);
+        
     }
 
     //Async log wrapper

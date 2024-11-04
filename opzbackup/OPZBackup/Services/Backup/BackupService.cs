@@ -45,16 +45,22 @@ public class BackupService
         {
             await _responseHandler.SendStartNotificationAsync(interactionContext, _context);
             await BackupMessages(interactionContext);
+            await CompressFilesAsync();
         }
         catch (Exception ex)
         {
             await _responseHandler.SendFailedAsync(interactionContext, _context);
             await _context.RollbackAsync();
             throw;
-            //TODO Deletes all stored files from this backup
         }
-
+        
         await _responseHandler.SendCompletedAsync(interactionContext, _context);
+    }
+
+    private async Task CompressFilesAsync()
+    {
+        //TODO-1 Implements file compression after the backup is finished
+        throw new NotImplementedException();
     }
 
     private async Task BackupMessages(SocketInteractionContext interactionContext)
@@ -73,16 +79,18 @@ public class BackupService
             if (!fetchedMessages.Any()) //Reached the end of channel
                 break;
 
-            lastMessageId = fetchedMessages.Last().Id;
-
             var backupBatch = await _messageProcessor.ProcessAsync(fetchedMessages, _context);
+
+            lastMessageId = fetchedMessages.Last().Id;
 
             if (!backupBatch.Messages.Any())
                 continue;
 
             await SaveBatch(backupBatch);
+
             _context.MessageCount += backupBatch.Messages.Count();
-            await _responseHandler.SendBatchFinishedAsync(interactionContext, _context);
+            _context.BatchNumber++;
+            await _responseHandler.SendBatchFinishedAsync(interactionContext, _context, backupBatch);
         }
     }
 
@@ -104,7 +112,8 @@ public class BackupService
         foreach (var downloadable in toDownload)
         {
             _context.FileCount += downloadable.Attachments.Count();
-            //TODO add to BackupContext all of the filePaths of the new files for later processing
+            foreach (var attachment in downloadable.Attachments)
+                _context.SavedFilePaths.Add(attachment.GetFullPath());
         }
 
         await _attachmentDownloader.DownloadAsync(toDownload);
