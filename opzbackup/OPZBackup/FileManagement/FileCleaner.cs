@@ -8,13 +8,13 @@ public static class FileCleaner
         foreach (var path in filePaths)
             concurrentDeletion.Add(DeleteFiles(path));
 
-        var deletionInProgress = Task.WhenAll(concurrentDeletion);
+        var deletionInProgress = Task.WhenAll(concurrentDeletion); 
 
         try
         {
             await deletionInProgress;
         }
-        catch (Exception)
+        catch (Exception) //Test if it actually catches thrown exception
         {
             if (deletionInProgress.Exception is not null)
                 throw deletionInProgress.Exception;

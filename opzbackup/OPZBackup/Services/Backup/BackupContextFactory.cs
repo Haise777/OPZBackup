@@ -1,4 +1,4 @@
-﻿
+﻿using Discord.Interactions;
 using OPZBackup.Data;
 using OPZBackup.Data.Models;
 
@@ -9,17 +9,23 @@ public class BackupContextFactory
 {
     //BackupContext dependencies
     private readonly MyDbContext _dbContext;
+    private readonly Mapper _mapper;
 
-    public BackupContextFactory(MyDbContext dbContext)
+    public BackupContextFactory(MyDbContext dbContext, Mapper mapper)
     {
         _dbContext = dbContext;
+        _mapper = mapper;
     }
 
-    public async Task<BackupContext> RegisterNewBackup(Channel channel, User author, bool isUntilLastBackup)
+    public async Task<BackupContext> RegisterNewBackup(SocketInteractionContext interactionContext,
+        bool isUntilLastBackup)
     {
         var backupContext = await BackupContext.CreateInstanceAsync
         (
-            channel, author, isUntilLastBackup,
+            interactionContext,
+            isUntilLastBackup,
+            _mapper.Map(interactionContext.Channel),
+            _mapper.Map(interactionContext.User),
             _dbContext
         );
 

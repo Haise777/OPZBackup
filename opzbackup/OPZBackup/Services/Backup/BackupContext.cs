@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
 using OPZBackup.Data;
 using OPZBackup.Data.Models;
@@ -9,6 +10,7 @@ namespace OPZBackup.Services;
 public class BackupContext
 {
     public BackupRegistry BackupRegistry { get; private set; }
+    public SocketInteractionContext InteractionContext { get; private set; }
     public bool IsStopped { get; private set; }
     public int MessageCount { get; set; }
     public int FileCount { get; set; }
@@ -18,8 +20,9 @@ public class BackupContext
 
     private readonly MyDbContext _dbContext;
 
-    private BackupContext(MyDbContext dbContext, bool isUntilLastBackup)
+    private BackupContext(SocketInteractionContext interactionContext, MyDbContext dbContext, bool isUntilLastBackup)
     {
+        InteractionContext = interactionContext;
         _dbContext = dbContext;
         IsUntilLastBackup = isUntilLastBackup;
     }
@@ -29,17 +32,20 @@ public class BackupContext
         IsStopped = true;
         _dbContext.BackupRegistries.Remove(BackupRegistry);
         await _dbContext.SaveChangesAsync();
-        
+
         await FileCleaner.DeleteFilesAsync(SavedFilePaths);
     }
 
     public void Stop() => IsStopped = true;
 
     [Obsolete(message: $"Use {nameof(BackupContextFactory)}.{nameof(BackupContextFactory.RegisterNewBackup)} instead.")]
-    public static async Task<BackupContext> CreateInstanceAsync(Channel channel, User author, bool isUntilLastBackup,
+    public static async Task<BackupContext> CreateInstanceAsync(SocketInteractionContext interactionContext,
+        bool isUntilLastBackup,
+        Channel channel,
+        User author,
         MyDbContext dbContext)
     {
-        var backupContext = new BackupContext(dbContext, isUntilLastBackup);
+        var backupContext = new BackupContext(interactionContext, dbContext, isUntilLastBackup);
         await backupContext.RegisterNewBackup(channel, author);
 
         return backupContext;

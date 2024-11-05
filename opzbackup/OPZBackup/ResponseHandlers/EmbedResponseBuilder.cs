@@ -5,7 +5,7 @@
 // LICENSE file in the root directory of this source tree.
 
 using Discord;
-using OPZBot.Extensions;
+using OPZBackup.Extensions;
 //Aliases for named tuples
 using ParsedValues = (string StartMessage, string LastMessage, string StartTime, string EndTime);
 
@@ -22,18 +22,11 @@ public class EmbedResponseBuilder
     public int NumberOfMessages { get; private set; }
     public int NumberOfFiles { get; private set; }
     public TimeSpan ElapsedTime { get; private set; }
-    private EmbedBuilder _embedBuilder;
+    private EmbedBuilder? _embedBuilder;
     private DateTime? _endTime;
 
     private string ElapsedTimeString => $"{ElapsedTime:hh\\:mm\\:ss}";
-
-    private EmbedResponseBuilder()
-    {
-    }
-
-    public static EmbedResponseBuilder GetBuilder() =>
-        new();
-
+    
     public EmbedResponseBuilder SetStartTime(DateTime startTime)
     {
         StartTime = startTime;
@@ -76,7 +69,7 @@ public class EmbedResponseBuilder
                 break;
         }
         
-        return _embedBuilder.Build();
+        return _embedBuilder!.Build();
     }
 
     private void AddFailedStage()

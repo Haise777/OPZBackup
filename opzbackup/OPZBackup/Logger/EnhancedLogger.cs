@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Microsoft.Extensions.Logging;
-using OPZBot.Logging;
 
 namespace OPZBackup.Logger;
 
@@ -40,7 +39,7 @@ public static class EnhancedLogger
         params object?[] args)
     {
         logger.LogError(ex, message, args);
-        await LogFileWritter.LogError(ex, message);
+        await LogWritter.LogError(ex, message);
     }
 
     //Log wrapper to log command executions

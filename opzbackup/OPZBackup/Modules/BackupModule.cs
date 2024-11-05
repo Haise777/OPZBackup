@@ -12,17 +12,18 @@ namespace OPZBackup.Modules;
 public class BackupModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly BackupService _backupService;
-    private readonly BackupResponseHandler _backupResponseHandler;
+    private readonly BackupResponseHandler _responseHandler;
+
     private readonly ILogger<BackupModule> _logger;
     private static BackupService? _currentBackup;
     private static readonly SemaphoreSlim CommandLock = new(1, 1);
 
-    public BackupModule(BackupService backupService, BackupResponseHandler backupResponseHandler,
-        ILogger<BackupModule> logger)
+    public BackupModule(BackupService backupService, ILogger<BackupModule> logger,
+        BackupResponseHandlerFactory responseHandlerFactory)
     {
         _backupService = backupService;
-        _backupResponseHandler = backupResponseHandler;
         _logger = logger;
+        _responseHandler = responseHandlerFactory.Create(Context);
     }
 
     [SlashCommand("fazer", "efetuar backup deste canal")]
@@ -39,7 +40,7 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
         if (CommandLock.CurrentCount < 1)
         {
             _logger.LogInformation("There is already a backup in progress.");
-            await _backupResponseHandler.SendAlreadyInProgressAsync(Context);
+            await _responseHandler.SendAlreadyInProgressAsync();
             return;
         }
 
@@ -49,7 +50,7 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
         try
         {
             _currentBackup = _backupService;
-            await _currentBackup.StartBackupAsync(Context, choice == 0);
+            await _currentBackup.StartBackupAsync(Context, _responseHandler, choice == 0);
         }
         finally
         {
@@ -72,7 +73,7 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
         if (!(CommandLock.CurrentCount < 1) || _currentBackup == null)
         {
             _logger.LogInformation("There is no backup in progress.");
-            await _backupResponseHandler.SendNoBackupInProgressAsync(Context);
+            await _responseHandler.SendNoBackupInProgressAsync();
             return;
         }
 
@@ -91,9 +92,9 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
     {
         _logger.LogInformation(
             "{User} does not have permission to execute {command}", Context.User.Username, commandName);
-        
-        await _backupResponseHandler.SendForbiddenAsync(Context);
-    } 
+
+        await _responseHandler.SendForbiddenAsync();
+    }
 
     private bool IsInAdminRole()
     {

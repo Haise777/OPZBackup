@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using OPZBackup.Data;
 using OPZBackup.Exceptions;
 using OPZBackup.FileManagement;
+using OPZBackup.Modules;
 using OPZBackup.ResponseHandlers;
 using OPZBackup.Services.Utils;
 
@@ -16,45 +17,42 @@ public class BackupService
     private readonly BackupContextFactory _contextFactory;
     private readonly AttachmentDownloader _attachmentDownloader;
     private readonly MyDbContext _dbContext;
-    private readonly BackupResponseHandler _responseHandler;
-    private readonly Mapper _mapper;
+    private BackupResponseHandler? _responseHandler;
     private BackupContext _context;
     private bool _forcedStop;
 
-    public BackupService(MessageFetcher messageFetcher, MessageProcessor messageProcessor,
-        BackupContextFactory contextFactory, MyDbContext dbContext, AttachmentDownloader attachmentDownloader,
-        Mapper mapper, BackupResponseHandler responseHandler)
+    public BackupService(MessageFetcher messageFetcher,
+        MessageProcessor messageProcessor,
+        BackupContextFactory contextFactory,
+        MyDbContext dbContext,
+        AttachmentDownloader attachmentDownloader)
     {
         _messageFetcher = messageFetcher;
         _messageProcessor = messageProcessor;
         _contextFactory = contextFactory;
         _dbContext = dbContext;
         _attachmentDownloader = attachmentDownloader;
-        _mapper = mapper;
-        _responseHandler = responseHandler;
     }
 
-    public async Task StartBackupAsync(SocketInteractionContext interactionContext, bool isUntilLast)
+    public async Task StartBackupAsync(SocketInteractionContext interactionContext, BackupResponseHandler responseHandler, bool isUntilLast)
     {
-        var channel = _mapper.Map(interactionContext.Channel);
-        var author = _mapper.Map(interactionContext.User);
-
-        _context = await _contextFactory.RegisterNewBackup(channel, author, isUntilLast);
-
+        _responseHandler = responseHandler;
+        _context = await _contextFactory.RegisterNewBackup(interactionContext, isUntilLast);
+        
         try
         {
-            await _responseHandler.SendStartNotificationAsync(interactionContext, _context);
-            await BackupMessages(interactionContext);
+            await _responseHandler.SendStartNotificationAsync(_context);
+            await BackupMessages();
             await CompressFilesAsync();
         }
         catch (Exception ex)
         {
-            await _responseHandler.SendFailedAsync(interactionContext, _context);
+            await _responseHandler.SendFailedAsync(_context);
             await _context.RollbackAsync();
             throw;
         }
         
-        await _responseHandler.SendCompletedAsync(interactionContext, _context);
+        await _responseHandler.SendCompletedAsync(_context);
     }
 
     private async Task CompressFilesAsync()
@@ -63,7 +61,7 @@ public class BackupService
         throw new NotImplementedException();
     }
 
-    private async Task BackupMessages(SocketInteractionContext interactionContext)
+    private async Task BackupMessages()
     {
         ulong lastMessageId = 0;
 
@@ -74,7 +72,7 @@ public class BackupService
             if (_context.IsStopped) //Reached the last backuped message
                 break;
 
-            var fetchedMessages = await FetchMessages(interactionContext.Channel, lastMessageId);
+            var fetchedMessages = await FetchMessages(lastMessageId);
 
             if (!fetchedMessages.Any()) //Reached the end of channel
                 break;
@@ -90,7 +88,7 @@ public class BackupService
 
             _context.MessageCount += backupBatch.Messages.Count();
             _context.BatchNumber++;
-            await _responseHandler.SendBatchFinishedAsync(interactionContext, _context, backupBatch);
+            await _responseHandler.SendBatchFinishedAsync(_context, backupBatch);
         }
     }
 
@@ -119,8 +117,10 @@ public class BackupService
         await _attachmentDownloader.DownloadAsync(toDownload);
     }
 
-    private async Task<IEnumerable<IMessage>> FetchMessages(ISocketMessageChannel channelContext, ulong lastMessageId)
+    private async Task<IEnumerable<IMessage>> FetchMessages(ulong lastMessageId)
     {
+        var channelContext = _context.InteractionContext.Channel;
+        
         if (lastMessageId == 0)
             return await _messageFetcher.FetchAsync(channelContext);
         else
