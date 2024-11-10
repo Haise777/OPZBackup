@@ -11,9 +11,10 @@ namespace OPZBackup.Modules;
 public class BackupModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly BackupService _backupService;
-    private readonly BackupResponseHandler _responseHandler;
-
     private readonly ILogger<BackupModule> _logger;
+    private readonly BackupResponseHandlerFactory _responseHandlerFactory;
+    
+    private BackupResponseHandler _responseHandler;
     private static BackupService? _currentBackup;
     private static readonly SemaphoreSlim CommandLock = new(1, 1);
 
@@ -22,12 +23,14 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
     {
         _backupService = backupService;
         _logger = logger;
-        _responseHandler = responseHandlerFactory.Create(Context);
+        _responseHandlerFactory = responseHandlerFactory;
     }
 
     [SlashCommand("fazer", "efetuar backup deste canal")]
     public async Task MakeBackup([Choice("ate-ultimo", 0)] [Choice("ate-inicio", 1)] int choice)
     {
+        await Context.Interaction.DeferAsync();
+        _responseHandler = _responseHandlerFactory.Create(Context);
         _logger.LogCommandExecution(Context, nameof(MakeBackup), choice.ToString());
 
         if (!IsInAdminRole())
@@ -61,6 +64,8 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("cancelar", "Cancela o processo de backup atual")]
     public async Task CancelBackupProcess()
     {
+        await Context.Interaction.DeferAsync();
+        _responseHandler = _responseHandlerFactory.Create(Context);
         _logger.LogCommandExecution(Context, nameof(CancelBackupProcess));
 
         if (!IsInAdminRole())

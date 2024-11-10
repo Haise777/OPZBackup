@@ -20,7 +20,6 @@ public class DirCompressor
         else
         {
             fileMode = FileMode.Create;
-            zipMode = ZipArchiveMode.Create;
         }
 
 
@@ -28,7 +27,7 @@ public class DirCompressor
         {
             using (var fileStream = new FileStream(zipPath, fileMode))
             {
-                using (var zip = new ZipArchive(fileStream, zipMode))
+                using (var zip = new ZipArchive(fileStream, ZipArchiveMode.Update))
                 {
                     foreach (var filePath in Directory.GetFiles(channelDirPath))
                     {

@@ -27,12 +27,12 @@ public class MessageProcessor
             .ToArrayAsync();
         var existingUserIds = await _dbContext.Users
             .Select(u => u.Id)
-            .ToArrayAsync();
+            .ToListAsync();
 
         var users = new List<User>();
         var messages = new List<Message>();
         var toDownload = new List<Downloadable>();
-        
+
         foreach (var message in fetchedMessages)
         {
             if (IsBotEmbedMessage(message))
@@ -53,19 +53,23 @@ public class MessageProcessor
 
             if (message.Attachments.Any())
                 GetAttachmentsAsDownloadable(message, toDownload, mappedMessage);
-            
+
             //TODO-4 If the author of this message needs to be saved
             if (!existingUserIds.Contains(message.Author.Id))
-                if (users.Any(u => u.Id == message.Author.Id))
-                    users.Add(_mapper.Map(message.Author));
+            {
+                var user = _mapper.Map(message.Author);
+                existingUserIds.Add(user.Id);
+                users.Add(user);
+            }
 
             messages.Add(mappedMessage);
         }
-        
+
         return new BackupBatch(users, messages, toDownload);
     }
 
-    private static void GetAttachmentsAsDownloadable(IMessage message, List<Downloadable> toDownload, Message mappedMessage)
+    private static void GetAttachmentsAsDownloadable(IMessage message, List<Downloadable> toDownload,
+        Message mappedMessage)
     {
         var downloadable = new Downloadable(
             message.Id,

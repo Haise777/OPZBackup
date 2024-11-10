@@ -26,7 +26,10 @@ public class OnlineAttachment
     
     private static string GetExtension(string fileUrl)
     {
-        var extension = MatchFileExtension.Match(fileUrl).Value;
+        var matched = MatchFileExtension.Match(fileUrl).Value;
+        var index = matched.IndexOf('.') + 1;
+        var extension = matched.Substring(index);
+        
         return extension.Length > 8 ? "" : extension;
     }
 }

@@ -7,6 +7,7 @@
 using Discord;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OPZBackup.FileManagement;
 using OPZBackup.Logger;
 using Serilog;
 using Serilog.Events;
@@ -24,7 +25,7 @@ public class Program : StartupBase
 
         try
         {
-            Log.Information($"OPZBot - v{AppInfo.Version} \n"+ "Starting host");
+            Log.Information($"OPZBot - v{AppInfo.Version} \n" + "Starting host");
 
             var hostBuilder = Host.CreateDefaultBuilder(args)
                 .UseSerilog((_, _, cfg)
@@ -34,13 +35,22 @@ public class Program : StartupBase
                             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                             .WriteTo.Console(), preserveStaticLogger: true
                 );
-            
-            if (!AppInfo.RunWithCooldowns) 
+
+            if (!AppInfo.RunWithCooldowns)
                 Log.Warning("Running without cooldowns!");
 
             ConfigureServices(hostBuilder);
             using var host = hostBuilder.Build();
-            await CreateDbFileIfNotExists(host);
+
+#if DEBUG //TODO Remove this later
+            File.Delete("opzbackup.db");
+            if (await FileCleaner.DeleteDirAsync("Backup"))
+                Log.Warning("Backup directory deleted!");
+#endif
+
+            if (await CreateDbFileIfNotExists(host))
+                Log.Information("Database file has been created");
+
             await RunAsync(host);
         }
         catch (HostAbortedException)
@@ -58,15 +68,15 @@ public class Program : StartupBase
             Environment.ExitCode = 1;
         }
     }
-    
+
     private static async Task RunAsync(IHost host)
     {
         using var serviceScope = host.Services.CreateScope();
         var services = GetStartupServices(serviceScope.ServiceProvider);
-        
+
         await services.interactionHandler.InitializeAsync();
         ConfigureApplication(services);
-        
+
         await services.SocketClient.LoginAsync(TokenType.Bot, AppInfo.Token);
         await services.SocketClient.StartAsync();
         await Task.Delay(-1);

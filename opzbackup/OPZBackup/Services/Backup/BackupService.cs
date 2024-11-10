@@ -51,8 +51,11 @@ public class BackupService
         }
         catch (Exception ex)
         {
-            await _responseHandler.SendFailedAsync(_context);
-            await _context.RollbackAsync();
+            var sendFailed = _responseHandler.SendFailedAsync(_context);
+            var rollBack = _context.RollbackAsync();
+            await rollBack;
+            await sendFailed;
+            
             throw;
         }
 

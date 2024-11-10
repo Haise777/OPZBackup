@@ -21,7 +21,6 @@ public class BackupResponseHandler
     private RestFollowupMessage? _interactionMessage;
     private IMessage? _lastMessage;
     
-    //TODO-3 Make it so that it stores the SocketInteractionContext from the BackupModule
     public BackupResponseHandler(SocketInteractionContext interactionContext, EmbedResponseBuilder responseBuilder)
     {
         _interactionContext = interactionContext;
@@ -56,6 +55,7 @@ public class BackupResponseHandler
             .SetBatchNumber(context.BatchNumber)
             .SetMessageCount(context.MessageCount)
             .SetFileCount(context.FileCount)
+            .UpdateElapsedTime()
             .Build(ProgressStage.InProgress);
 
         await _interactionMessage.ModifyAsync(m => m.Embed = embedResponse);
@@ -69,6 +69,7 @@ public class BackupResponseHandler
             .SetBatchNumber(context.BatchNumber)
             .SetMessageCount(context.MessageCount)
             .SetFileCount(context.FileCount)
+            .UpdateElapsedTime()
             .Build(ProgressStage.Finished);
 
         await _interactionMessage.ModifyAsync(m => m.Embed = embedResponse);
@@ -81,6 +82,7 @@ public class BackupResponseHandler
             .SetBatchNumber(context.BatchNumber)
             .SetMessageCount(context.MessageCount)
             .SetFileCount(context.FileCount)
+            .UpdateElapsedTime()
             .Build(ProgressStage.Failed);
 
         await _interactionMessage.ModifyAsync(m => m.Embed = embedResponse);

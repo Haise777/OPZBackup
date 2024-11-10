@@ -37,7 +37,7 @@ public partial class MyDbContext : DbContext
             entity.HasIndex(e => e.AuthorId, "backup_registry_users_id_fk");
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+                .ValueGeneratedOnAdd()
                 .HasColumnName("id");
             entity.Property(e => e.AuthorId).HasColumnName("author_id");
             entity.Property(e => e.ChannelId).HasColumnName("channel_id");

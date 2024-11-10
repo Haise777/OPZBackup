@@ -1,9 +1,11 @@
-﻿using Discord.Interactions;
+﻿using Discord;
+using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using OPZBackup.Data;
 using OPZBackup.FileManagement;
@@ -19,7 +21,7 @@ namespace OPZBackup;
 
 public abstract class StartupBase
 {
-    protected static Task CreateDbFileIfNotExists(IHost host)
+    protected static Task<bool> CreateDbFileIfNotExists(IHost host)
     {
         using var serviceScope = host.Services.CreateScope();
         var context = serviceScope.ServiceProvider.GetRequiredService<MyDbContext>();
@@ -81,18 +83,34 @@ public abstract class StartupBase
     {
         hostBuilder.ConfigureServices((_, s) =>
         {
-            s.AddDbContext<MyDbContext>(db => db.UseSqlite("Data Source=opzbackup.db"));
-            
-            s.AddSingleton<Mapper>();
-            s.AddScoped<BackupService>();
-            s.AddScoped<MessageProcessor>();
-            s.AddScoped<MessageFetcher>();
-            s.AddScoped<BackupModule>();
-            s.AddScoped<AttachmentDownloader>();
-            s.AddScoped<DirCompressor>();
-            s.AddTransient<BackupContextFactory>();
-            s.AddTransient<BackupResponseHandlerFactory>();
-            s.AddTransient<EmbedResponseBuilder>();
+            s.AddDbContext<MyDbContext>(db => db.UseSqlite("Data Source=opzbackup.db"))
+                .AddHttpClient()
+                .AddSingleton(_ => new DiscordSocketClient(new DiscordSocketConfig
+                {
+                    GatewayIntents = GatewayIntents.All,
+                    AlwaysDownloadUsers = true
+                }))
+                .AddSingleton(p =>
+                    new InteractionService(p.GetRequiredService<DiscordSocketClient>(),
+                        new InteractionServiceConfig
+                        {
+                            DefaultRunMode = RunMode.Async
+                        }
+                    )
+                )
+
+                .AddSingleton<Mapper>()
+                .AddScoped<InteractionHandler>()
+                .AddScoped<BackupService>()
+                .AddScoped<MessageProcessor>()
+                .AddScoped<MessageFetcher>()
+                .AddScoped<BackupModule>()
+                .AddScoped<AttachmentDownloader>()
+                .AddScoped<DirCompressor>()
+                .AddTransient<BackupContextFactory>()
+                .AddTransient<BackupResponseHandlerFactory>()
+                .AddTransient<EmbedResponseBuilder>()
+                .RemoveAll<IHttpMessageHandlerBuilderFilter>();
         });
     }
 }

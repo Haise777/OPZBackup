@@ -26,7 +26,7 @@ public class EmbedResponseBuilder
     private DateTime? _endTime;
 
     private string ElapsedTimeString => $"{ElapsedTime:hh\\:mm\\:ss}";
-    
+
     public EmbedResponseBuilder SetStartTime(DateTime startTime)
     {
         StartTime = startTime;
@@ -68,7 +68,7 @@ public class EmbedResponseBuilder
                 AddInProgressStage();
                 break;
         }
-        
+
         return _embedBuilder!.Build();
     }
 
@@ -96,7 +96,7 @@ public class EmbedResponseBuilder
             .WithColor(Color.Gold)
             .AddField("Progresso:", GenerateProgressField(true));
     }
-    
+
     private void AddStartedStage()
     {
         _embedBuilder = CreateNewEmbed()
@@ -104,7 +104,7 @@ public class EmbedResponseBuilder
             .WithColor(Color.Gold)
             .AddField("progresso:", GenerateProgressField(true, "..."));
     }
-    
+
     private string GenerateProgressField(bool withActual, string? actual = null)
     {
         var progressString =
@@ -117,10 +117,10 @@ public class EmbedResponseBuilder
         {
             if (actual != null)
                 progressString += $"Atual: {actual}";
-            
-            progressString +=
-                $"Atual: {CurrentMessage.Author} {CurrentMessage.TimestampWithFixedTimezone().ToShortDateString()} {CurrentMessage.Timestamp.DateTime.ToShortTimeString()}" +
-                $"\n{CurrentMessage.Content}";
+            else
+                progressString +=
+                    $"Atual: {CurrentMessage.Author.Username} {CurrentMessage.TimestampWithFixedTimezone().ToShortDateString()} {CurrentMessage.Timestamp.DateTime.ToShortTimeString()}" +
+                    $"\n{CurrentMessage.Content}";
         }
 
         return progressString;
@@ -191,7 +191,7 @@ public class EmbedResponseBuilder
 
     public EmbedResponseBuilder SetMessageCount(int messageCount)
     {
-        NumberOfFiles = messageCount;
+        NumberOfMessages = messageCount;
         return this;
     }
 
@@ -207,9 +207,9 @@ public class EmbedResponseBuilder
         return this;
     }
 
-    public EmbedResponseBuilder SetLastMessage(IMessage lastMessage)
+    public EmbedResponseBuilder SetLastMessage(IMessage message)
     {
-        LastMessage = lastMessage;
+        LastMessage = message;
         return this;
     }
 }
