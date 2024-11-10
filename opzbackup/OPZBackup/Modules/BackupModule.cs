@@ -3,7 +3,8 @@ using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using OPZBackup.Logger;
 using OPZBackup.ResponseHandlers;
-using BackupService = OPZBackup.Services.BackupService;
+using OPZBackup.ResponseHandlers.Backup;
+using BackupService = OPZBackup.Services.Backup.BackupService;
 
 namespace OPZBackup.Modules;
 
@@ -12,15 +13,19 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly BackupService _backupService;
     private readonly ILogger<BackupModule> _logger;
-    private readonly BackupResponseHandlerFactory _responseHandlerFactory;
+    private readonly ServiceResponseHandlerFactory _responseHandlerFactory;
     
-    private BackupResponseHandler _responseHandler;
+    private ModuleResponseHandler _responseHandler;
     private static BackupService? _currentBackup;
     private static readonly SemaphoreSlim CommandLock = new(1, 1);
 
-    public BackupModule(BackupService backupService, ILogger<BackupModule> logger,
-        BackupResponseHandlerFactory responseHandlerFactory)
+    public BackupModule(
+        BackupService backupService, 
+        ILogger<BackupModule> logger,
+        ModuleResponseHandler responseHandler,
+        ServiceResponseHandlerFactory responseHandlerFactory)
     {
+        _responseHandler = responseHandler;
         _backupService = backupService;
         _logger = logger;
         _responseHandlerFactory = responseHandlerFactory;
@@ -30,7 +35,6 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
     public async Task MakeBackup([Choice("ate-ultimo", 0)] [Choice("ate-inicio", 1)] int choice)
     {
         await Context.Interaction.DeferAsync();
-        _responseHandler = _responseHandlerFactory.Create(Context);
         _logger.LogCommandExecution(Context, nameof(MakeBackup), choice.ToString());
 
         if (!IsInAdminRole())
@@ -42,7 +46,7 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
         if (CommandLock.CurrentCount < 1)
         {
             _logger.LogInformation("There is already a backup in progress.");
-            await _responseHandler.SendAlreadyInProgressAsync();
+            await _responseHandler.SendAlreadyInProgressAsync(Context);
             return;
         }
 
@@ -52,7 +56,8 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
         try
         {
             _currentBackup = _backupService;
-            await _currentBackup.StartBackupAsync(Context, _responseHandler, choice == 0);
+            var serviceResponseHandler = _responseHandlerFactory.Create(Context);
+            await _currentBackup.StartBackupAsync(Context, serviceResponseHandler, choice == 0);
         }
         finally
         {
@@ -65,7 +70,6 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
     public async Task CancelBackupProcess()
     {
         await Context.Interaction.DeferAsync();
-        _responseHandler = _responseHandlerFactory.Create(Context);
         _logger.LogCommandExecution(Context, nameof(CancelBackupProcess));
 
         if (!IsInAdminRole())
@@ -77,7 +81,7 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
         if (!(CommandLock.CurrentCount < 1) || _currentBackup == null)
         {
             _logger.LogInformation("There is no backup in progress.");
-            await _responseHandler.SendNoBackupInProgressAsync();
+            await _responseHandler.SendNoBackupInProgressAsync(Context);
             return;
         }
 
@@ -97,14 +101,14 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
         _logger.LogInformation(
             "{User} does not have permission to execute {command}", Context.User.Username, commandName);
 
-        await _responseHandler.SendForbiddenAsync();
+        await _responseHandler.SendForbiddenAsync(Context);
     }
 
     private bool IsInAdminRole()
     {
         var user = Context.User as SocketGuildUser;
 
-        if (user!.Roles.Any(x => x.Id == AppInfo.MainAdminRoleId))
+        if (user!.Roles.Any(x => x.Id == App.MainAdminRoleId))
             return true;
 
         return false;

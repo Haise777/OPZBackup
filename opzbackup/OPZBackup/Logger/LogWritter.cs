@@ -4,7 +4,7 @@ public static class LogWritter
 {
     public static async Task LogHostCrash(Exception ex)
     {
-        var sessionDate = $"{AppInfo.SessionTime:dd.MM.yyyy_HH.mm.ss}";
+        var sessionDate = $"{App.SessionTime:dd.MM.yyyy_HH.mm.ss}";
         await using var sw = new StreamWriter(Path.Combine(AppContext.BaseDirectory,
             $"crashreport_{sessionDate}.log"));
 
@@ -16,7 +16,7 @@ public static class LogWritter
         if (!Directory.Exists(Path.Combine(AppContext.BaseDirectory, "errorlogs")))
             Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "errorlogs"));
 
-        var sessionDate = $"{AppInfo.SessionTime:dd.MM.yyyy_HH.mm.ss}";
+        var sessionDate = $"{App.SessionTime:dd.MM.yyyy_HH.mm.ss}";
 
         await using var fileWriter = new StreamWriter(
             Path.Combine(AppContext.BaseDirectory, $"errorlogs/log_{sessionDate}.log"), true);

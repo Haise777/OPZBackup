@@ -9,9 +9,9 @@ using OPZBackup.Extensions;
 //Aliases for named tuples
 using ParsedValues = (string StartMessage, string LastMessage, string StartTime, string EndTime);
 
-namespace OPZBackup.ResponseHandlers;
+namespace OPZBackup.ResponseHandlers.Backup;
 
-public class EmbedResponseBuilder
+public class ResponseBuilder
 {
     public DateTime? StartTime { get; set; }
     public IMessage? StartMessage { get; set; }
@@ -27,25 +27,25 @@ public class EmbedResponseBuilder
 
     private string ElapsedTimeString => $"{ElapsedTime:hh\\:mm\\:ss}";
 
-    public EmbedResponseBuilder SetStartTime(DateTime startTime)
+    public ResponseBuilder SetStartTime(DateTime startTime)
     {
         StartTime = startTime;
         return this;
     }
 
-    public EmbedResponseBuilder SetStartMessage(IMessage message)
+    public ResponseBuilder SetStartMessage(IMessage message)
     {
         StartMessage = message;
         return this;
     }
 
-    public EmbedResponseBuilder SetAuthor(IUser author)
+    public ResponseBuilder SetAuthor(IUser author)
     {
         Author = author;
         return this;
     }
 
-    public EmbedResponseBuilder UpdateElapsedTime()
+    public ResponseBuilder UpdateElapsedTime()
     {
         ElapsedTime = StartTime.HasValue ? (DateTime.Now - StartTime).Value : TimeSpan.Zero;
         return this;
@@ -183,33 +183,33 @@ public class EmbedResponseBuilder
         return embedBuilder;
     }
 
-    public EmbedResponseBuilder SetBatchNumber(int batchNumber)
+    public ResponseBuilder SetBatchNumber(int batchNumber)
     {
         BatchNumber = batchNumber;
         return this;
     }
 
-    public EmbedResponseBuilder SetMessageCount(int messageCount)
+    public ResponseBuilder SetMessageCount(int messageCount)
     {
         NumberOfMessages = messageCount;
         return this;
     }
 
-    public EmbedResponseBuilder SetFileCount(int fileCount)
+    public ResponseBuilder SetFileCount(int fileCount)
     {
         NumberOfFiles = fileCount;
         return this;
     }
 
-    public EmbedResponseBuilder SetCurrentMessage(IMessage message)
+    public ResponseBuilder SetCurrentMessage(IMessage message)
     {
         CurrentMessage = message;
         return this;
     }
 
-    public EmbedResponseBuilder SetLastMessage(IMessage message)
+    public ResponseBuilder CurrentAsLastMessage()
     {
-        LastMessage = message;
+        LastMessage = CurrentMessage;
         return this;
     }
 }

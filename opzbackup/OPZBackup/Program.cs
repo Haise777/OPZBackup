@@ -25,7 +25,7 @@ public class Program : StartupBase
 
         try
         {
-            Log.Information($"OPZBot - v{AppInfo.Version} \n" + "Starting host");
+            Log.Information($"OPZBot - v{App.Version} \n" + "Starting host");
 
             var hostBuilder = Host.CreateDefaultBuilder(args)
                 .UseSerilog((_, _, cfg)
@@ -36,17 +36,14 @@ public class Program : StartupBase
                             .WriteTo.Console(), preserveStaticLogger: true
                 );
 
-            if (!AppInfo.RunWithCooldowns)
+            if (!App.RunWithCooldowns)
                 Log.Warning("Running without cooldowns!");
 
             ConfigureServices(hostBuilder);
             using var host = hostBuilder.Build();
 
-#if DEBUG //TODO Remove this later
-            File.Delete("opzbackup.db");
-            if (await FileCleaner.DeleteDirAsync("Backup"))
-                Log.Warning("Backup directory deleted!");
-#endif
+            if (Dev.IsCleanRun)
+                await Dev.DoCleanRun();
 
             if (await CreateDbFileIfNotExists(host))
                 Log.Information("Database file has been created");
@@ -77,7 +74,7 @@ public class Program : StartupBase
         await services.interactionHandler.InitializeAsync();
         ConfigureApplication(services);
 
-        await services.SocketClient.LoginAsync(TokenType.Bot, AppInfo.Token);
+        await services.SocketClient.LoginAsync(TokenType.Bot, App.Token);
         await services.SocketClient.StartAsync();
         await Task.Delay(-1);
     }

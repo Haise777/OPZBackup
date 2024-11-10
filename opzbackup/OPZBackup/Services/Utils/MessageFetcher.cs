@@ -7,11 +7,11 @@ public class MessageFetcher
 {
     public async Task<IEnumerable<IMessage>> FetchAsync(ISocketMessageChannel channel)
     {
-        return await channel.GetMessagesAsync(AppInfo.MaxMessagesPerBatch).FlattenAsync();
+        return await channel.GetMessagesAsync(App.MaxMessagesPerBatch).FlattenAsync();
     }
 
     public Task<IEnumerable<IMessage>> FetchAsync(ISocketMessageChannel channel, ulong startFrom)
     {
-        return channel.GetMessagesAsync(startFrom, Direction.Before, AppInfo.MaxMessagesPerBatch).FlattenAsync();
+        return channel.GetMessagesAsync(startFrom, Direction.Before, App.MaxMessagesPerBatch).FlattenAsync();
     }
 }

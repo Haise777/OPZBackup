@@ -18,7 +18,7 @@ public class Downloadable
 
         MessageId = messageId;
         ChannelId = channelId;
-        ChannelDirPath = $"{AppInfo.FileBackupPath}/{channelId}";
+        ChannelDirPath = $"{App.FileBackupPath}/{channelId}";
 
         if (attachments.Count() > 1)
         {
@@ -83,7 +83,7 @@ public class Downloadable
             attachmentList.Add(new OnlineAttachment(
                 attachment1.Url,
                 $"file{count++}",
-                $"{AppInfo.FileBackupPath}/{channelId}/{messageId}"
+                $"{App.FileBackupPath}/{channelId}/{messageId}"
             ));
         }
 

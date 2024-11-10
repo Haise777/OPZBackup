@@ -7,8 +7,8 @@ public class AttachmentDownloader
     public AttachmentDownloader(HttpClient client)
     {
         _client = client;
-        if (!Directory.Exists(AppInfo.FileBackupPath))
-            Directory.CreateDirectory(AppInfo.FileBackupPath);
+        if (!Directory.Exists(App.FileBackupPath))
+            Directory.CreateDirectory(App.FileBackupPath);
     }
 
     public async Task DownloadAsync(IEnumerable<Downloadable> toDownload)
@@ -33,7 +33,7 @@ public class AttachmentDownloader
     {
         return Task.Run(() =>
         {
-            var path = $"{AppInfo.FileBackupPath}/{channelId}";
+            var path = $"{App.FileBackupPath}/{channelId}";
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
         });

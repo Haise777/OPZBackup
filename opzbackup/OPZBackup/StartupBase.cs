@@ -12,7 +12,9 @@ using OPZBackup.FileManagement;
 using OPZBackup.Logger;
 using OPZBackup.Modules;
 using OPZBackup.ResponseHandlers;
+using OPZBackup.ResponseHandlers.Backup;
 using OPZBackup.Services;
+using OPZBackup.Services.Backup;
 using OPZBackup.Services.Utils;
 using Serilog;
 using Serilog.Events;
@@ -70,12 +72,19 @@ public abstract class StartupBase
 
         services.SocketClient.Ready += async () =>
         {
-#if DEBUG
-            await services.Commands.RegisterCommandsToGuildAsync(AppInfo.TestGuildId);
-#else
-            await sCommands.RegisterCommandsGloballyAsync();
-#endif
-            AppInfo.SetBotUserId(services.SocketClient.CurrentUser.Id);
+            if (Dev.IsDebug)
+            {
+                if (Dev.TestGuildId == default)
+                    throw new ApplicationException("TestGuildId is not defined");
+                
+                await services.Commands.RegisterCommandsToGuildAsync(Dev.TestGuildId);
+            }
+            else
+            {
+                await services.Commands.RegisterCommandsGloballyAsync();
+            }
+
+            App.SetBotUserId(services.SocketClient.CurrentUser.Id);
         };
     }
 
@@ -98,7 +107,6 @@ public abstract class StartupBase
                         }
                     )
                 )
-
                 .AddSingleton<Mapper>()
                 .AddScoped<InteractionHandler>()
                 .AddScoped<BackupService>()
@@ -107,9 +115,10 @@ public abstract class StartupBase
                 .AddScoped<BackupModule>()
                 .AddScoped<AttachmentDownloader>()
                 .AddScoped<DirCompressor>()
+                .AddScoped<ServiceResponseHandlerFactory>()
+                .AddScoped<ModuleResponseHandler>()
                 .AddTransient<BackupContextFactory>()
-                .AddTransient<BackupResponseHandlerFactory>()
-                .AddTransient<EmbedResponseBuilder>()
+                .AddTransient<ResponseBuilder>()
                 .RemoveAll<IHttpMessageHandlerBuilderFilter>();
         });
     }

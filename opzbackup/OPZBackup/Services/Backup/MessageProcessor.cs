@@ -87,5 +87,5 @@ public class MessageProcessor
     }
 
     private static bool IsBotEmbedMessage(IMessage message) =>
-        message.Content == "" && message.Author.Id == AppInfo.BotUserId;
+        message.Content == "" && message.Author.Id == App.BotUserId;
 }

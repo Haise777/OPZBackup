@@ -8,7 +8,7 @@ public class DirCompressor
     public async Task CompressAsync(string channelDirPath)
     {
         var placeName = Path.GetFileName(channelDirPath.TrimEnd(Path.DirectorySeparatorChar));
-        var zipPath = Path.Combine(AppInfo.FileBackupPath, $"{placeName}.zip");
+        var zipPath = Path.Combine(App.FileBackupPath, $"{placeName}.zip");
         FileMode fileMode;
         ZipArchiveMode zipMode;
 

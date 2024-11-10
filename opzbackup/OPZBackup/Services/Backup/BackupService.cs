@@ -1,14 +1,15 @@
 ﻿using Discord;
 using Discord.Interactions;
-using Discord.WebSocket;
 using OPZBackup.Data;
 using OPZBackup.Exceptions;
 using OPZBackup.FileManagement;
-using OPZBackup.Modules;
 using OPZBackup.ResponseHandlers;
+using OPZBackup.ResponseHandlers.Backup;
 using OPZBackup.Services.Utils;
 
-namespace OPZBackup.Services;
+// ReSharper disable PossibleMultipleEnumeration TODO-4
+
+namespace OPZBackup.Services.Backup;
 
 public class BackupService
 {
@@ -18,8 +19,8 @@ public class BackupService
     private readonly AttachmentDownloader _attachmentDownloader;
     private readonly MyDbContext _dbContext;
     private readonly DirCompressor _dirCompressor;
-    private BackupResponseHandler? _responseHandler;
-    private BackupContext _context;
+    private ServiceResponseHandler _responseHandler = null!;
+    private BackupContext _context = null!;
     private bool _forcedStop;
 
     public BackupService(MessageFetcher messageFetcher,
@@ -38,7 +39,7 @@ public class BackupService
     }
 
     public async Task StartBackupAsync(SocketInteractionContext interactionContext,
-        BackupResponseHandler responseHandler, bool isUntilLast)
+        ServiceResponseHandler responseHandler, bool isUntilLast)
     {
         _responseHandler = responseHandler;
         _context = await _contextFactory.RegisterNewBackup(interactionContext, isUntilLast);
@@ -49,8 +50,14 @@ public class BackupService
             await BackupMessages();
             await CompressFilesAsync();
         }
+        catch (BackupCanceledException)
+        {
+            var sendCancelled = _responseHandler.SendProcessCancelledAsync();
+            await sendCancelled;
+        }
         catch (Exception ex)
         {
+            //TODO-3 Log exception and also send the error name back to the client
             var sendFailed = _responseHandler.SendFailedAsync(_context);
             var rollBack = _context.RollbackAsync();
             await rollBack;
@@ -77,10 +84,11 @@ public class BackupService
         {
             if (_forcedStop)
                 throw new BackupCanceledException();
-            if (_context.IsStopped) //Reached the last backuped message
+            if (_context.IsStopped) //Flag becomes true when reached the last backuped message
                 break;
 
             var fetchedMessages = await FetchMessages(lastMessageId);
+            
 
             if (!fetchedMessages.Any()) //Reached the end of channel
                 break;

@@ -1,15 +1,16 @@
 ﻿using Microsoft.Extensions.Configuration;
+using OPZBackup.FileManagement;
+using Serilog;
 
 namespace OPZBackup;
 
-public static class AppInfo
+public static class App
 {
     public static readonly IConfiguration Configuration = GetConfigurationFromFile();
     private const string _configPrefix = "app";
 
-    static AppInfo()
+    static App()
     {
-
     }
 
 
@@ -26,17 +27,13 @@ public static class AppInfo
     public static ulong? MainAdminRoleId { get; private set; } =
         Configuration.GetValue<ulong?>($"{_configPrefix}:{nameof(MainAdminRoleId)}");
 
-    public static ulong TestGuildId { get; private set; } =
-        Configuration.GetValue<ulong>($"app-dev:{nameof(TestGuildId)}");
-
     public static string Token { get; private set; } =
         Configuration.GetValue<string>($"{_configPrefix}:{nameof(Token)}");
-    
+
     public static int MaxMessagesPerBatch { get; private set; } =
         Configuration.GetValue<int>($"{_configPrefix}:{nameof(MaxMessagesPerBatch)}");
 
     public static ulong BotUserId { get; private set; }
-    
 
     public static void SetBotUserId(ulong botUserId)
     {
@@ -47,7 +44,7 @@ public static class AppInfo
         BotUserId = botUserId;
     }
 
-    private static IConfiguration GetConfigurationFromFile()
+    public static IConfiguration GetConfigurationFromFile()
     {
         try
         {
