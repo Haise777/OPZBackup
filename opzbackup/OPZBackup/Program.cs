@@ -37,8 +37,8 @@ public class Program : StartupBase
             
             if (!AppInfo.RunWithCooldowns) 
                 Log.Warning("Running without cooldowns!");
-            
-            //TODO ConfigureServices
+
+            ConfigureServices(hostBuilder);
             using var host = hostBuilder.Build();
             await CreateDbFileIfNotExists(host);
             await RunAsync(host);

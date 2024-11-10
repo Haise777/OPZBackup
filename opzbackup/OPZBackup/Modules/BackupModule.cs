@@ -3,7 +3,6 @@ using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using OPZBackup.Logger;
 using OPZBackup.ResponseHandlers;
-using OPZBackup.Services;
 using BackupService = OPZBackup.Services.BackupService;
 
 namespace OPZBackup.Modules;

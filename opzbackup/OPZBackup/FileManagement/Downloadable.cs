@@ -1,16 +1,14 @@
 ﻿using Discord;
 using OPZBackup.Data.Dto;
-using Attachment = OPZBackup.Data.Dto.Attachment;
 
 namespace OPZBackup.FileManagement;
-
-using Attachment = Attachment;
 
 public class Downloadable
 {
     public readonly ulong MessageId;
     public readonly ulong ChannelId;
-    public readonly IEnumerable<Attachment> Attachments;
+    public readonly string ChannelDirPath;
+    public readonly IEnumerable<OnlineAttachment> Attachments;
     private static readonly SemaphoreSlim _downloadLimiter = new(50, 50);
 
     public Downloadable(ulong messageId, ulong channelId, IEnumerable<IAttachment> attachments)
@@ -20,6 +18,7 @@ public class Downloadable
 
         MessageId = messageId;
         ChannelId = channelId;
+        ChannelDirPath = $"{AppInfo.FileBackupPath}/{channelId}";
 
         if (attachments.Count() > 1)
         {
@@ -28,10 +27,10 @@ public class Downloadable
             return;
         }
 
-        var attachment = new Attachment(
+        var attachment = new OnlineAttachment(
             attachments.First().Url,
             messageId.ToString(),
-            $"{AppInfo.FileBackupPath}/{channelId}"
+            ChannelDirPath
         );
 
         Attachments = new[] { attachment };
@@ -56,15 +55,15 @@ public class Downloadable
         return downloadedFiles;
     }
 
-    private static async Task<AttachmentFile> DownloadAttachmentsAsync(Attachment attachment, HttpClient client)
+    private static async Task<AttachmentFile> DownloadAttachmentsAsync(OnlineAttachment onlineAttachment, HttpClient client)
     {
         var attempts = 0;
         while (true)
         {
             try
             {
-                var file = await client.GetByteArrayAsync(attachment.Url);
-                return new AttachmentFile(file, attachment.GetFullPath());
+                var file = await client.GetByteArrayAsync(onlineAttachment.Url);
+                return new AttachmentFile(file, onlineAttachment.GetFullPath());
             }
             catch (HttpRequestException ex)
             {
@@ -74,14 +73,14 @@ public class Downloadable
         }
     }
 
-    private static IEnumerable<Attachment> GetAttachments(IEnumerable<IAttachment> attachments, ulong channelId,
+    private static IEnumerable<OnlineAttachment> GetAttachments(IEnumerable<IAttachment> attachments, ulong channelId,
         ulong messageId)
     {
-        var attachmentList = new List<Attachment>();
+        var attachmentList = new List<OnlineAttachment>();
         var count = 1;
         foreach (var attachment1 in attachments)
         {
-            attachmentList.Add(new Attachment(
+            attachmentList.Add(new OnlineAttachment(
                 attachment1.Url,
                 $"file{count++}",
                 $"{AppInfo.FileBackupPath}/{channelId}/{messageId}"

@@ -98,26 +98,26 @@ public class BackupResponseHandler
         DelayedDeleteInteraction();
     }
 
-    public async Task SendDeleteConfirmationAsync()
-    {
-        var button = new ButtonBuilder()
-            .WithStyle(ButtonStyle.Danger)
-            .WithLabel("Confirmar")
-            .WithCustomId(BackupInteractionModule.CONFIRM_USER_DELETE_ID);
-        var buttonCancel = new ButtonBuilder()
-            .WithStyle(ButtonStyle.Secondary)
-            .WithLabel("Cancelar")
-            .WithCustomId(BackupInteractionModule.CANCEL_USER_DELETE_ID);
-
-        var components = new ComponentBuilder()
-            .WithButton(button)
-            .WithButton(buttonCancel)
-            .Build();
-
-        await _interactionContext.Interaction.RespondAsync(ephemeral: true, text:
-            "**Todas as suas mensagens** junto de seu usuario serão apagados dos registros de backup permanentemente" +
-            "\nDeseja prosseguir?", components: components);
-    }
+    // public async Task SendDeleteConfirmationAsync()
+    // {
+    //     var button = new ButtonBuilder()
+    //         .WithStyle(ButtonStyle.Danger)
+    //         .WithLabel("Confirmar")
+    //         .WithCustomId(BackupInteractionModule.CONFIRM_USER_DELETE_ID);
+    //     var buttonCancel = new ButtonBuilder()
+    //         .WithStyle(ButtonStyle.Secondary)
+    //         .WithLabel("Cancelar")
+    //         .WithCustomId(BackupInteractionModule.CANCEL_USER_DELETE_ID);
+    //
+    //     var components = new ComponentBuilder()
+    //         .WithButton(button)
+    //         .WithButton(buttonCancel)
+    //         .Build();
+    //
+    //     await _interactionContext.Interaction.RespondAsync(ephemeral: true, text:
+    //         "**Todas as suas mensagens** junto de seu usuario serão apagados dos registros de backup permanentemente" +
+    //         "\nDeseja prosseguir?", components: components);
+    // }
 
     public async Task SendUserDeletionResultAsync(bool wasDeleted)
     {
@@ -204,6 +204,15 @@ public class BackupResponseHandler
                 Log.Error(ex, ex.Message);
                 await LogWritter.LogError(ex, ex.Message);
             }
+        });
+    }
+
+    public async Task SendCompressingFilesAsync(BackupContext context)
+    {
+        await _interactionMessage.ModifyAsync(m =>
+        {
+            m.Content = "*Arquivos estao sendo comprimidos agora*";
+            m.Embed = null;
         });
     }
 }

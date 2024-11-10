@@ -17,6 +17,7 @@ public class BackupService
     private readonly BackupContextFactory _contextFactory;
     private readonly AttachmentDownloader _attachmentDownloader;
     private readonly MyDbContext _dbContext;
+    private readonly DirCompressor _dirCompressor;
     private BackupResponseHandler? _responseHandler;
     private BackupContext _context;
     private bool _forcedStop;
@@ -25,20 +26,23 @@ public class BackupService
         MessageProcessor messageProcessor,
         BackupContextFactory contextFactory,
         MyDbContext dbContext,
-        AttachmentDownloader attachmentDownloader)
+        AttachmentDownloader attachmentDownloader, 
+        DirCompressor dirCompressor)
     {
         _messageFetcher = messageFetcher;
         _messageProcessor = messageProcessor;
         _contextFactory = contextFactory;
         _dbContext = dbContext;
         _attachmentDownloader = attachmentDownloader;
+        _dirCompressor = dirCompressor;
     }
 
-    public async Task StartBackupAsync(SocketInteractionContext interactionContext, BackupResponseHandler responseHandler, bool isUntilLast)
+    public async Task StartBackupAsync(SocketInteractionContext interactionContext,
+        BackupResponseHandler responseHandler, bool isUntilLast)
     {
         _responseHandler = responseHandler;
         _context = await _contextFactory.RegisterNewBackup(interactionContext, isUntilLast);
-        
+
         try
         {
             await _responseHandler.SendStartNotificationAsync(_context);
@@ -51,14 +55,15 @@ public class BackupService
             await _context.RollbackAsync();
             throw;
         }
-        
+
         await _responseHandler.SendCompletedAsync(_context);
     }
 
     private async Task CompressFilesAsync()
     {
-        //TODO-1 Implements file compression after the backup is finished
-        throw new NotImplementedException();
+        await _responseHandler.SendCompressingFilesAsync(_context);
+        await _dirCompressor.CompressAsync(_context.ChannelDirPath);
+        await FileCleaner.DeleteDirAsync(_context.ChannelDirPath);
     }
 
     private async Task BackupMessages()
@@ -110,8 +115,7 @@ public class BackupService
         foreach (var downloadable in toDownload)
         {
             _context.FileCount += downloadable.Attachments.Count();
-            foreach (var attachment in downloadable.Attachments)
-                _context.SavedFilePaths.Add(attachment.GetFullPath());
+            _context.ChannelDirPath = downloadable.ChannelDirPath;
         }
 
         await _attachmentDownloader.DownloadAsync(toDownload);
@@ -120,7 +124,7 @@ public class BackupService
     private async Task<IEnumerable<IMessage>> FetchMessages(ulong lastMessageId)
     {
         var channelContext = _context.InteractionContext.Channel;
-        
+
         if (lastMessageId == 0)
             return await _messageFetcher.FetchAsync(channelContext);
         else

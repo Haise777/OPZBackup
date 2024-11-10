@@ -16,7 +16,7 @@ public class BackupContext
     public int FileCount { get; set; }
     public bool IsUntilLastBackup { get; }
     public int BatchNumber { get; set; }
-    public List<string> SavedFilePaths { get; } = new();
+    public string ChannelDirPath { get; set; }
 
     private readonly MyDbContext _dbContext;
 
@@ -33,7 +33,7 @@ public class BackupContext
         _dbContext.BackupRegistries.Remove(BackupRegistry);
         await _dbContext.SaveChangesAsync();
 
-        await FileCleaner.DeleteFilesAsync(SavedFilePaths);
+        await FileCleaner.DeleteDirAsync(ChannelDirPath);
     }
 
     public void Stop() => IsStopped = true;
