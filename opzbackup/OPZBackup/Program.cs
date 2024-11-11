@@ -7,7 +7,6 @@
 using Discord;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OPZBackup.FileManagement;
 using OPZBackup.Logger;
 using Serilog;
 using Serilog.Events;
@@ -17,7 +16,9 @@ namespace OPZBackup;
 public class Program : StartupBase
 {
     public static Task Main(string[] args)
-        => MainAsync(args);
+    {
+        return MainAsync(args);
+    }
 
     private static async Task MainAsync(string[] args)
     {
@@ -33,7 +34,7 @@ public class Program : StartupBase
                             .Enrich.FromLogContext()
                             .MinimumLevel.Information()
                             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                            .WriteTo.Console(), preserveStaticLogger: true
+                            .WriteTo.Console(), true
                 );
 
             if (!App.RunWithCooldowns)

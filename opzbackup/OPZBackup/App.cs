@@ -1,20 +1,19 @@
 ﻿using Microsoft.Extensions.Configuration;
-using OPZBackup.FileManagement;
-using Serilog;
 
 namespace OPZBackup;
 
 public static class App
 {
-    public static readonly IConfiguration Configuration = GetConfigurationFromFile();
     private const string _configPrefix = "app";
+
+
+    public const string Version = "0.1.0";
+    public static readonly IConfiguration Configuration = GetConfigurationFromFile();
 
     static App()
     {
     }
 
-
-    public const string Version = "0.1.0";
     public static DateTime SessionTime { get; } = DateTime.Now;
     public static string FileBackupPath { get; } = $"{AppContext.BaseDirectory.Replace('\\', '/')}Backup/Files";
 
@@ -50,7 +49,7 @@ public static class App
         {
             return new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+                .AddJsonFile("appsettings.json", false, false)
                 .Build();
         }
         catch (InvalidDataException ex)

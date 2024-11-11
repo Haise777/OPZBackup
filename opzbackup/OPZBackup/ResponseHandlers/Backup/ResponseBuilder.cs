@@ -1,10 +1,4 @@
-﻿// Copyright (c) 2023, Gabriel Shimabucoro
-// All rights reserved.
-// 
-// This source code is licensed under the BSD-style license found in the
-// LICENSE file in the root directory of this source tree.
-
-using Discord;
+﻿using Discord;
 using OPZBackup.Extensions;
 //Aliases for named tuples
 using ParsedValues = (string StartMessage, string LastMessage, string StartTime, string EndTime);
@@ -13,6 +7,8 @@ namespace OPZBackup.ResponseHandlers.Backup;
 
 public class ResponseBuilder
 {
+    private EmbedBuilder? _embedBuilder;
+    private DateTime? _endTime;
     public DateTime? StartTime { get; set; }
     public IMessage? StartMessage { get; set; }
     public IMessage? CurrentMessage { get; set; }
@@ -22,8 +18,6 @@ public class ResponseBuilder
     public int NumberOfMessages { get; private set; }
     public int NumberOfFiles { get; private set; }
     public TimeSpan ElapsedTime { get; private set; }
-    private EmbedBuilder? _embedBuilder;
-    private DateTime? _endTime;
 
     private string ElapsedTimeString => $"{ElapsedTime:hh\\:mm\\:ss}";
 

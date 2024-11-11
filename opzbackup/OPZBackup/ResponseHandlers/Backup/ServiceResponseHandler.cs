@@ -1,6 +1,7 @@
 ﻿using Discord.Interactions;
 using Discord.Rest;
 using OPZBackup.Services;
+using OPZBackup.Services.Backup;
 
 namespace OPZBackup.ResponseHandlers.Backup;
 
@@ -33,7 +34,7 @@ public class ServiceResponseHandler
     public async Task SendBatchFinishedAsync(BackupContext context, BackupBatch batch)
     {
         if (_interaction == null) throw new InvalidOperationException("The interaction has not been created yet.");
-        
+
         if (_responseBuilder.StartMessage == null)
             _responseBuilder.SetStartMessage(
                 await _interactionContext.Channel.GetMessageAsync(batch.Messages.First().Id));

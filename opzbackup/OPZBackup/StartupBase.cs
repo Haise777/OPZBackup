@@ -11,7 +11,6 @@ using OPZBackup.Data;
 using OPZBackup.FileManagement;
 using OPZBackup.Logger;
 using OPZBackup.Modules;
-using OPZBackup.ResponseHandlers;
 using OPZBackup.ResponseHandlers.Backup;
 using OPZBackup.Services;
 using OPZBackup.Services.Backup;
@@ -39,13 +38,6 @@ public abstract class StartupBase
             .WriteTo.Console()
             .CreateLogger();
     }
-
-    protected record StartupServices(
-        InteractionHandler interactionHandler,
-        DiscordSocketClient SocketClient,
-        InteractionService Commands,
-        ILogger<Program> Logger
-    );
 
     protected static StartupServices GetStartupServices(IServiceProvider services)
     {
@@ -76,7 +68,7 @@ public abstract class StartupBase
             {
                 if (Dev.TestGuildId == default)
                     throw new ApplicationException("TestGuildId is not defined");
-                
+
                 await services.Commands.RegisterCommandsToGuildAsync(Dev.TestGuildId);
             }
             else
@@ -122,4 +114,11 @@ public abstract class StartupBase
                 .RemoveAll<IHttpMessageHandlerBuilderFilter>();
         });
     }
+
+    protected record StartupServices(
+        InteractionHandler interactionHandler,
+        DiscordSocketClient SocketClient,
+        InteractionService Commands,
+        ILogger<Program> Logger
+    );
 }

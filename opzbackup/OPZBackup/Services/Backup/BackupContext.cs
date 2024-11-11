@@ -1,23 +1,13 @@
-﻿using Discord;
-using Discord.Interactions;
+﻿using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
 using OPZBackup.Data;
 using OPZBackup.Data.Models;
 using OPZBackup.FileManagement;
 
-namespace OPZBackup.Services;
+namespace OPZBackup.Services.Backup;
 
 public class BackupContext
 {
-    public BackupRegistry BackupRegistry { get; private set; }
-    public SocketInteractionContext InteractionContext { get; private set; }
-    public bool IsStopped { get; private set; }
-    public int MessageCount { get; set; }
-    public int FileCount { get; set; }
-    public bool IsUntilLastBackup { get; }
-    public int BatchNumber { get; set; }
-    public string ChannelDirPath { get; set; }
-
     private readonly MyDbContext _dbContext;
 
     private BackupContext(SocketInteractionContext interactionContext, MyDbContext dbContext, bool isUntilLastBackup)
@@ -26,6 +16,15 @@ public class BackupContext
         _dbContext = dbContext;
         IsUntilLastBackup = isUntilLastBackup;
     }
+
+    public BackupRegistry BackupRegistry { get; private set; } = null!;
+    public SocketInteractionContext InteractionContext { get; private set; }
+    public bool IsStopped { get; private set; }
+    public int MessageCount { get; set; }
+    public int FileCount { get; set; }
+    public bool IsUntilLastBackup { get; }
+    public int BatchNumber { get; set; }
+    public string? ChannelDirPath { get; set; }
 
     public async Task RollbackAsync()
     {
@@ -36,9 +35,12 @@ public class BackupContext
         await FileCleaner.DeleteDirAsync(ChannelDirPath);
     }
 
-    public void Stop() => IsStopped = true;
+    public void Stop()
+    {
+        IsStopped = true;
+    }
 
-    [Obsolete(message: $"Use {nameof(BackupContextFactory)}.{nameof(BackupContextFactory.RegisterNewBackup)} instead.")]
+    [Obsolete($"Use {nameof(BackupContextFactory)}.{nameof(BackupContextFactory.RegisterNewBackup)} instead.")]
     public static async Task<BackupContext> CreateInstanceAsync(SocketInteractionContext interactionContext,
         bool isUntilLastBackup,
         Channel channel,

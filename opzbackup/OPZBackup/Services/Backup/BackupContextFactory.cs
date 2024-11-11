@@ -1,8 +1,7 @@
 ﻿using Discord.Interactions;
 using OPZBackup.Data;
-using OPZBackup.Data.Models;
 
-namespace OPZBackup.Services;
+namespace OPZBackup.Services.Backup;
 
 #pragma warning disable CS0618 // Type or member is obsolete
 public class BackupContextFactory

@@ -49,7 +49,6 @@ public static class EnhancedLogger
         logger.LogInformation(
             "{author} > {channel} > {command} {commandArg}",
             context.User.Username, context.Channel.Name, command, commandArg);
-        
     }
 
     //Async log wrapper

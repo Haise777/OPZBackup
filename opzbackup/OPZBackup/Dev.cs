@@ -10,7 +10,7 @@ public static class Dev
     {
 #if DEBUG
         var configuration = App.GetConfigurationFromFile();
-        
+
         TestGuildId = configuration.GetValue<ulong>($"app-dev:{nameof(TestGuildId)}");
         IsCleanRun = configuration.GetValue<bool>("app-dev:CleanRun");
         IsDebug = true;

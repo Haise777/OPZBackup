@@ -5,11 +5,11 @@ namespace OPZBackup.FileManagement;
 
 public class Downloadable
 {
-    public readonly ulong MessageId;
-    public readonly ulong ChannelId;
-    public readonly string ChannelDirPath;
-    public readonly IEnumerable<OnlineAttachment> Attachments;
     private static readonly SemaphoreSlim _downloadLimiter = new(50, 50);
+    public readonly IEnumerable<OnlineAttachment> Attachments;
+    public readonly string ChannelDirPath;
+    public readonly ulong ChannelId;
+    public readonly ulong MessageId;
 
     public Downloadable(ulong messageId, ulong channelId, IEnumerable<IAttachment> attachments)
     {
@@ -55,11 +55,11 @@ public class Downloadable
         return downloadedFiles;
     }
 
-    private static async Task<AttachmentFile> DownloadAttachmentsAsync(OnlineAttachment onlineAttachment, HttpClient client)
+    private static async Task<AttachmentFile> DownloadAttachmentsAsync(OnlineAttachment onlineAttachment,
+        HttpClient client)
     {
         var attempts = 0;
         while (true)
-        {
             try
             {
                 var file = await client.GetByteArrayAsync(onlineAttachment.Url);
@@ -70,7 +70,6 @@ public class Downloadable
                 if (++attempts > 3) throw;
                 await Task.Delay(5000);
             }
-        }
     }
 
     private static IEnumerable<OnlineAttachment> GetAttachments(IEnumerable<IAttachment> attachments, ulong channelId,
@@ -79,13 +78,11 @@ public class Downloadable
         var attachmentList = new List<OnlineAttachment>();
         var count = 1;
         foreach (var attachment1 in attachments)
-        {
             attachmentList.Add(new OnlineAttachment(
                 attachment1.Url,
                 $"file{count++}",
                 $"{App.FileBackupPath}/{channelId}/{messageId}"
             ));
-        }
 
         return attachmentList;
     }

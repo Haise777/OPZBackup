@@ -4,7 +4,7 @@ using OPZBackup.Data;
 using OPZBackup.Data.Models;
 using OPZBackup.FileManagement;
 
-namespace OPZBackup.Services.Utils;
+namespace OPZBackup.Services.Backup;
 
 //This is the class responsible for applying the processing part of bussiness logic to it
 public class MessageProcessor
@@ -46,7 +46,8 @@ public class MessageProcessor
                     context.Stop();
                     break;
                 }
-                else continue;
+
+                continue;
             }
 
             var mappedMessage = _mapper.Map(message, context.BackupRegistry.Id);
@@ -86,6 +87,8 @@ public class MessageProcessor
             mappedMessage.File = $"{downloadableAttachments.First().FilePath}";
     }
 
-    private static bool IsBotEmbedMessage(IMessage message) =>
-        message.Content == "" && message.Author.Id == App.BotUserId;
+    private static bool IsBotEmbedMessage(IMessage message)
+    {
+        return message.Content == "" && message.Author.Id == App.BotUserId;
+    }
 }

@@ -3,7 +3,6 @@ using Discord.Interactions;
 using OPZBackup.Data;
 using OPZBackup.Exceptions;
 using OPZBackup.FileManagement;
-using OPZBackup.ResponseHandlers;
 using OPZBackup.ResponseHandlers.Backup;
 using OPZBackup.Services.Utils;
 
@@ -13,21 +12,21 @@ namespace OPZBackup.Services.Backup;
 
 public class BackupService
 {
-    private readonly MessageFetcher _messageFetcher;
-    private readonly MessageProcessor _messageProcessor;
-    private readonly BackupContextFactory _contextFactory;
     private readonly AttachmentDownloader _attachmentDownloader;
+    private readonly BackupContextFactory _contextFactory;
     private readonly MyDbContext _dbContext;
     private readonly DirCompressor _dirCompressor;
-    private ServiceResponseHandler _responseHandler = null!;
+    private readonly MessageFetcher _messageFetcher;
+    private readonly MessageProcessor _messageProcessor;
     private BackupContext _context = null!;
     private bool _forcedStop;
+    private ServiceResponseHandler _responseHandler = null!;
 
     public BackupService(MessageFetcher messageFetcher,
         MessageProcessor messageProcessor,
         BackupContextFactory contextFactory,
         MyDbContext dbContext,
-        AttachmentDownloader attachmentDownloader, 
+        AttachmentDownloader attachmentDownloader,
         DirCompressor dirCompressor)
     {
         _messageFetcher = messageFetcher;
@@ -55,14 +54,14 @@ public class BackupService
             var sendCancelled = _responseHandler.SendProcessCancelledAsync();
             await sendCancelled;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             //TODO-3 Log exception and also send the error name back to the client
             var sendFailed = _responseHandler.SendFailedAsync(_context);
             var rollBack = _context.RollbackAsync();
             await rollBack;
             await sendFailed;
-            
+
             throw;
         }
 
@@ -88,7 +87,7 @@ public class BackupService
                 break;
 
             var fetchedMessages = await FetchMessages(lastMessageId);
-            
+
 
             if (!fetchedMessages.Any()) //Reached the end of channel
                 break;
@@ -124,11 +123,9 @@ public class BackupService
     private async Task DownloadMessageAttachments(IEnumerable<Downloadable> toDownload)
     {
         foreach (var downloadable in toDownload)
-        {
             _context.FileCount += downloadable.Attachments.Count();
-            _context.ChannelDirPath = downloadable.ChannelDirPath;
-        }
 
+        _context.ChannelDirPath = toDownload.First().ChannelDirPath;
         await _attachmentDownloader.DownloadAsync(toDownload);
     }
 
@@ -136,10 +133,11 @@ public class BackupService
     {
         var channelContext = _context.InteractionContext.Channel;
 
-        if (lastMessageId == 0)
-            return await _messageFetcher.FetchAsync(channelContext);
-        else
-            return await _messageFetcher.FetchAsync(channelContext, lastMessageId);
+        return lastMessageId switch
+        {
+            0 => await _messageFetcher.FetchAsync(channelContext),
+            _ => await _messageFetcher.FetchAsync(channelContext, lastMessageId)
+        };
     }
 
     public void Cancel()
