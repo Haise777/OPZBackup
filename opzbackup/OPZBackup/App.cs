@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.IO.Compression;
+using Microsoft.Extensions.Configuration;
 
 namespace OPZBackup;
 
@@ -15,7 +16,12 @@ public static class App
     }
 
     public static DateTime SessionTime { get; } = DateTime.Now;
-    public static string FileBackupPath { get; } = $"{AppContext.BaseDirectory.Replace('\\', '/')}Backup/Files";
+
+    public static string BaseBackupPath { get; } = $"{AppContext.BaseDirectory.Replace('\\', '/')}backup";
+
+    public static string FileBackupPath { get; } = $"{BaseBackupPath}/files";
+
+    public static string TempFilePath { get; } = $"{FileBackupPath}/temp";
 
     public static bool RunWithCooldowns { get; private set; } =
         Configuration.GetValue<bool>($"{_configPrefix}:{nameof(RunWithCooldowns)}");
@@ -31,6 +37,8 @@ public static class App
 
     public static int MaxMessagesPerBatch { get; private set; } =
         Configuration.GetValue<int>($"{_configPrefix}:{nameof(MaxMessagesPerBatch)}");
+
+    public static CompressionLevel CompressionLevel { get; private set; } = GetCompressionLevel();
 
     public static ulong BotUserId { get; private set; }
 
@@ -57,5 +65,19 @@ public static class App
             Console.WriteLine("FATAL ERROR: Config file is corrupted");
             throw;
         }
+    }
+
+    private static CompressionLevel GetCompressionLevel()
+    {
+        var configValue = Configuration.GetValue<string>($"{_configPrefix}:{nameof(CompressionLevel)}");
+
+        return configValue switch
+        {
+            "optimal" => CompressionLevel.Optimal,
+            "fastest" => CompressionLevel.Fastest,
+            "hardest" => CompressionLevel.SmallestSize,
+            "no" => CompressionLevel.NoCompression,
+            _ => throw new ApplicationException($"Unknown compression level: {configValue}")
+        };
     }
 }

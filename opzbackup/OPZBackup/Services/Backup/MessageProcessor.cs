@@ -78,13 +78,14 @@ public class MessageProcessor
             message.Attachments
         );
         toDownload.Add(downloadable);
+        
+        //TODO-Feature Make so that the messages saved on the database points to their correct files
+        // var downloadableAttachments = downloadable.Attachments.ToArray();
 
-        var downloadableAttachments = downloadable.Attachments.ToArray();
-
-        if (downloadableAttachments.Count() == 1)
-            mappedMessage.File = $"{downloadableAttachments.First().GetFullPath()}";
-        else
-            mappedMessage.File = $"{downloadableAttachments.First().FilePath}";
+        // if (downloadableAttachments.Count() == 1)
+        //     mappedMessage.File = $"{downloadableAttachments.First().GetFullName()}";
+        // else
+        //     mappedMessage.File = $"{downloadableAttachments.First().FilePath}";
     }
 
     private static bool IsBotEmbedMessage(IMessage message)

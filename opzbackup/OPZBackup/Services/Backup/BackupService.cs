@@ -7,6 +7,10 @@ using OPZBackup.ResponseHandlers.Backup;
 using OPZBackup.Services.Utils;
 
 // ReSharper disable PossibleMultipleEnumeration TODO-4
+//TODO-Feature Have every backup process from the start to finish be logged in a specific file
+//TODO-3 Better organize the logfiles in a log folder and have specific behavior for different types of logs, like append, new file, etc
+//TODO-Feature Implement passive benchmarking capabilities to various bot functions, time per batch, average per batch, response time, etc
+
 
 namespace OPZBackup.Services.Backup;
 
@@ -46,17 +50,22 @@ public class BackupService
         try
         {
             await _responseHandler.SendStartNotificationAsync(_context);
+
             await BackupMessages();
             await CompressFilesAsync();
         }
         catch (BackupCanceledException)
         {
+            //TODO-2 Log cancellation
             var sendCancelled = _responseHandler.SendProcessCancelledAsync();
+            var rollBack = _context.RollbackAsync();
+            await rollBack;
             await sendCancelled;
+            return;
         }
         catch (Exception)
         {
-            //TODO-3 Log exception and also send the error name back to the client
+            //TODO-2 Log exception and also send the error name back to the client
             var sendFailed = _responseHandler.SendFailedAsync(_context);
             var rollBack = _context.RollbackAsync();
             await rollBack;
@@ -70,9 +79,13 @@ public class BackupService
 
     private async Task CompressFilesAsync()
     {
+        //TODO-3 Implement a way of tracking the progress of the compression
         await _responseHandler.SendCompressingFilesAsync(_context);
-        await _dirCompressor.CompressAsync(_context.ChannelDirPath);
-        await FileCleaner.DeleteDirAsync(_context.ChannelDirPath);
+        await _dirCompressor.CompressAsync(
+            $"{App.TempFilePath}/{_context.BackupRegistry.ChannelId}",
+            $"{App.FileBackupPath}"
+        );
+        await FileCleaner.DeleteDirAsync(App.TempFilePath);
     }
 
     private async Task BackupMessages()
@@ -82,27 +95,21 @@ public class BackupService
         while (true)
         {
             if (_forcedStop)
-                throw new BackupCanceledException();
-            if (_context.IsStopped) //Flag becomes true when reached the last backuped message
+                throw new BackupCanceledException(); //TODO-4 Should I use a CancellationToken here to throw instead?
+            if (_context.IsStopped)
                 break;
 
             var fetchedMessages = await FetchMessages(lastMessageId);
-
-
-            if (!fetchedMessages.Any()) //Reached the end of channel
-                break;
-
-            var backupBatch = await _messageProcessor.ProcessAsync(fetchedMessages, _context);
-
+            if (!fetchedMessages.Any()) break;
             lastMessageId = fetchedMessages.Last().Id;
 
+            var backupBatch = await _messageProcessor.ProcessAsync(fetchedMessages, _context);
             if (!backupBatch.Messages.Any())
                 continue;
 
             await SaveBatch(backupBatch);
-
-            _context.MessageCount += backupBatch.Messages.Count();
             _context.BatchNumber++;
+            _context.MessageCount += backupBatch.Messages.Count();
             await _responseHandler.SendBatchFinishedAsync(_context, backupBatch);
         }
     }
@@ -125,7 +132,6 @@ public class BackupService
         foreach (var downloadable in toDownload)
             _context.FileCount += downloadable.Attachments.Count();
 
-        _context.ChannelDirPath = toDownload.First().ChannelDirPath;
         await _attachmentDownloader.DownloadAsync(toDownload);
     }
 

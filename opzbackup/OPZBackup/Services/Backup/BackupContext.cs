@@ -24,7 +24,6 @@ public class BackupContext
     public int FileCount { get; set; }
     public bool IsUntilLastBackup { get; }
     public int BatchNumber { get; set; }
-    public string? ChannelDirPath { get; set; }
 
     public async Task RollbackAsync()
     {
@@ -32,7 +31,7 @@ public class BackupContext
         _dbContext.BackupRegistries.Remove(BackupRegistry);
         await _dbContext.SaveChangesAsync();
 
-        await FileCleaner.DeleteDirAsync(ChannelDirPath);
+        await FileCleaner.DeleteDirAsync(App.TempFilePath);
     }
 
     public void Stop()

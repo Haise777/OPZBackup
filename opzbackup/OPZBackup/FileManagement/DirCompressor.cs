@@ -4,13 +4,10 @@ namespace OPZBackup.FileManagement;
 
 public class DirCompressor
 {
-    public async Task CompressAsync(string? channelDirPath)
+    public async Task CompressAsync(string channelDirPath, string targetDirPath)
     {
-        if (channelDirPath is null)
-            return;
-
-        var placeName = Path.GetFileName(channelDirPath.TrimEnd(Path.DirectorySeparatorChar));
-        var zipPath = Path.Combine(App.FileBackupPath, $"{placeName}.zip");
+        var fileName = Path.GetFileName(channelDirPath.TrimEnd(Path.DirectorySeparatorChar)); //TODO
+        var zipPath = Path.Combine(targetDirPath, $"{fileName}.zip");
         var fileMode = File.Exists(zipPath) ? FileMode.Open : FileMode.Create;
 
         await Task.Run(() =>
@@ -26,7 +23,7 @@ public class DirCompressor
                 if (existingEntry != null)
                     existingEntry.Delete();
 
-                zip.CreateEntryFromFile(filePath, entryName, CompressionLevel.Fastest);
+                zip.CreateEntryFromFile(filePath, entryName, App.CompressionLevel);
             }
         });
     }

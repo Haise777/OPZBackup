@@ -22,6 +22,7 @@ public class Program : StartupBase
 
     private static async Task MainAsync(string[] args)
     {
+        //TODO-3 Implement colored logging with AnsiStyles
         ConfigureStaticLogger();
 
         try
@@ -46,9 +47,12 @@ public class Program : StartupBase
             if (Dev.IsCleanRun)
                 await Dev.DoCleanRun();
 
+            if (!Directory.Exists(App.FileBackupPath))
+                Directory.CreateDirectory(App.FileBackupPath);
+            
             if (await CreateDbFileIfNotExists(host))
                 Log.Information("Database file has been created");
-
+            
             await RunAsync(host);
         }
         catch (HostAbortedException)

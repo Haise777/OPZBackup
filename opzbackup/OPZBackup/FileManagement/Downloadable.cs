@@ -7,33 +7,30 @@ public class Downloadable
 {
     private static readonly SemaphoreSlim _downloadLimiter = new(50, 50);
     public readonly IEnumerable<OnlineAttachment> Attachments;
-    public readonly string ChannelDirPath;
     public readonly ulong ChannelId;
     public readonly ulong MessageId;
 
     public Downloadable(ulong messageId, ulong channelId, IEnumerable<IAttachment> attachments)
     {
-        if (attachments.Count() == 0)
+        if (!attachments.Any())
             throw new ArgumentException("No attachments provided.");
 
         MessageId = messageId;
         ChannelId = channelId;
-        ChannelDirPath = $"{App.FileBackupPath}/{channelId}";
 
         if (attachments.Count() > 1)
         {
-            var attachmentList = GetAttachments(attachments, channelId, messageId);
+            var attachmentList = GetAttachments(attachments);
             Attachments = attachmentList;
             return;
         }
 
         var attachment = new OnlineAttachment(
             attachments.First().Url,
-            messageId.ToString(),
-            ChannelDirPath
+            messageId.ToString()
         );
 
-        Attachments = new[] { attachment };
+        Attachments = [attachment];
     }
 
     public async Task<IEnumerable<AttachmentFile>> DownloadAsync(HttpClient client)
@@ -63,25 +60,24 @@ public class Downloadable
             try
             {
                 var file = await client.GetByteArrayAsync(onlineAttachment.Url);
-                return new AttachmentFile(file, onlineAttachment.GetFullPath());
+                return new AttachmentFile(file, onlineAttachment.GetFullName());
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException ex) //TODO-3 Deal with httpclient exceptions
             {
                 if (++attempts > 3) throw;
                 await Task.Delay(5000);
             }
     }
 
-    private static IEnumerable<OnlineAttachment> GetAttachments(IEnumerable<IAttachment> attachments, ulong channelId,
-        ulong messageId)
+    private static IEnumerable<OnlineAttachment> GetAttachments(IEnumerable<IAttachment> attachments)
     {
         var attachmentList = new List<OnlineAttachment>();
         var count = 1;
+        
         foreach (var attachment1 in attachments)
             attachmentList.Add(new OnlineAttachment(
                 attachment1.Url,
-                $"file{count++}",
-                $"{App.FileBackupPath}/{channelId}/{messageId}"
+                $"file{count++}"
             ));
 
         return attachmentList;

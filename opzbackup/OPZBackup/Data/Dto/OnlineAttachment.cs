@@ -7,20 +7,18 @@ public class OnlineAttachment
     private static readonly Regex MatchFileExtension = new(@"\.([^\.]+?)(?=\?ex)");
     public readonly string FileExtension;
     public readonly string FileName;
-    public readonly string FilePath;
     public readonly string Url;
 
-    public OnlineAttachment(string url, string fileName, string filePath)
+    public OnlineAttachment(string url, string fileName)
     {
         Url = url;
         FileName = fileName;
         FileExtension = GetExtension(url);
-        FilePath = filePath;
     }
 
-    public string GetFullPath()
+    public string GetFullName()
     {
-        return $"{FilePath}/{FileName}.{FileExtension}";
+        return $"{FileName}.{FileExtension}";
     }
 
     private static string GetExtension(string fileUrl)

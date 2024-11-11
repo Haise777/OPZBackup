@@ -7,8 +7,6 @@ public class AttachmentDownloader
     public AttachmentDownloader(HttpClient client)
     {
         _client = client;
-        if (!Directory.Exists(App.FileBackupPath))
-            Directory.CreateDirectory(App.FileBackupPath);
     }
 
     public async Task DownloadAsync(IEnumerable<Downloadable> toDownload)
@@ -25,15 +23,25 @@ public class AttachmentDownloader
     private async Task DownloadAndWriteFile(Downloadable downloadable)
     {
         var files = await downloadable.DownloadAsync(_client);
+        var filePath = $"{App.TempFilePath}/{downloadable.ChannelId}/";
+        
+        if (files.Count() == 1)
+        {
+            var file = files.First();
+            await File.WriteAllBytesAsync(filePath + file.FileName, file.FileBytes);
+            
+            return;
+        }
+
         foreach (var file in files)
-            await File.WriteAllBytesAsync(file.FullFilePath, file.FileBytes);
+            await File.WriteAllBytesAsync(filePath + file.FileName, file.FileBytes);
     }
 
     private Task CreateChannelDirIfNotExists(ulong channelId)
     {
         return Task.Run(() =>
         {
-            var path = $"{App.FileBackupPath}/{channelId}";
+            var path = $"{App.TempFilePath}/{channelId}";
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
         });

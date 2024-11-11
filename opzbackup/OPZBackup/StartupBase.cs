@@ -22,6 +22,7 @@ namespace OPZBackup;
 
 public abstract class StartupBase
 {
+    //TODO-4 Rethink the whole startup class organization
     protected static Task<bool> CreateDbFileIfNotExists(IHost host)
     {
         using var serviceScope = host.Services.CreateScope();
@@ -51,7 +52,6 @@ public abstract class StartupBase
 
     protected static void ConfigureApplication(StartupServices services)
     {
-        //TODO Refactor this 
         services.SocketClient.Log += msg =>
             services.Logger.RichLogAsync(EnhancedLogger.ParseLogLevel(msg.Severity), msg.Exception,
                 "{subject} " + msg.Message,
@@ -84,7 +84,7 @@ public abstract class StartupBase
     {
         hostBuilder.ConfigureServices((_, s) =>
         {
-            s.AddDbContext<MyDbContext>(db => db.UseSqlite("Data Source=opzbackup.db"))
+            s.AddDbContext<MyDbContext>(db => db.UseSqlite($"Data Source={App.BaseBackupPath}/opzbackup.db"))
                 .AddHttpClient()
                 .AddSingleton(_ => new DiscordSocketClient(new DiscordSocketConfig
                 {

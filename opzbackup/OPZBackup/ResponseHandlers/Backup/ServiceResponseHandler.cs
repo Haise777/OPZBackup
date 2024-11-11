@@ -85,6 +85,7 @@ public class ServiceResponseHandler
 
     public async Task SendCompressingFilesAsync(BackupContext context)
     {
+        //TODO-2 Work in a better message for this
         await _interaction!.ModifyAsync(m =>
         {
             m.Content = "*Arquivos estao sendo comprimidos agora*";
