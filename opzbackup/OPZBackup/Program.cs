@@ -23,6 +23,7 @@ public class Program : StartupBase
     private static async Task MainAsync(string[] args)
     {
         //TODO-3 Implement colored logging with AnsiStyles
+        //TODO-Feature Implement a terminal to perform some commands to the bot
         ConfigureStaticLogger();
 
         try
@@ -45,14 +46,14 @@ public class Program : StartupBase
             using var host = hostBuilder.Build();
 
             if (Dev.IsCleanRun)
-                await Dev.DoCleanRun();
+                Dev.DoCleanRun();
 
             if (!Directory.Exists(App.FileBackupPath))
                 Directory.CreateDirectory(App.FileBackupPath);
-            
+
             if (await CreateDbFileIfNotExists(host))
                 Log.Information("Database file has been created");
-            
+
             await RunAsync(host);
         }
         catch (HostAbortedException)

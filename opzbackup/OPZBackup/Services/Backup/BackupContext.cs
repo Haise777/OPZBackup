@@ -9,12 +9,15 @@ namespace OPZBackup.Services.Backup;
 public class BackupContext
 {
     private readonly MyDbContext _dbContext;
+    private readonly FileCleaner _fileCleaner;
 
-    private BackupContext(SocketInteractionContext interactionContext, MyDbContext dbContext, bool isUntilLastBackup)
+    private BackupContext(SocketInteractionContext interactionContext, MyDbContext dbContext, bool isUntilLastBackup,
+        FileCleaner fileCleaner)
     {
         InteractionContext = interactionContext;
         _dbContext = dbContext;
         IsUntilLastBackup = isUntilLastBackup;
+        _fileCleaner = fileCleaner;
     }
 
     public BackupRegistry BackupRegistry { get; private set; } = null!;
@@ -31,7 +34,7 @@ public class BackupContext
         _dbContext.BackupRegistries.Remove(BackupRegistry);
         await _dbContext.SaveChangesAsync();
 
-        await FileCleaner.DeleteDirAsync(App.TempFilePath);
+        await _fileCleaner.DeleteDirAsync(App.TempFilePath);
     }
 
     public void Stop()
@@ -44,9 +47,10 @@ public class BackupContext
         bool isUntilLastBackup,
         Channel channel,
         User author,
-        MyDbContext dbContext)
+        MyDbContext dbContext,
+        FileCleaner fileCleaner)
     {
-        var backupContext = new BackupContext(interactionContext, dbContext, isUntilLastBackup);
+        var backupContext = new BackupContext(interactionContext, dbContext, isUntilLastBackup, fileCleaner);
         await backupContext.RegisterNewBackup(channel, author);
 
         return backupContext;

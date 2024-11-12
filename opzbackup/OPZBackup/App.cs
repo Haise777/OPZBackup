@@ -76,7 +76,7 @@ public static class App
             "optimal" => CompressionLevel.Optimal,
             "fastest" => CompressionLevel.Fastest,
             "hardest" => CompressionLevel.SmallestSize,
-            "no" => CompressionLevel.NoCompression,
+            "off" => CompressionLevel.NoCompression,
             _ => throw new ApplicationException($"Unknown compression level: {configValue}")
         };
     }

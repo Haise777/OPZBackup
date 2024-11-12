@@ -49,7 +49,7 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
             return;
         }
 
-        //TODO Tempo desde o ultimo backup (se com cooldowns)
+        //TODO-2 Tempo desde o ultimo backup (se com cooldowns)
 
         await CommandLock.WaitAsync();
         try

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using OPZBackup.Exceptions;
 using OPZBackup.FileManagement;
 using Serilog;
 
@@ -27,14 +28,17 @@ public static class Dev
     public static bool IsCleanRun { get; }
 
 
-    public static async Task DoCleanRun()
+    public static void DoCleanRun()
     {
+        if (!IsCleanRun)
+            throw new InvalidStartupException("Attempted to perform a clean run besides the flag being set to false");
+        
         Log.Warning("!! CLEAN RUN flag is set to true");
         var prefix = "CLEAN RUN:";
 
         File.Delete("opzbackup.db");
         Log.Warning($"{prefix} database file deleted!");
-        if (await FileCleaner.DeleteDirAsync("Backup"))
+        if (FileCleaner.DeleteDir("Backup"))
             Log.Warning($"{prefix} backup directory deleted!");
     }
 }

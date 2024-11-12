@@ -25,13 +25,14 @@ public class BackupService
     private BackupContext _context = null!;
     private bool _forcedStop;
     private ServiceResponseHandler _responseHandler = null!;
+    private readonly FileCleaner _fileCleaner;
 
     public BackupService(MessageFetcher messageFetcher,
         MessageProcessor messageProcessor,
         BackupContextFactory contextFactory,
         MyDbContext dbContext,
         AttachmentDownloader attachmentDownloader,
-        DirCompressor dirCompressor)
+        DirCompressor dirCompressor, FileCleaner fileCleaner)
     {
         _messageFetcher = messageFetcher;
         _messageProcessor = messageProcessor;
@@ -39,6 +40,7 @@ public class BackupService
         _dbContext = dbContext;
         _attachmentDownloader = attachmentDownloader;
         _dirCompressor = dirCompressor;
+        _fileCleaner = fileCleaner;
     }
 
     public async Task StartBackupAsync(SocketInteractionContext interactionContext,
@@ -85,7 +87,7 @@ public class BackupService
             $"{App.TempFilePath}/{_context.BackupRegistry.ChannelId}",
             $"{App.FileBackupPath}"
         );
-        await FileCleaner.DeleteDirAsync(App.TempFilePath);
+        await _fileCleaner.DeleteDirAsync(App.TempFilePath);
     }
 
     private async Task BackupMessages()

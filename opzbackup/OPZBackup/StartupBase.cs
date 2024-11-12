@@ -109,6 +109,7 @@ public abstract class StartupBase
                 .AddScoped<DirCompressor>()
                 .AddScoped<ServiceResponseHandlerFactory>()
                 .AddScoped<ModuleResponseHandler>()
+                .AddScoped<FileCleaner>()
                 .AddTransient<BackupContextFactory>()
                 .AddTransient<ResponseBuilder>()
                 .RemoveAll<IHttpMessageHandlerBuilderFilter>();
