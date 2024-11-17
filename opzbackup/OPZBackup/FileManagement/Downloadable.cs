@@ -1,12 +1,14 @@
 ﻿using Discord;
 using OPZBackup.Data.Dto;
+using OPZBackup.Logger;
+using Serilog;
 
 namespace OPZBackup.FileManagement;
 
+//TODO-1 Rethink the whole Downloadable/AttachmentOnline/AttachmentFile logic and separate the download functionality from the Downloadable
 public class Downloadable
 {
-    private static readonly SemaphoreSlim _downloadLimiter = new(50, 50);
-    public readonly IEnumerable<AttachmentOnline> Attachments;
+    public readonly IEnumerable<OnlineFile> Attachments;
     public readonly ulong ChannelId;
     public readonly ulong MessageId;
 
@@ -20,62 +22,25 @@ public class Downloadable
 
         if (attachments.Count() > 1)
         {
-            var attachmentList = GetAttachments(attachments);
-            Attachments = attachmentList;
+            Attachments = GetAttachments(attachments);
             return;
         }
 
-        var attachment = new AttachmentOnline(
+        var attachment = new OnlineFile(
             attachments.First().Url,
             messageId.ToString()
         );
 
         Attachments = [attachment];
     }
-
-    public async Task<IEnumerable<AttachmentFile>> DownloadAsync(HttpClient client)
+    
+    private static IEnumerable<OnlineFile> GetAttachments(IEnumerable<IAttachment> attachments)
     {
-        var downloadedFiles = new List<AttachmentFile>();
-        foreach (var attachment in Attachments)
-        {
-            await _downloadLimiter.WaitAsync();
-            try
-            {
-                downloadedFiles.Add(await DownloadAttachmentsAsync(attachment, client));
-            }
-            finally
-            {
-                _downloadLimiter.Release();
-            }
-        }
-
-        return downloadedFiles;
-    }
-
-    private static async Task<AttachmentFile> DownloadAttachmentsAsync(AttachmentOnline attachmentOnline,
-        HttpClient client)
-    {
-        var attempts = 0;
-        while (true)
-            try
-            {
-                var file = await client.GetByteArrayAsync(attachmentOnline.Url);
-                return new AttachmentFile(file, attachmentOnline.GetFullName());
-            }
-            catch (HttpRequestException ex) //TODO-3 Deal with httpclient exceptions
-            {
-                if (++attempts > 3) throw;
-                await Task.Delay(5000);
-            }
-    }
-
-    private static IEnumerable<AttachmentOnline> GetAttachments(IEnumerable<IAttachment> attachments)
-    {
-        var attachmentList = new List<AttachmentOnline>();
+        var attachmentList = new List<OnlineFile>();
         var count = 1;
-        
+
         foreach (var attachment1 in attachments)
-            attachmentList.Add(new AttachmentOnline(
+            attachmentList.Add(new OnlineFile(
                 attachment1.Url,
                 $"file{count++}"
             ));

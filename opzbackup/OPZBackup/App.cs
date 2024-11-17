@@ -15,13 +15,13 @@ public static class App
     {
     }
 
-    public static DateTime SessionTime { get; } = DateTime.Now;
+    public static DateTime SessionDate { get; } = DateTime.Now;
 
     public static string BaseBackupPath { get; } = $"{AppContext.BaseDirectory.Replace('\\', '/')}backup";
 
-    public static string FileBackupPath { get; } = $"{BaseBackupPath}/files";
+    public static string BackupPath { get; } = $"{BaseBackupPath}/files";
 
-    public static string TempFilePath { get; } = $"{FileBackupPath}/temp";
+    public static string TempPath { get; } = $"{BackupPath}/temp";
 
     public static bool RunWithCooldowns { get; private set; } =
         Configuration.GetValue<bool>($"{_configPrefix}:{nameof(RunWithCooldowns)}");

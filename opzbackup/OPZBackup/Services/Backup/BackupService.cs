@@ -3,8 +3,10 @@ using Discord.Interactions;
 using OPZBackup.Data;
 using OPZBackup.Exceptions;
 using OPZBackup.FileManagement;
+using OPZBackup.Logger;
 using OPZBackup.ResponseHandlers.Backup;
 using OPZBackup.Services.Utils;
+using Serilog;
 
 // ReSharper disable PossibleMultipleEnumeration TODO-4
 //TODO-Feature Have every backup process from the start to finish be logged in a specific file
@@ -22,6 +24,7 @@ public class BackupService
     private readonly DirCompressor _dirCompressor;
     private readonly MessageFetcher _messageFetcher;
     private readonly MessageProcessor _messageProcessor;
+    private readonly BackupLogger _logger;
     private BackupContext _context = null!;
     private bool _forcedStop;
     private ServiceResponseHandler _responseHandler = null!;
@@ -32,7 +35,8 @@ public class BackupService
         BackupContextFactory contextFactory,
         MyDbContext dbContext,
         AttachmentDownloader attachmentDownloader,
-        DirCompressor dirCompressor, FileCleaner fileCleaner)
+        DirCompressor dirCompressor, FileCleaner fileCleaner,
+        BackupLogger logger)
     {
         _messageFetcher = messageFetcher;
         _messageProcessor = messageProcessor;
@@ -41,6 +45,7 @@ public class BackupService
         _attachmentDownloader = attachmentDownloader;
         _dirCompressor = dirCompressor;
         _fileCleaner = fileCleaner;
+        _logger = logger;
     }
 
     public async Task StartBackupAsync(SocketInteractionContext interactionContext,
@@ -59,6 +64,7 @@ public class BackupService
         catch (BackupCanceledException)
         {
             //TODO-2 Log cancellation
+            _logger.Log.Information("Backup canceled.");
             var sendCancelled = _responseHandler.SendProcessCancelledAsync();
             var rollBack = _context.RollbackAsync();
             await rollBack;
@@ -82,16 +88,21 @@ public class BackupService
     private async Task CompressFilesAsync()
     {
         //TODO-3 Implement a way of tracking the progress of the compression
+        if (_context.FileCount == 0)
+            return;
+        
+        _logger.Log.Information("Compressing files");
         await _responseHandler.SendCompressingFilesAsync(_context);
         await _dirCompressor.CompressAsync(
-            $"{App.TempFilePath}/{_context.BackupRegistry.ChannelId}",
-            $"{App.FileBackupPath}"
+            $"{App.TempPath}/{_context.BackupRegistry.ChannelId}",
+            $"{App.BackupPath}"
         );
-        await _fileCleaner.DeleteDirAsync(App.TempFilePath);
+        await _fileCleaner.DeleteDirAsync(App.TempPath);
     }
 
     private async Task BackupMessages()
     {
+        _logger.Log.Information("Starting backup");
         ulong lastMessageId = 0;
 
         while (true)
@@ -110,8 +121,8 @@ public class BackupService
                 continue;
 
             await SaveBatch(backupBatch);
-            _context.BatchNumber++;
             _context.MessageCount += backupBatch.Messages.Count();
+            _logger.Log.Information("Batch '{n}' finished", _context.BatchNumber++);
             await _responseHandler.SendBatchFinishedAsync(_context, backupBatch);
         }
     }
@@ -123,6 +134,7 @@ public class BackupService
         if (batch.Users.Any())
             _dbContext.Users.AddRange(batch.Users);
 
+        //TODO-4 Execute in parallel the db save and download
         await _dbContext.SaveChangesAsync();
 
         if (batch.ToDownload.Any())
@@ -131,10 +143,11 @@ public class BackupService
 
     private async Task DownloadMessageAttachments(IEnumerable<Downloadable> toDownload)
     {
+        _logger.Log.Information("Downloading attachments");
         foreach (var downloadable in toDownload)
             _context.FileCount += downloadable.Attachments.Count();
 
-        await _attachmentDownloader.DownloadAsync(toDownload);
+        await _attachmentDownloader.DownloadRangeAsync(toDownload);
     }
 
     private async Task<IEnumerable<IMessage>> FetchMessages(ulong lastMessageId)

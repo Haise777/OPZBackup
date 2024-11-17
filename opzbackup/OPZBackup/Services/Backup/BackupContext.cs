@@ -34,7 +34,7 @@ public class BackupContext
         _dbContext.BackupRegistries.Remove(BackupRegistry);
         await _dbContext.SaveChangesAsync();
 
-        await _fileCleaner.DeleteDirAsync(App.TempFilePath);
+        await _fileCleaner.DeleteDirAsync(App.TempPath);
     }
 
     public void Stop()

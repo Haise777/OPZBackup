@@ -33,12 +33,13 @@ public static class Dev
         if (!IsCleanRun)
             throw new InvalidStartupException("Attempted to perform a clean run besides the flag being set to false");
         
-        Log.Warning("!! CLEAN RUN flag is set to true");
         var prefix = "CLEAN RUN:";
 
         File.Delete("opzbackup.db");
         Log.Warning($"{prefix} database file deleted!");
         if (FileCleaner.DeleteDir("Backup"))
             Log.Warning($"{prefix} backup directory deleted!");
+        if (FileCleaner.DeleteDir("logs"))
+            Log.Warning($"{prefix} logs directory deleted!");
     }
 }

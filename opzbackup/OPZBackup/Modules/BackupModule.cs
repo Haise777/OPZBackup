@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using OPZBackup.Logger;
 using OPZBackup.ResponseHandlers.Backup;
 using BackupService = OPZBackup.Services.Backup.BackupService;
+using ILogger = Serilog.ILogger;
 
 namespace OPZBackup.Modules;
 
@@ -13,20 +14,20 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
     private static BackupService? _currentBackup;
     private static readonly SemaphoreSlim CommandLock = new(1, 1);
     private readonly BackupService _backupService;
-    private readonly ILogger<BackupModule> _logger;
+    private readonly ILogger _logger;
     private readonly ServiceResponseHandlerFactory _responseHandlerFactory;
 
     private readonly ModuleResponseHandler _responseHandler;
 
     public BackupModule(
         BackupService backupService,
-        ILogger<BackupModule> logger,
+        ILogger logger,
         ModuleResponseHandler responseHandler,
         ServiceResponseHandlerFactory responseHandlerFactory)
     {
         _responseHandler = responseHandler;
         _backupService = backupService;
-        _logger = logger;
+        _logger = logger.ForContext("System", "Backup");
         _responseHandlerFactory = responseHandlerFactory;
     }
 
@@ -34,8 +35,8 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
     public async Task MakeBackup([Choice("ate-ultimo", 0)] [Choice("ate-inicio", 1)] int choice)
     {
         await Context.Interaction.DeferAsync();
-        _logger.LogCommandExecution(Context, nameof(MakeBackup), choice.ToString());
-
+        //_logger.LogCommandExecution(Context, nameof(MakeBackup), choice.ToString());
+        _logger.Information("Fazer");
         if (!IsInAdminRole())
         {
             await ForbiddenAsync(nameof(MakeBackup));
@@ -44,7 +45,8 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
 
         if (CommandLock.CurrentCount < 1)
         {
-            _logger.LogInformation("There is already a backup in progress.");
+            // _logger.LogInformation("There is already a backup in progress.");
+            _logger.Information("Fazer");
             await _responseHandler.SendAlreadyInProgressAsync(Context);
             return;
         }
@@ -69,7 +71,7 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
     public async Task CancelBackupProcess()
     {
         await Context.Interaction.DeferAsync();
-        _logger.LogCommandExecution(Context, nameof(CancelBackupProcess));
+        //_logger.LogCommandExecution(Context, nameof(CancelBackupProcess));
 
         if (!IsInAdminRole())
         {
@@ -79,7 +81,7 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
 
         if (!(CommandLock.CurrentCount < 1) || _currentBackup == null)
         {
-            _logger.LogInformation("There is no backup in progress.");
+            // _logger.LogInformation("There is no backup in progress.");
             await _responseHandler.SendNoBackupInProgressAsync(Context);
             return;
         }
@@ -97,8 +99,8 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
 
     private async Task ForbiddenAsync(string commandName)
     {
-        _logger.LogInformation(
-            "{User} does not have permission to execute {command}", Context.User.Username, commandName);
+        // _logger.LogInformation(
+        //     "{User} does not have permission to execute {command}", Context.User.Username, commandName);
 
         await _responseHandler.SendForbiddenAsync(Context);
     }

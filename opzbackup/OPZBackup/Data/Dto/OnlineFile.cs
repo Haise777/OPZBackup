@@ -2,23 +2,19 @@
 
 namespace OPZBackup.Data.Dto;
 
-public class AttachmentOnline
+public record OnlineFile
 {
     private static readonly Regex MatchFileExtension = new(@"\.([^\.]+?)(?=\?ex)");
     public readonly string FileExtension;
     public readonly string FileName;
     public readonly string Url;
+    public string FullFileName => $"{FileName}.{FileExtension}";
 
-    public AttachmentOnline(string url, string fileName)
+    public OnlineFile(string url, string fileName)
     {
         Url = url;
         FileName = fileName;
         FileExtension = GetExtension(url);
-    }
-
-    public string GetFullName()
-    {
-        return $"{FileName}.{FileExtension}";
     }
 
     private static string GetExtension(string fileUrl)

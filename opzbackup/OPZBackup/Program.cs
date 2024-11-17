@@ -9,7 +9,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OPZBackup.Logger;
 using Serilog;
+using Serilog.Debugging;
 using Serilog.Events;
+using Serilog.Filters;
 
 namespace OPZBackup;
 
@@ -31,25 +33,34 @@ public class Program : StartupBase
             Log.Information($"OPZBot - v{App.Version} \n" + "Starting host");
 
             var hostBuilder = Host.CreateDefaultBuilder(args)
-                .UseSerilog((_, _, cfg)
-                        => cfg
+                .UseSerilog((_, _, cfg) => cfg
+                        .WriteTo.Logger(l => l
+                            .Filter.ByIncludingOnly(Matching.WithProperty("System"))
+                            //outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level}] {Message}{NewLine}{Exception}"))
                             .Enrich.FromLogContext()
                             .MinimumLevel.Information()
                             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                            .WriteTo.Console(), true
+                            .WriteTo.File($"logs/session_{App.SessionDate:yyyyMMdd_HH-mm-ss}.txt")
+                            .WriteTo.Console()
+                        )
+                        
+                    , preserveStaticLogger: true
                 );
 
             if (!App.RunWithCooldowns)
                 Log.Warning("Running without cooldowns!");
+            if (Dev.IsCleanRun)
+            {
+                Log.Warning("!! CLEAN RUN flag is set to true");
+                Dev.DoCleanRun();
+            }
 
             ConfigureServices(hostBuilder);
             using var host = hostBuilder.Build();
+            SelfLog.Enable(Console.Out);
 
-            if (Dev.IsCleanRun)
-                Dev.DoCleanRun();
-
-            if (!Directory.Exists(App.FileBackupPath))
-                Directory.CreateDirectory(App.FileBackupPath);
+            if (!Directory.Exists(App.BackupPath))
+                Directory.CreateDirectory(App.BackupPath);
 
             if (await CreateDbFileIfNotExists(host))
                 Log.Information("Database file has been created");
@@ -63,7 +74,11 @@ public class Program : StartupBase
         catch (Exception ex)
         {
             Log.Fatal(ex, "Host terminated unexpectedly");
-            await LogWritter.LogHostCrash(ex);
+            await using var newLog = new LoggerConfiguration()
+                .WriteTo.File("/logs/crash_{date}.txt").CreateLogger();
+
+            newLog.Fatal(ex, "Host terminated unexpectedly");
+            //await LogWritter.LogHostCrash(ex);
         }
         finally
         {

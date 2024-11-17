@@ -17,6 +17,7 @@ using OPZBackup.Services.Backup;
 using OPZBackup.Services.Utils;
 using Serilog;
 using Serilog.Events;
+using ILogger = Serilog.ILogger;
 
 namespace OPZBackup;
 
@@ -46,21 +47,19 @@ public abstract class StartupBase
             services.GetRequiredService<InteractionHandler>(),
             services.GetRequiredService<DiscordSocketClient>(),
             services.GetRequiredService<InteractionService>(),
-            services.GetRequiredService<ILogger<Program>>()
+            services.GetRequiredService<ILogger>()
         );
     }
 
     protected static void ConfigureApplication(StartupServices services)
     {
+        var logger = services.Logger.ForContext("System", "Discord.Net");
+
         services.SocketClient.Log += msg =>
-            services.Logger.RichLogAsync(EnhancedLogger.ParseLogLevel(msg.Severity), msg.Exception,
-                "{subject} " + msg.Message,
-                "BOT:");
+            Task.Run(() => logger.Write(EnhancedLogger.ParseLogLevel(msg.Severity), msg.Exception, msg.Message));
 
         services.Commands.Log += msg =>
-            services.Logger.RichLogAsync(EnhancedLogger.ParseLogLevel(msg.Severity), msg.Exception,
-                "{subject} " + msg.Message,
-                "COMMAND:");
+            Task.Run(() => logger.Write(EnhancedLogger.ParseLogLevel(msg.Severity), msg.Exception, msg.Message));
 
         services.SocketClient.Ready += async () =>
         {
@@ -101,6 +100,7 @@ public abstract class StartupBase
                 )
                 .AddSingleton<Mapper>()
                 .AddScoped<InteractionHandler>()
+                .AddScoped<BackupLogger>()
                 .AddScoped<BackupService>()
                 .AddScoped<MessageProcessor>()
                 .AddScoped<MessageFetcher>()
@@ -120,6 +120,6 @@ public abstract class StartupBase
         InteractionHandler interactionHandler,
         DiscordSocketClient SocketClient,
         InteractionService Commands,
-        ILogger<Program> Logger
+        ILogger Logger
     );
 }
