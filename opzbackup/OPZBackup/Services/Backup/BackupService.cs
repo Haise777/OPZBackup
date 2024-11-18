@@ -71,9 +71,10 @@ public class BackupService
             await sendCancelled;
             return;
         }
-        catch (Exception)
+        catch (Exception e)
         {
             //TODO-2 Log exception and also send the error name back to the client
+            _logger.Log.Error(e, "Backup failed.");
             var sendFailed = _responseHandler.SendFailedAsync(_context);
             var rollBack = _context.RollbackAsync();
             await rollBack;
@@ -82,6 +83,7 @@ public class BackupService
             throw;
         }
 
+        _logger.Log.Information("Backup finished");
         await _responseHandler.SendCompletedAsync(_context);
     }
 
@@ -90,13 +92,14 @@ public class BackupService
         //TODO-3 Implement a way of tracking the progress of the compression
         if (_context.FileCount == 0)
             return;
-        
+
         _logger.Log.Information("Compressing files");
         await _responseHandler.SendCompressingFilesAsync(_context);
         await _dirCompressor.CompressAsync(
             $"{App.TempPath}/{_context.BackupRegistry.ChannelId}",
             $"{App.BackupPath}"
         );
+        _logger.Log.Information("Files compressed");
         await _fileCleaner.DeleteDirAsync(App.TempPath);
     }
 
@@ -110,19 +113,30 @@ public class BackupService
             if (_forcedStop)
                 throw new BackupCanceledException(); //TODO-4 Should I use a CancellationToken here to throw instead?
             if (_context.IsStopped)
+            {
+                _logger.Log.Information("Reached already saved message, finishing backup...");
                 break;
+            }
 
             var fetchedMessages = await FetchMessages(lastMessageId);
-            if (!fetchedMessages.Any()) break;
+            if (!fetchedMessages.Any())
+            {
+                _logger.Log.Information("Reached the end of the channel, finishing backup...");
+                break;
+            }
+
             lastMessageId = fetchedMessages.Last().Id;
 
             var backupBatch = await _messageProcessor.ProcessAsync(fetchedMessages, _context);
             if (!backupBatch.Messages.Any())
+            {
+                _logger.Log.Information("No messages in current batch, skipping...");
                 continue;
+            }
 
             await SaveBatch(backupBatch);
             _context.MessageCount += backupBatch.Messages.Count();
-            _logger.Log.Information("Batch '{n}' finished", _context.BatchNumber++);
+            _logger.Log.Information("Batch '{n}' finished", ++_context.BatchNumber);
             await _responseHandler.SendBatchFinishedAsync(_context, backupBatch);
         }
     }
@@ -143,16 +157,19 @@ public class BackupService
 
     private async Task DownloadMessageAttachments(IEnumerable<Downloadable> toDownload)
     {
-        _logger.Log.Information("Downloading attachments");
+        var fileCount = 0;
         foreach (var downloadable in toDownload)
-            _context.FileCount += downloadable.Attachments.Count();
+            fileCount += downloadable.Attachments.Count();
 
+        _logger.Log.Information("Downloading {fileCount} attachments", fileCount);
+        _context.FileCount += fileCount;
         await _attachmentDownloader.DownloadRangeAsync(toDownload);
     }
 
     private async Task<IEnumerable<IMessage>> FetchMessages(ulong lastMessageId)
     {
         var channelContext = _context.InteractionContext.Channel;
+        _logger.Log.Information("Fetching messages...");
 
         return lastMessageId switch
         {

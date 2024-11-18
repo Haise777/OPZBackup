@@ -7,6 +7,7 @@ public class AttachmentDownloader
 {
     private static readonly SemaphoreSlim
         _downloadLimiter = new(50, 50); //TODO-3 Make the value be configurable in the appsettings
+
     private readonly ILogger _logger;
 
     private readonly HttpClient _client;
@@ -24,7 +25,7 @@ public class AttachmentDownloader
 
         foreach (var downloadable in toDownload)
             concurrentDownloads.Add(DownloadAndWriteFile(downloadable));
-        
+
         try
         {
             await Task.WhenAll(concurrentDownloads);
@@ -105,6 +106,7 @@ public class AttachmentDownloader
             {
                 //Log.
                 if (++attempts >= 3) throw;
+                _logger.Warning(ex, "Failed to download file\n URL: {file}. \nRetrying...", onlineFile.Url);
                 await Task.Delay(5000);
             }
     }
