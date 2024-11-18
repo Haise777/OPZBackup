@@ -29,11 +29,8 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
         _responseHandler = responseHandler;
         _backupService = backupService;
         _responseHandlerFactory = responseHandlerFactory;
-
-        //TODO-4 Abstract all of the logging setups in a more centralized place
-        var c = StringStyle.Foreground.BrightBlue;
-        var r = StringStyle.Reset;
-        _logger = logger.ForContext("System", $"{c}BackupModule{r}");
+        
+        _logger = logger.ForContext("System", OutputTemplate.ColorText("BackupModule", 12));
     }
 
     [SlashCommand("fazer", "efetuar backup deste canal")]
