@@ -4,6 +4,7 @@
 // This source code is licensed under the BSD-style license found in the
 // LICENSE file in the root directory of this source tree.
 
+using AnsiStyles;
 using Discord;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -31,22 +32,23 @@ public class Program : StartupBase
         try
         {
             Log.Information($"OPZBot - v{App.Version} \n" + "Starting host");
-
+            
             var hostBuilder = Host.CreateDefaultBuilder(args)
                 .UseSerilog((_, _, cfg) => cfg
-                        .WriteTo.Logger(l => l
+                        .WriteTo.Logger(l => l //TODO-3 Place this elsewhere
                             .Filter.ByIncludingOnly(Matching.WithProperty("System"))
                             //outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level}] {Message}{NewLine}{Exception}"))
                             .Enrich.FromLogContext()
                             .MinimumLevel.Information()
                             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                            .WriteTo.File($"logs/session_{App.SessionDate:yyyyMMdd_HH-mm-ss}.txt")
-                            .WriteTo.Console()
+                            .WriteTo.Async(f => f.File($"logs/session/session_{App.SessionDate:yyyyMMdd_HH-mm-ss}.txt",
+                                outputTemplate:"[{Timestamp:HH:mm:ss} {Level:u3} {System}]{NewLine}{Message}{NewLine}{Exception}"))
+                            //.WriteTo.File($"logs/session_{App.SessionDate:yyyyMMdd_HH-mm-ss}.txt")
+                            .WriteTo.Console(outputTemplate:"[{Timestamp:HH:mm:ss} {Level:u3} {System}] {Message}{NewLine}{Exception}")
                         )
-                        
                     , preserveStaticLogger: true
                 );
-
+            
             if (!App.RunWithCooldowns)
                 Log.Warning("Running without cooldowns!");
             if (Dev.IsCleanRun)
@@ -75,7 +77,7 @@ public class Program : StartupBase
         {
             Log.Fatal(ex, "Host terminated unexpectedly");
             await using var newLog = new LoggerConfiguration()
-                .WriteTo.File("/logs/crash_{date}.txt").CreateLogger();
+                .WriteTo.File($"logs/crash_{App.SessionDate:yyyyMMdd_HH-mm-ss}.txt").CreateLogger();
 
             newLog.Fatal(ex, "Host terminated unexpectedly");
             //await LogWritter.LogHostCrash(ex);

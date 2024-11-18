@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using AnsiStyles;
+using Serilog;
 
 namespace OPZBackup.Logger;
 
@@ -11,12 +12,17 @@ public class BackupLogger : IAsyncDisposable
     public BackupLogger()
     {
         var date = DateTime.Now.ToString("yyyyMMdd_HH-mm-ss");
-        _filePath = $"logs/backup_{date}.txt";
+        _filePath = $"logs/backup/backup_{date}.txt"; //TODO centralize log paths configuration in one place
 
+        var c = StringStyle.Foreground[63];
+        var r = StringStyle.Reset;
+        var serviceName = $"{c}Backup{r}"; //TODO
+        
         Log = new LoggerConfiguration()
             .Enrich.FromLogContext()
-            .WriteTo.File(_filePath)
-            .WriteTo.Console()
+            .WriteTo.Async(f => f.File(_filePath,
+                outputTemplate:"[{Timestamp:HH:mm:ss} {Level:u3}]{NewLine} - {Message}{NewLine}{Exception}"))
+            .WriteTo.Console(outputTemplate:$"[{{Timestamp:HH:mm:ss}} {{Level:u3}} {serviceName}] {{Message}}{{NewLine}}{{Exception}}")
             .CreateLogger();
 
         if (_first)

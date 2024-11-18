@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using AnsiStyles;
+using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
@@ -53,7 +54,9 @@ public abstract class StartupBase
 
     protected static void ConfigureApplication(StartupServices services)
     {
-        var logger = services.Logger.ForContext("System", "Discord.Net");
+        var c = StringStyle.Foreground.BrightBlue;
+        var r = StringStyle.Reset;
+        var logger = services.Logger.ForContext("System", $"{c}DiscordNet{r}");
 
         services.SocketClient.Log += msg =>
             Task.Run(() => logger.Write(EnhancedLogger.ParseLogLevel(msg.Severity), msg.Exception, msg.Message));

@@ -1,4 +1,5 @@
-﻿using Discord.Interactions;
+﻿using AnsiStyles;
+using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using OPZBackup.Logger;
@@ -27,8 +28,12 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
     {
         _responseHandler = responseHandler;
         _backupService = backupService;
-        _logger = logger.ForContext("System", "Backup");
         _responseHandlerFactory = responseHandlerFactory;
+
+        //TODO-4 Abstract all of the logging setups in a more centralized place
+        var c = StringStyle.Foreground.BrightBlue;
+        var r = StringStyle.Reset;
+        _logger = logger.ForContext("System", $"{c}BackupModule{r}");
     }
 
     [SlashCommand("fazer", "efetuar backup deste canal")]
