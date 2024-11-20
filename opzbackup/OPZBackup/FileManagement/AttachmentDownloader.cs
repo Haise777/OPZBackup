@@ -18,13 +18,13 @@ public class AttachmentDownloader
         _logger = logger;
     }
 
-    public async Task DownloadRangeAsync(IEnumerable<Downloadable> toDownload)
+    public async Task DownloadRangeAsync(IEnumerable<Downloadable> toDownload, CancellationToken cancellationToken)
     {
         var concurrentDownloads = new List<Task>();
         await CreateChannelDirIfNotExists(toDownload.First().ChannelId);
 
         foreach (var downloadable in toDownload)
-            concurrentDownloads.Add(DownloadAndWriteFile(downloadable));
+            concurrentDownloads.Add(DownloadAndWriteFile(downloadable, cancellationToken));
 
         try
         {
@@ -42,10 +42,12 @@ public class AttachmentDownloader
         }
     }
 
-    private async Task DownloadAndWriteFile(Downloadable downloadable)
+    private async Task DownloadAndWriteFile(Downloadable downloadable, CancellationToken cancellationToken)
     {
-        var files = await DownloadAttachments(downloadable);
+        var files = await DownloadAttachments(downloadable, cancellationToken);
         var channelPath = $"{App.TempPath}/{downloadable.ChannelId}/";
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         if (files.Count() == 1)
         {
@@ -69,16 +71,19 @@ public class AttachmentDownloader
         });
     }
 
-    private async Task<IEnumerable<DownloadedFile>> DownloadAttachments(Downloadable downloadable)
+    private async Task<IEnumerable<DownloadedFile>> DownloadAttachments(Downloadable downloadable,
+        CancellationToken cancellationToken)
     {
         var downloadedFiles = new List<DownloadedFile>();
 
         foreach (var attachment in downloadable.Attachments)
         {
-            await _downloadLimiter.WaitAsync();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await _downloadLimiter.WaitAsync(cancellationToken);
             try
             {
-                downloadedFiles.Add(await AttemptDownload(attachment));
+                downloadedFiles.Add(await AttemptDownload(attachment, cancellationToken));
             }
             finally
             {
@@ -89,12 +94,14 @@ public class AttachmentDownloader
         return downloadedFiles;
     }
 
-    private async Task<DownloadedFile> AttemptDownload(OnlineFile onlineFile)
+    private async Task<DownloadedFile> AttemptDownload(OnlineFile onlineFile, CancellationToken cancellationToken)
     {
         var attempts = 0;
         while (true)
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var fileBytes = await _client.GetByteArrayAsync(onlineFile.Url);
                 return new DownloadedFile(
                     fileBytes,

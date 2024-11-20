@@ -18,7 +18,7 @@ public class MessageProcessor
         _mapper = mapper;
     }
 
-    public async Task<BackupBatch> ProcessAsync(IEnumerable<IMessage> fetchedMessages, BackupContext context)
+    public async Task<BackupBatch> ProcessAsync(IEnumerable<IMessage> fetchedMessages, BackupContext context, CancellationToken cancellationToken)
     {
         //TODO-3 Separate this to get its 'needed values' from some sort of 'caching system'
         var existingMessageIds = await _dbContext.Messages
@@ -35,6 +35,7 @@ public class MessageProcessor
 
         foreach (var message in fetchedMessages)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (IsBotEmbedMessage(message))
                 continue;
 

@@ -25,7 +25,6 @@ public class Program : StartupBase
 
     private static async Task MainAsync(string[] args)
     {
-        //TODO-3 Implement colored logging with AnsiStyles
         //TODO-Feature Implement a terminal to perform some commands to the bot
         ConfigureStaticLogger();
 

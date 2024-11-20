@@ -88,7 +88,7 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
             return;
         }
 
-        _currentBackup.Cancel();
+        await _currentBackup.CancelAsync();
     }
 
     [SlashCommand("deletar-proprio",

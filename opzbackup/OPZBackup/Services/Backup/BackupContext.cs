@@ -6,7 +6,7 @@ using OPZBackup.FileManagement;
 
 namespace OPZBackup.Services.Backup;
 
-public class BackupContext
+public class BackupContext : IAsyncDisposable
 {
     private readonly MyDbContext _dbContext;
     private readonly FileCleaner _fileCleaner;
@@ -74,5 +74,10 @@ public class BackupContext
         await _dbContext.SaveChangesAsync();
 
         BackupRegistry = backupRegistry;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _dbContext.DisposeAsync();
     }
 }

@@ -9,14 +9,13 @@ using OPZBackup.Services.Utils;
 using Serilog;
 
 // ReSharper disable PossibleMultipleEnumeration TODO-4
-//TODO-Feature Have every backup process from the start to finish be logged in a specific file
 //TODO-3 Better organize the logfiles in a log folder and have specific behavior for different types of logs, like append, new file, etc
 //TODO-Feature Implement passive benchmarking capabilities to various bot functions, time per batch, average per batch, response time, etc
 
 
 namespace OPZBackup.Services.Backup;
 
-public class BackupService
+public class BackupService : IAsyncDisposable
 {
     private readonly AttachmentDownloader _attachmentDownloader;
     private readonly BackupContextFactory _contextFactory;
@@ -26,9 +25,10 @@ public class BackupService
     private readonly MessageProcessor _messageProcessor;
     private readonly BackupLogger _logger;
     private BackupContext _context = null!;
-    private bool _forcedStop;
     private ServiceResponseHandler _responseHandler = null!;
     private readonly FileCleaner _fileCleaner;
+    private readonly CancellationTokenSource _cancelTokenSource;
+    private readonly CancellationToken _cancelToken;
 
     public BackupService(MessageFetcher messageFetcher,
         MessageProcessor messageProcessor,
@@ -46,6 +46,8 @@ public class BackupService
         _dirCompressor = dirCompressor;
         _fileCleaner = fileCleaner;
         _logger = logger;
+        _cancelTokenSource = new CancellationTokenSource();
+        _cancelToken = _cancelTokenSource.Token;
     }
 
     public async Task StartBackupAsync(SocketInteractionContext interactionContext,
@@ -61,7 +63,7 @@ public class BackupService
             await BackupMessages();
             await CompressFilesAsync();
         }
-        catch (BackupCanceledException)
+        catch (OperationCanceledException)
         {
             //TODO-2 Log cancellation
             _logger.Log.Information("Backup canceled.");
@@ -87,31 +89,16 @@ public class BackupService
         await _responseHandler.SendCompletedAsync(_context);
     }
 
-    private async Task CompressFilesAsync()
-    {
-        //TODO-3 Implement a way of tracking the progress of the compression
-        if (_context.FileCount == 0)
-            return;
-
-        _logger.Log.Information("Compressing files");
-        await _responseHandler.SendCompressingFilesAsync(_context);
-        await _dirCompressor.CompressAsync(
-            $"{App.TempPath}/{_context.BackupRegistry.ChannelId}",
-            $"{App.BackupPath}"
-        );
-        _logger.Log.Information("Files compressed");
-        await _fileCleaner.DeleteDirAsync(App.TempPath);
-    }
-
     private async Task BackupMessages()
     {
         _logger.Log.Information("Starting backup");
+
         ulong lastMessageId = 0;
 
         while (true)
         {
-            if (_forcedStop)
-                throw new BackupCanceledException(); //TODO-4 Should I use a CancellationToken here to throw instead?
+            _cancelToken.ThrowIfCancellationRequested();
+
             if (_context.IsStopped)
             {
                 _logger.Log.Information("Reached already saved message, finishing backup...");
@@ -127,7 +114,7 @@ public class BackupService
 
             lastMessageId = fetchedMessages.Last().Id;
 
-            var backupBatch = await _messageProcessor.ProcessAsync(fetchedMessages, _context);
+            var backupBatch = await _messageProcessor.ProcessAsync(fetchedMessages, _context, _cancelToken);
             if (!backupBatch.Messages.Any())
             {
                 _logger.Log.Information("No messages in current batch, skipping...");
@@ -163,7 +150,7 @@ public class BackupService
 
         _logger.Log.Information("Downloading {fileCount} attachments", fileCount);
         _context.FileCount += fileCount;
-        await _attachmentDownloader.DownloadRangeAsync(toDownload);
+        await _attachmentDownloader.DownloadRangeAsync(toDownload, _cancelToken);
     }
 
     private async Task<IEnumerable<IMessage>> FetchMessages(ulong lastMessageId)
@@ -178,8 +165,33 @@ public class BackupService
         };
     }
 
-    public void Cancel()
+    private async Task CompressFilesAsync()
     {
-        _forcedStop = true;
+        //TODO-3 Implement a way of tracking the progress of the compression
+        if (_context.FileCount == 0)
+            return;
+
+        _logger.Log.Information("Compressing files");
+        await _responseHandler.SendCompressingFilesAsync(_context);
+        await _dirCompressor.CompressAsync(
+            $"{App.TempPath}/{_context.BackupRegistry.ChannelId}",
+            $"{App.BackupPath}",
+            _cancelToken
+        );
+        _logger.Log.Information("Files compressed");
+        await _fileCleaner.DeleteDirAsync(App.TempPath);
+    }
+
+    public async Task CancelAsync()
+    {
+        await _cancelTokenSource.CancelAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _dbContext.DisposeAsync();
+        await _logger.DisposeAsync();
+        await _context.DisposeAsync();
+        _cancelTokenSource.Dispose();
     }
 }
