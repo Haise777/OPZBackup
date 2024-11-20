@@ -27,13 +27,4 @@ public static class OutputTemplate
 
         return builder.ToString();
     }
-
-    //TODO-4 Move this to a more appropriate place
-    public static string ColorText(string text, ushort color)
-    {
-        var colorCode = StringStyle.Foreground[color];
-        var resetCode = StringStyle.Reset;
-        
-        return $"{colorCode}{text}{resetCode}";
-    }
 }

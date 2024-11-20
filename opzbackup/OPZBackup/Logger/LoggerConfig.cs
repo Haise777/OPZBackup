@@ -7,6 +7,7 @@ namespace OPZBackup.Logger;
 public static class LoggerConfig
 {
     private const string _fileDateFormat = "yyyyMMdd_HH-mm-ss";
+    public const string LogFilePath = "logs";
 
     public static LoggerConfiguration GetMainConfiguration(LoggerConfiguration configuration)
     {
@@ -15,7 +16,7 @@ public static class LoggerConfig
             .Enrich.FromLogContext()
             .MinimumLevel.Information()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-            .WriteTo.Async(f => f.File($"logs/session/session_{App.SessionDate.ToString(_fileDateFormat)}.txt",
+            .WriteTo.Async(f => f.File($"{LogFilePath}/session/session_{App.SessionDate.ToString(_fileDateFormat)}.txt",
                 outputTemplate: OutputTemplate.SplitDefaultTemplate("System")))
             .WriteTo.Console(outputTemplate: OutputTemplate.DefaultTemplate("System"))
         );

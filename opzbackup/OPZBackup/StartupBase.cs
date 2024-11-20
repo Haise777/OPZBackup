@@ -54,13 +54,13 @@ public abstract class StartupBase
 
     protected static void ConfigureApplication(StartupServices services)
     {
-        var logger = services.Logger.ForContext("System", OutputTemplate.ColorText("DiscordNet", 12));
+        var logger = services.Logger.ForContext("System", LoggerUtils.ColorText("DiscordNet", 12));
 
         services.SocketClient.Log += msg =>
-            Task.Run(() => logger.Write(EnhancedLogger.ParseLogLevel(msg.Severity), msg.Exception, msg.Message));
+            Task.Run(() => logger.Write(LoggerUtils.ParseLogLevel(msg.Severity), msg.Exception, msg.Message));
 
         services.Commands.Log += msg =>
-            Task.Run(() => logger.Write(EnhancedLogger.ParseLogLevel(msg.Severity), msg.Exception, msg.Message));
+            Task.Run(() => logger.Write(LoggerUtils.ParseLogLevel(msg.Severity), msg.Exception, msg.Message));
 
         services.SocketClient.Ready += async () =>
         {

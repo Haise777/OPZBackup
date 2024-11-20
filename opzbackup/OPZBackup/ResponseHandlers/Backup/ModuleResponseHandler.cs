@@ -100,7 +100,7 @@ public class ModuleResponseHandler
             catch (Exception ex)
             {
                 Log.Error(ex, ex.Message);
-                await LogWritter.LogError(ex, ex.Message);
+                //TODO await LogWritter.LogError(ex, ex.Message);
             }
         });
     }

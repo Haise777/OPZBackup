@@ -30,7 +30,7 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
         _backupService = backupService;
         _responseHandlerFactory = responseHandlerFactory;
         
-        _logger = logger.ForContext("System", OutputTemplate.ColorText("BackupModule", 12));
+        _logger = logger.ForContext("System", LoggerUtils.ColorText("BackupModule", 12));
     }
 
     [SlashCommand("fazer", "efetuar backup deste canal")]
