@@ -9,9 +9,6 @@ using OPZBackup.Services.Utils;
 using Serilog;
 
 // ReSharper disable PossibleMultipleEnumeration TODO-4
-//TODO-3 Better organize the logfiles in a log folder and have specific behavior for different types of logs, like append, new file, etc
-//TODO-Feature Implement passive benchmarking capabilities to various bot functions, time per batch, average per batch, response time, etc
-
 
 namespace OPZBackup.Services.Backup;
 
@@ -24,11 +21,12 @@ public class BackupService : IAsyncDisposable
     private readonly MessageFetcher _messageFetcher;
     private readonly MessageProcessor _messageProcessor;
     private readonly BackupLogger _logger;
-    private BackupContext _context = null!;
-    private ServiceResponseHandler _responseHandler = null!;
     private readonly FileCleaner _fileCleaner;
     private readonly CancellationTokenSource _cancelTokenSource;
     private readonly CancellationToken _cancelToken;
+    private readonly PerformanceProfiler _profiler;
+    private BackupContext _context = null!;
+    private ServiceResponseHandler _responseHandler = null!;
 
     public BackupService(MessageFetcher messageFetcher,
         MessageProcessor messageProcessor,
@@ -36,7 +34,7 @@ public class BackupService : IAsyncDisposable
         MyDbContext dbContext,
         AttachmentDownloader attachmentDownloader,
         DirCompressor dirCompressor, FileCleaner fileCleaner,
-        BackupLogger logger)
+        BackupLogger logger, PerformanceProfiler profiler)
     {
         _messageFetcher = messageFetcher;
         _messageProcessor = messageProcessor;
@@ -46,6 +44,7 @@ public class BackupService : IAsyncDisposable
         _dirCompressor = dirCompressor;
         _fileCleaner = fileCleaner;
         _logger = logger;
+        _profiler = profiler;
         _cancelTokenSource = new CancellationTokenSource();
         _cancelToken = _cancelTokenSource.Token;
     }
@@ -55,13 +54,16 @@ public class BackupService : IAsyncDisposable
     {
         _responseHandler = responseHandler;
         _context = await _contextFactory.RegisterNewBackup(interactionContext, isUntilLast);
+        _profiler.Subscribe(nameof(SaveBatch));
+        _profiler.Subscribe(nameof(DownloadMessageAttachments));
+        _profiler.Subscribe(nameof(CompressFiles));
 
         try
         {
             await _responseHandler.SendStartNotificationAsync(_context);
 
             await BackupMessages();
-            await CompressFilesAsync();
+            await CompressFiles();
         }
         catch (OperationCanceledException)
         {
@@ -85,23 +87,25 @@ public class BackupService : IAsyncDisposable
             throw;
         }
 
-        _logger.Log.Information("Backup finished");
+        _logger.Log.Information("Backup finished in {time}", _profiler.TotalElapsed().Milliseconds);
         await _responseHandler.SendCompletedAsync(_context);
     }
 
     private async Task BackupMessages()
     {
         _logger.Log.Information("Starting backup");
+        var timer = _profiler.Subscribe("batch");
 
         ulong lastMessageId = 0;
 
         while (true)
         {
             _cancelToken.ThrowIfCancellationRequested();
+            timer.StartTimer();
 
             if (_context.IsStopped)
             {
-                _logger.Log.Information("Reached already saved message, finishing backup...");
+                _logger.Log.Information("Reached last saved message, finishing backup...");
                 break;
             }
 
@@ -122,14 +126,19 @@ public class BackupService : IAsyncDisposable
             }
 
             await SaveBatch(backupBatch);
+
+            var batchTime = timer.Stop();
             _context.MessageCount += backupBatch.Messages.Count();
-            _logger.Log.Information("Batch '{n}' finished", ++_context.BatchNumber);
+            _logger.Log.Information("Batch '{n}' finished in {elapsed} | {mean}",
+                ++_context.BatchNumber, batchTime.Milliseconds, timer.Mean().Milliseconds);
             await _responseHandler.SendBatchFinishedAsync(_context, backupBatch);
         }
     }
 
     private async Task SaveBatch(BackupBatch batch)
     {
+        var timer = _profiler.Timers[nameof(SaveBatch)];
+        timer.StartTimer();
         _dbContext.Messages.AddRange(batch.Messages);
 
         if (batch.Users.Any())
@@ -137,6 +146,8 @@ public class BackupService : IAsyncDisposable
 
         //TODO-4 Execute in parallel the db save and download
         await _dbContext.SaveChangesAsync();
+        var time = timer.Stop();
+        _logger.Log.Information("Batch saved in {seconds} | {mean}", time.Milliseconds, timer.Mean().Milliseconds);
 
         if (batch.ToDownload.Any())
             await DownloadMessageAttachments(batch.ToDownload);
@@ -144,6 +155,9 @@ public class BackupService : IAsyncDisposable
 
     private async Task DownloadMessageAttachments(IEnumerable<Downloadable> toDownload)
     {
+        var timer = _profiler.Timers[nameof(DownloadMessageAttachments)];
+        timer.StartTimer();
+
         var fileCount = 0;
         foreach (var downloadable in toDownload)
             fileCount += downloadable.Attachments.Count();
@@ -151,6 +165,8 @@ public class BackupService : IAsyncDisposable
         _logger.Log.Information("Downloading {fileCount} attachments", fileCount);
         _context.FileCount += fileCount;
         await _attachmentDownloader.DownloadRangeAsync(toDownload, _cancelToken);
+        var time = timer.Stop();
+        _logger.Log.Information("Download finished in {seconds} | {mean}", time.Milliseconds, timer.Mean().Milliseconds);
     }
 
     private async Task<IEnumerable<IMessage>> FetchMessages(ulong lastMessageId)
@@ -165,12 +181,14 @@ public class BackupService : IAsyncDisposable
         };
     }
 
-    private async Task CompressFilesAsync()
+    private async Task CompressFiles()
     {
+        var timer = _profiler.Timers[nameof(CompressFiles)];
         //TODO-3 Implement a way of tracking the progress of the compression
         if (_context.FileCount == 0)
             return;
 
+        timer.StartTimer();
         _logger.Log.Information("Compressing files");
         await _responseHandler.SendCompressingFilesAsync(_context);
         await _dirCompressor.CompressAsync(
@@ -178,7 +196,8 @@ public class BackupService : IAsyncDisposable
             $"{App.BackupPath}",
             _cancelToken
         );
-        _logger.Log.Information("Files compressed");
+        var time = timer.Stop();
+        _logger.Log.Information("Files compressed in {seconds} | {mean}", time.Milliseconds, timer.Mean().Milliseconds);
         await _fileCleaner.DeleteDirAsync(App.TempPath);
     }
 

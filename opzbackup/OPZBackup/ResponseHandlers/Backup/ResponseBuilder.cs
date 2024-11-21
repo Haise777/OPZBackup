@@ -171,7 +171,7 @@ public class ResponseBuilder
 
         if (Author is not null)
             embedBuilder.WithFooter(new EmbedFooterBuilder()
-                .WithText($"por: {Author.Username}")
+                .WithText($"{Author.Username}")
                 .WithIconUrl(Author.GetAvatarUrl()));
 
         return embedBuilder;
