@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Microsoft.EntityFrameworkCore;
 using OPZBackup.Data;
 using OPZBackup.Exceptions;
 using OPZBackup.FileManagement;
@@ -64,6 +65,7 @@ public class BackupService : IAsyncDisposable
 
             await BackupMessages();
             await CompressFiles();
+            await IncrementStatistics();
         }
         catch (OperationCanceledException)
         {
@@ -89,6 +91,29 @@ public class BackupService : IAsyncDisposable
 
         _logger.Log.Information("Backup finished in {time}", _profiler.TotalElapsed().Milliseconds);
         await _responseHandler.SendCompletedAsync(_context);
+    }
+
+    private async Task IncrementStatistics()
+    {
+        _logger.Log.Information("Updating statistic data.");
+        
+        var tracker = _context.StatisticTracker;
+
+        foreach (var userStatistics in tracker.GetStatistics())
+        {
+            var user = await _dbContext.Users.FirstAsync(u => u.Id == userStatistics.Key);
+            user.MessageCount += userStatistics.Value.MessageCount;
+            user.FileCount += userStatistics.Value.FileCount;
+            user.ByteSize += userStatistics.Value.ByteSize;
+        }
+
+        var channel = await _dbContext.Channels.FirstAsync(c => c.Id == _context.BackupRegistry.ChannelId);
+        var total = tracker.GetTotalStatistics();
+        channel.MessageCount += total.MessageCount;
+        channel.FileCount += total.FileCount;
+        channel.ByteSize += total.ByteSize;
+        
+        await _dbContext.SaveChangesAsync();
     }
 
     private async Task BackupMessages()
@@ -166,7 +191,8 @@ public class BackupService : IAsyncDisposable
         _context.FileCount += fileCount;
         await _attachmentDownloader.DownloadRangeAsync(toDownload, _cancelToken);
         var time = timer.Stop();
-        _logger.Log.Information("Download finished in {seconds} | {mean}", time.Milliseconds, timer.Mean().Milliseconds);
+        _logger.Log.Information("Download finished in {seconds} | {mean}", time.Milliseconds,
+            timer.Mean().Milliseconds);
     }
 
     private async Task<IEnumerable<IMessage>> FetchMessages(ulong lastMessageId)

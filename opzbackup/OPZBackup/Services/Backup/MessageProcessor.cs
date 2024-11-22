@@ -54,8 +54,11 @@ public class MessageProcessor
             var mappedMessage = _mapper.Map(message, context.BackupRegistry.Id);
 
             if (message.Attachments.Any())
-                GetAttachmentsAsDownloadable(message, toDownload, mappedMessage);
-
+            {
+                var fileCount = GetAttachmentsAsDownloadable(message, toDownload, mappedMessage);
+                context.StatisticTracker.IncrementFileCounter(message.Author.Id, fileCount);
+            }
+            
             //TODO-4 If the author of this message needs to be saved
             if (!existingUserIds.Contains(message.Author.Id))
             {
@@ -64,13 +67,14 @@ public class MessageProcessor
                 users.Add(user);
             }
 
+            context.StatisticTracker.IncrementMessageCounter(message.Author.Id);
             messages.Add(mappedMessage);
         }
 
         return new BackupBatch(users, messages, toDownload);
     }
 
-    private static void GetAttachmentsAsDownloadable(IMessage message, List<Downloadable> toDownload,
+    private static int GetAttachmentsAsDownloadable(IMessage message, List<Downloadable> toDownload,
         Message mappedMessage)
     {
         var downloadable = new Downloadable(
@@ -79,7 +83,9 @@ public class MessageProcessor
             message.Attachments
         );
         toDownload.Add(downloadable);
-        
+
+        return downloadable.Attachments.Count();
+
         //TODO-Feature Make so that the messages saved on the database points to their correct files
         // var downloadableAttachments = downloadable.Attachments.ToArray();
 

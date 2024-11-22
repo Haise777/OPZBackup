@@ -111,6 +111,7 @@ public abstract class StartupBase
                 .AddScoped<ServiceResponseHandlerFactory>()
                 .AddScoped<ModuleResponseHandler>()
                 .AddScoped<FileCleaner>()
+                .AddScoped<StatisticTracker>()
                 .AddScoped<PerformanceProfiler>()
                 .AddTransient<BackupContextFactory>()
                 .AddTransient<ResponseBuilder>()

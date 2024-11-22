@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using OPZBackup.Data;
 using OPZBackup.Data.Models;
 using OPZBackup.FileManagement;
+using OPZBackup.Services.Utils;
 
 namespace OPZBackup.Services.Backup;
 
@@ -12,16 +13,18 @@ public class BackupContext : IAsyncDisposable
     private readonly FileCleaner _fileCleaner;
 
     private BackupContext(SocketInteractionContext interactionContext, MyDbContext dbContext, bool isUntilLastBackup,
-        FileCleaner fileCleaner)
+        FileCleaner fileCleaner, StatisticTracker statisticTracker)
     {
         InteractionContext = interactionContext;
         _dbContext = dbContext;
         IsUntilLastBackup = isUntilLastBackup;
         _fileCleaner = fileCleaner;
+        StatisticTracker = statisticTracker;
     }
 
     public BackupRegistry BackupRegistry { get; private set; } = null!;
     public SocketInteractionContext InteractionContext { get; private set; }
+    public StatisticTracker StatisticTracker { get; private set; }
     public bool IsStopped { get; private set; }
     public int MessageCount { get; set; }
     public int FileCount { get; set; }
@@ -48,9 +51,10 @@ public class BackupContext : IAsyncDisposable
         Channel channel,
         User author,
         MyDbContext dbContext,
-        FileCleaner fileCleaner)
+        FileCleaner fileCleaner,
+        StatisticTracker statisticTracker)
     {
-        var backupContext = new BackupContext(interactionContext, dbContext, isUntilLastBackup, fileCleaner);
+        var backupContext = new BackupContext(interactionContext, dbContext, isUntilLastBackup, fileCleaner, statisticTracker);
         await backupContext.RegisterNewBackup(channel, author);
 
         return backupContext;

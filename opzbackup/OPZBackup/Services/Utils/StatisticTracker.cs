@@ -1,0 +1,39 @@
+﻿using System.Collections.Frozen;
+using OPZBackup.Data.Models;
+
+namespace OPZBackup.Services.Utils;
+
+public class StatisticTracker
+{
+    private readonly Dictionary<ulong, Statistics> _usersStatistics = new();
+    private readonly Statistics _channelStatistics = new();
+
+    public void IncrementMessageCounter(ulong userId)
+    {
+        if (!_usersStatistics.ContainsKey(userId))
+            _usersStatistics.Add(userId, new Statistics());
+
+
+        _usersStatistics[userId].MessageCount++;
+        _channelStatistics.MessageCount++;
+    }
+
+    public void IncrementFileCounter(ulong userId, int fileCount = 1)
+    {
+        if (!_usersStatistics.ContainsKey(userId))
+            _usersStatistics.Add(userId, new Statistics());
+
+
+        _usersStatistics[userId].FileCount += fileCount;
+        _channelStatistics.FileCount += fileCount;
+    }
+
+    public void IncrementByteSize(ulong userId, ulong byteSize)
+    {
+        _usersStatistics[userId].ByteSize += byteSize;
+        _channelStatistics.ByteSize += byteSize;
+    }
+
+    public FrozenDictionary<ulong, Statistics> GetStatistics() => _usersStatistics.ToFrozenDictionary();
+    public Statistics GetTotalStatistics() => _channelStatistics;
+}
