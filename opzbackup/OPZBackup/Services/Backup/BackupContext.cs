@@ -76,9 +76,25 @@ public class BackupContext : IAsyncDisposable
         };
 
         if (!await _dbContext.Channels.AnyAsync(c => c.Id == channel.Id))
+        {
             _dbContext.Channels.Add(channel);
+            backupRegistry.Channel = channel;
+        }
+        else
+        {
+            backupRegistry.Channel = await _dbContext.Channels.FirstAsync(c => c.Id == channel.Id);
+        }
+
+
         if (!await _dbContext.Users.AnyAsync(u => u.Id == author.Id))
+        {
             _dbContext.Users.Add(author);
+            backupRegistry.Author = author;
+        }
+        else
+        {
+            backupRegistry.Author = await _dbContext.Users.FirstAsync(u => u.Id == author.Id);
+        }
 
         _dbContext.BackupRegistries.Add(backupRegistry);
         await _dbContext.SaveChangesAsync();

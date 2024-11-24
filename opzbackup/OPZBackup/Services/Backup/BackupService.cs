@@ -96,9 +96,14 @@ public class BackupService : IAsyncDisposable
             throw;
         }
 
-        _logger.Log.Information("Backup finished in {time}",
-            _profiler.TotalElapsed(true, nameof(SaveBatch), nameof(DownloadMessageAttachments)).Formatted());
-        await _responseHandler.SendCompletedAsync(_context);
+        _logger.Log.Information("Backup {id} finished in {time}\n" +
+                                " | Occupying {compressedTotal} in saved attachments",
+            _context.BackupRegistry.Id,
+            _profiler.TotalElapsed(true, nameof(SaveBatch), nameof(DownloadMessageAttachments)).Formatted(),
+            _context.StatisticTracker.CompressedFilesSize
+        );
+
+        await _responseHandler.SendCompletedAsync(_context, _context.BackupRegistry.Channel);
     }
 
     private async Task IncrementStatistics()
@@ -120,6 +125,7 @@ public class BackupService : IAsyncDisposable
         channel.MessageCount += total.MessageCount;
         channel.FileCount += total.FileCount;
         channel.ByteSize += total.ByteSize;
+        channel.CompressedByteSize += tracker.CompressedFilesSize;
 
         await _dbContext.SaveChangesAsync();
     }
@@ -164,7 +170,7 @@ public class BackupService : IAsyncDisposable
             _context.MessageCount += backupBatch.Messages.Count();
             _logger.Log.Information("Batch '{n}' finished in {elapsed} | {mean}",
                 ++_context.BatchNumber, timer.Elapsed.Formatted(), timer.Mean.Formatted());
-            await _responseHandler.SendBatchFinishedAsync(_context, backupBatch);
+            await _responseHandler.SendBatchFinishedAsync(_context, backupBatch, timer.Mean);
         }
     }
 
@@ -226,13 +232,15 @@ public class BackupService : IAsyncDisposable
         timer.StartTimer();
         _logger.Log.Information("Compressing files");
         await _responseHandler.SendCompressingFilesAsync(_context);
-        await _dirCompressor.CompressAsync(
+        var compressedSize = await _dirCompressor.CompressAsync(
             $"{App.TempPath}/{_context.BackupRegistry.ChannelId}",
             $"{App.BackupPath}",
             _cancelToken
         );
         timer.Stop();
         _logger.Log.Information("Files compressed in {seconds}", timer.Elapsed.Formatted());
+        _context.StatisticTracker.CompressedFilesSize += (ulong)compressedSize;
+
         await _fileCleaner.DeleteDirAsync(App.TempPath);
     }
 

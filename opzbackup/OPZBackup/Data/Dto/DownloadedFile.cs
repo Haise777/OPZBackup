@@ -2,6 +2,7 @@
 
 public record DownloadedFile(
     byte[] FileBytes,
+    ulong SenderId,
     string FileName,
     string FileExtension
 )

@@ -1,4 +1,5 @@
 ﻿using OPZBackup.Data.Dto;
+using OPZBackup.Services.Utils;
 using Serilog;
 
 namespace OPZBackup.FileManagement;
@@ -12,10 +13,13 @@ public class AttachmentDownloader
 
     private readonly ILogger _logger;
 
-    public AttachmentDownloader(HttpClient client, ILogger logger)
+    private readonly StatisticTracker _statisticTracker;
+
+    public AttachmentDownloader(HttpClient client, ILogger logger, StatisticTracker statisticTracker)
     {
         _client = client;
         _logger = logger;
+        _statisticTracker = statisticTracker;
     }
 
     public async Task DownloadRangeAsync(IEnumerable<Downloadable> toDownload, CancellationToken cancellationToken)
@@ -52,13 +56,17 @@ public class AttachmentDownloader
         if (files.Count() == 1)
         {
             var file = files.First();
+            _statisticTracker.IncrementByteSize(file.SenderId, (ulong)file.FileBytes.Length);            
             await File.WriteAllBytesAsync(channelPath + file.FullFileName, file.FileBytes);
 
             return;
         }
 
         foreach (var file in files)
+        {
+            _statisticTracker.IncrementByteSize(file.SenderId, (ulong)file.FileBytes.Length);            
             await File.WriteAllBytesAsync(channelPath + file.FullFileName, file.FileBytes);
+        }
     }
 
     private Task CreateChannelDirIfNotExists(ulong channelId)
@@ -105,6 +113,7 @@ public class AttachmentDownloader
                 var fileBytes = await _client.GetByteArrayAsync(onlineFile.Url);
                 return new DownloadedFile(
                     fileBytes,
+                    onlineFile.SenderId,
                     onlineFile.FileName,
                     onlineFile.FileExtension
                 );

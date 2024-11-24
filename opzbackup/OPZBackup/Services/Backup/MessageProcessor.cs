@@ -78,11 +78,7 @@ public class MessageProcessor
     private static int GetAttachmentsAsDownloadable(IMessage message, List<Downloadable> toDownload,
         Message mappedMessage)
     {
-        var downloadable = new Downloadable(
-            message.Id,
-            message.Channel.Id,
-            message.Attachments
-        );
+        var downloadable = new Downloadable(message);
         toDownload.Add(downloadable);
 
         return downloadable.Attachments.Count();

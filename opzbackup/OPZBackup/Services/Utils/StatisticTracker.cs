@@ -6,6 +6,7 @@ public class StatisticTracker
 {
     private readonly Statistics _channelStatistics = new();
     private readonly Dictionary<ulong, Statistics> _usersStatistics = new();
+    public ulong CompressedFilesSize; //TODO change this later
 
     public void IncrementMessageCounter(ulong userId)
     {

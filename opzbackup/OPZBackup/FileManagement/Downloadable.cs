@@ -10,37 +10,41 @@ public class Downloadable
     public readonly ulong ChannelId;
     public readonly ulong MessageId;
 
-    public Downloadable(ulong messageId, ulong channelId, IEnumerable<IAttachment> attachments)
+    public Downloadable(IMessage message)
     {
+        var attachments = message.Attachments;
         if (!attachments.Any())
             throw new ArgumentException("No attachments provided.");
 
-        MessageId = messageId;
-        ChannelId = channelId;
+        MessageId = message.Id;
+        ChannelId = message.Channel.Id;
 
         if (attachments.Count() > 1)
         {
-            Attachments = GetAttachments(attachments);
+            Attachments = GetAttachments(message);
             return;
         }
 
         var attachment = new OnlineFile(
             attachments.First().Url,
-            messageId.ToString()
+            MessageId.ToString(),
+            message.Author.Id
         );
 
         Attachments = [attachment];
     }
 
-    private static IEnumerable<OnlineFile> GetAttachments(IEnumerable<IAttachment> attachments)
+    private static IEnumerable<OnlineFile> GetAttachments(IMessage message)
     {
+        var attachments = message.Attachments;
         var attachmentList = new List<OnlineFile>();
         var count = 1;
 
         foreach (var attachment1 in attachments)
             attachmentList.Add(new OnlineFile(
                 attachment1.Url,
-                $"file{count++}"
+                $"file{count++}",
+               message.Author.Id 
             ));
 
         return attachmentList;

@@ -6,12 +6,12 @@ public static class TimeSpanExtension
     {
         if (timeSpan.Seconds < 60)
             if (timeSpan.Seconds < 10)
-                return timeSpan.ToString("s'.'fff");
+                return timeSpan.ToString("s'.'fff's'");
             else
-                return timeSpan.ToString("ss'.'fff");
+                return timeSpan.ToString("ss'.'fff's'");
 
         if (timeSpan.Minutes < 60)
-            return timeSpan.ToString("mm':'ss'");
+            return timeSpan.ToString("mm':'ss");
 
         return timeSpan.ToString("hh':'mm':'ss");
     }

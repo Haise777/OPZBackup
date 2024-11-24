@@ -1,5 +1,6 @@
 ﻿using Discord.Interactions;
 using Discord.Rest;
+using OPZBackup.Data.Models;
 using OPZBackup.Services;
 using OPZBackup.Services.Backup;
 
@@ -21,7 +22,6 @@ public class ServiceResponseHandler
     public async Task SendStartNotificationAsync(BackupContext context)
     {
         var embedResponse = _responseBuilder
-            .SetAuthor(_interactionContext.User)
             .SetStartTime(DateTime.Now)
             .SetBatchNumber(context.BatchNumber)
             .SetMessageCount(context.MessageCount)
@@ -31,7 +31,7 @@ public class ServiceResponseHandler
         _interaction = await _interactionContext.Interaction.FollowupAsync(embed: embedResponse);
     }
 
-    public async Task SendBatchFinishedAsync(BackupContext context, BackupBatch batch)
+    public async Task SendBatchFinishedAsync(BackupContext context, BackupBatch batch, TimeSpan averageBatchTime)
     {
         if (_interaction == null) throw new InvalidOperationException("The interaction has not been created yet.");
 
@@ -46,13 +46,15 @@ public class ServiceResponseHandler
             .SetBatchNumber(context.BatchNumber)
             .SetMessageCount(context.MessageCount)
             .SetFileCount(context.FileCount)
+            .SetTotalFileSize(context.StatisticTracker.GetTotalStatistics().ByteSize)
+            .SetAverageBatchTime(averageBatchTime)
             .UpdateElapsedTime()
             .Build(ProgressStage.InProgress);
 
         await _interaction.ModifyAsync(m => m.Embed = embedResponse);
     }
 
-    public async Task SendCompletedAsync(BackupContext context)
+    public async Task SendCompletedAsync(BackupContext context, Channel channel)
     {
         if (_interaction == null) throw new InvalidOperationException("The interaction has not been created yet.");
 
@@ -62,6 +64,10 @@ public class ServiceResponseHandler
             .SetMessageCount(context.MessageCount)
             .SetFileCount(context.FileCount)
             .UpdateElapsedTime()
+            .SetChannelMessages(channel.MessageCount)
+            .SetChannelByteSize(channel.ByteSize)
+            .SetChannelNumberOfFiles(channel.FileCount)
+            .SetChannelCompressedSize(channel.CompressedByteSize)
             .Build(ProgressStage.Finished);
 
         await _interaction.ModifyAsync(m => m.Embed = embedResponse);

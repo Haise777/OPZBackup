@@ -1,5 +1,6 @@
 ﻿using Discord;
 using OPZBackup.Extensions;
+using OPZBackup.Services.Utils;
 //Aliases for named tuples
 using ParsedValues = (string StartMessage, string LastMessage, string StartTime, string EndTime);
 
@@ -13,11 +14,20 @@ public class ResponseBuilder
     public IMessage? StartMessage { get; set; }
     public IMessage? CurrentMessage { get; set; }
     public IMessage? LastMessage { get; set; }
-    public IUser? Author { get; private set; }
     public int BatchNumber { get; private set; }
     public int NumberOfMessages { get; private set; }
     public int NumberOfFiles { get; private set; }
     public TimeSpan ElapsedTime { get; private set; }
+    public TimeSpan AverageBatchTime { get; private set; }
+    public ulong TotalFileSize { get; private set; }
+
+    public ulong ChannelByteSize { get; private set; }
+
+    public int ChannelNumberOfFiles { get; private set; }
+
+    public int ChannelMessages { get; private set; }
+    
+    public ulong ChannelCompressedSize { get; private set; }
 
     private string ElapsedTimeString => $"{ElapsedTime:hh\\:mm\\:ss}";
 
@@ -27,15 +37,39 @@ public class ResponseBuilder
         return this;
     }
 
-    public ResponseBuilder SetStartMessage(IMessage message)
+    public ResponseBuilder SetChannelByteSize(ulong channelByteSize)
     {
-        StartMessage = message;
+        ChannelByteSize = channelByteSize;
         return this;
     }
 
-    public ResponseBuilder SetAuthor(IUser author)
+    public ResponseBuilder SetChannelMessages(int channelMessages)
     {
-        Author = author;
+        ChannelMessages = channelMessages;
+        return this;
+    }
+    
+    public ResponseBuilder SetChannelNumberOfFiles(int channelNumberOfFiles)
+    {
+        ChannelNumberOfFiles = channelNumberOfFiles;
+        return this;
+    }
+
+    public ResponseBuilder SetAverageBatchTime(TimeSpan averageBatchTime)
+    {
+        AverageBatchTime = averageBatchTime;
+        return this;
+    }
+
+    public ResponseBuilder SetTotalFileSize(ulong totalFileSize)
+    {
+        TotalFileSize = totalFileSize;
+        return this;
+    }
+
+    public ResponseBuilder SetStartMessage(IMessage message)
+    {
+        StartMessage = message;
         return this;
     }
 
@@ -80,7 +114,7 @@ public class ResponseBuilder
         _embedBuilder = CreateNewEmbed()
             .WithTitle("Backup finalizado")
             .WithColor(Color.Green)
-            .AddField("Estatisticas:", GenerateProgressField(false));
+            .AddField("Estatisticas:", GenerateFinishedField());
     }
 
     private void AddInProgressStage()
@@ -104,8 +138,8 @@ public class ResponseBuilder
         var progressString =
             $"Decorrido: {ElapsedTimeString}\n" +
             $"N de mensagens: {NumberOfMessages}\n" +
-            $"N de arquivos: {NumberOfFiles}\n" +
-            $"Ciclos realizados: {BatchNumber}\n";
+            $"N de arquivos: {NumberOfFiles} [{ByteSizeConversor.ToFormattedString(TotalFileSize)}]\n" +
+            $"Ciclos realizados: {BatchNumber} [{AverageBatchTime.Formatted()}]\n";
 
         if (withActual)
         {
@@ -116,6 +150,19 @@ public class ResponseBuilder
                     $"Atual: {CurrentMessage.Author.Username} {CurrentMessage.TimestampWithFixedTimezone().ToShortDateString()} {CurrentMessage.Timestamp.DateTime.ToShortTimeString()}" +
                     $"\n{CurrentMessage.Content}";
         }
+
+        return progressString;
+    }
+
+    private string GenerateFinishedField()
+    {
+        var progressString =
+            $"Decorrido: {ElapsedTimeString}\n" +
+            $"N de mensagens: {ChannelMessages} [+{NumberOfMessages}]\n" +
+            $"N de arquivos: {ChannelNumberOfFiles} [+{NumberOfFiles}]\n" +
+            $"T. Armazenados: {ByteSizeConversor.ToFormattedString(ChannelByteSize)} [+{ByteSizeConversor.ToFormattedString(TotalFileSize)}]\n" +
+            $"T. Comprimidos: {ByteSizeConversor.ToFormattedString(ChannelCompressedSize)}\n" +
+            $"Ciclos realizados: {BatchNumber}\n";
 
         return progressString;
     }
@@ -169,11 +216,6 @@ public class ResponseBuilder
             .AddField(startTimeEmbed)
             .AddField(endTimeEmbed);
 
-        if (Author is not null)
-            embedBuilder.WithFooter(new EmbedFooterBuilder()
-                .WithText($"{Author.Username}")
-                .WithIconUrl(Author.GetAvatarUrl()));
-
         return embedBuilder;
     }
 
@@ -204,6 +246,12 @@ public class ResponseBuilder
     public ResponseBuilder CurrentAsLastMessage()
     {
         LastMessage = CurrentMessage;
+        return this;
+    }
+
+    public ResponseBuilder SetChannelCompressedSize(ulong channelCompressedSize)
+    {
+        ChannelCompressedSize = channelCompressedSize;
         return this;
     }
 }
