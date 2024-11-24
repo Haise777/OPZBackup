@@ -1,19 +1,17 @@
-﻿using AnsiStyles;
-using Serilog;
+﻿using Serilog;
 
 namespace OPZBackup.Logger;
 
 public class BackupLogger : IAsyncDisposable
 {
-    public Serilog.Core.Logger Log { get; set; }
-    private readonly string _filePath;
     private static bool _first = true;
+    private readonly string _filePath;
 
     public BackupLogger()
     {
         var date = DateTime.Now.ToString("yyyyMMdd_HH-mm-ss");
         _filePath = $"{LoggerConfig.LogFilePath}/backup/backup_{date}.txt";
-        
+
         Log = new LoggerConfiguration()
             .Enrich.FromLogContext()
             .WriteTo.Async(f => f.File(_filePath,
@@ -27,6 +25,8 @@ public class BackupLogger : IAsyncDisposable
             DisposeAsync().GetAwaiter().GetResult();
         }
     }
+
+    public Serilog.Core.Logger Log { get; set; }
 
     public async ValueTask DisposeAsync()
     {

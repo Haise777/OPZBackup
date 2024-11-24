@@ -8,13 +8,13 @@ namespace OPZBackup.Services.Backup;
 #pragma warning disable CS0618 // Type or member is obsolete
 public class BackupContextFactory
 {
-    //BackupContext dependencies
     private readonly MyDbContext _dbContext;
-    private readonly Mapper _mapper;
     private readonly FileCleaner _fileCleaner;
+    private readonly Mapper _mapper;
     private readonly StatisticTracker _statisticTracker;
 
-    public BackupContextFactory(MyDbContext dbContext, Mapper mapper, FileCleaner fileCleaner, StatisticTracker statisticTracker)
+    public BackupContextFactory(MyDbContext dbContext, Mapper mapper, FileCleaner fileCleaner,
+        StatisticTracker statisticTracker)
     {
         _dbContext = dbContext;
         _mapper = mapper;
@@ -38,4 +38,5 @@ public class BackupContextFactory
 
         return backupContext;
     }
+    //BackupContext dependencies
 }

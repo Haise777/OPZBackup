@@ -1,6 +1,4 @@
 ﻿using System.Text;
-using AnsiStyles;
-using Microsoft.Extensions.Primitives;
 
 namespace OPZBackup.Logger;
 

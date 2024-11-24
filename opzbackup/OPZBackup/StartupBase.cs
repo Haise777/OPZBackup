@@ -1,5 +1,4 @@
-﻿using AnsiStyles;
-using Discord;
+﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Http;
-using Microsoft.Extensions.Logging;
 using OPZBackup.Data;
 using OPZBackup.FileManagement;
 using OPZBackup.Logger;

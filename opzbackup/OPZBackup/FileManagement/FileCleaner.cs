@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using OPZBackup.Logger;
-using Serilog;
 
 namespace OPZBackup.FileManagement;
 
@@ -29,7 +27,7 @@ public class FileCleaner
         return await task;
     }
 
-    public static bool DeleteDir(string? channelDirPath) 
+    public static bool DeleteDir(string? channelDirPath)
     {
         if (channelDirPath is null || !Directory.Exists(channelDirPath))
             return false;

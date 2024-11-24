@@ -31,6 +31,11 @@ public class BackupContext : IAsyncDisposable
     public bool IsUntilLastBackup { get; }
     public int BatchNumber { get; set; }
 
+    public async ValueTask DisposeAsync()
+    {
+        await _dbContext.DisposeAsync();
+    }
+
     public async Task RollbackAsync()
     {
         IsStopped = true;
@@ -54,7 +59,8 @@ public class BackupContext : IAsyncDisposable
         FileCleaner fileCleaner,
         StatisticTracker statisticTracker)
     {
-        var backupContext = new BackupContext(interactionContext, dbContext, isUntilLastBackup, fileCleaner, statisticTracker);
+        var backupContext = new BackupContext(interactionContext, dbContext, isUntilLastBackup, fileCleaner,
+            statisticTracker);
         await backupContext.RegisterNewBackup(channel, author);
 
         return backupContext;
@@ -78,10 +84,5 @@ public class BackupContext : IAsyncDisposable
         await _dbContext.SaveChangesAsync();
 
         BackupRegistry = backupRegistry;
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await _dbContext.DisposeAsync();
     }
 }

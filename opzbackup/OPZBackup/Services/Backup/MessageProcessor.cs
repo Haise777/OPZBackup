@@ -18,7 +18,8 @@ public class MessageProcessor
         _mapper = mapper;
     }
 
-    public async Task<BackupBatch> ProcessAsync(IEnumerable<IMessage> fetchedMessages, BackupContext context, CancellationToken cancellationToken)
+    public async Task<BackupBatch> ProcessAsync(IEnumerable<IMessage> fetchedMessages, BackupContext context,
+        CancellationToken cancellationToken)
     {
         //TODO-3 Separate this to get its 'needed values' from some sort of 'caching system'
         var existingMessageIds = await _dbContext.Messages
@@ -58,7 +59,7 @@ public class MessageProcessor
                 var fileCount = GetAttachmentsAsDownloadable(message, toDownload, mappedMessage);
                 context.StatisticTracker.IncrementFileCounter(message.Author.Id, fileCount);
             }
-            
+
             //TODO-4 If the author of this message needs to be saved
             if (!existingUserIds.Contains(message.Author.Id))
             {

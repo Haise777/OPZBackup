@@ -1,18 +1,9 @@
-﻿// Copyright (c) 2024, Gabriel Shimabucoro
-// All rights reserved.
-// 
-// This source code is licensed under the BSD-style license found in the
-// LICENSE file in the root directory of this source tree.
-
-using AnsiStyles;
-using Discord;
+﻿using Discord;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OPZBackup.Logger;
 using Serilog;
 using Serilog.Debugging;
-using Serilog.Events;
-using Serilog.Filters;
 
 namespace OPZBackup;
 
@@ -34,7 +25,7 @@ public class Program : StartupBase
 
             var hostBuilder = Host.CreateDefaultBuilder(args)
                 .UseSerilog((_, _, cfg) => LoggerConfig.GetMainConfiguration(cfg)
-                    , preserveStaticLogger: true
+                    , true
                 );
 
             if (!App.RunWithCooldowns)

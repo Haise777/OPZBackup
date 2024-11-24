@@ -1,7 +1,5 @@
-﻿using AnsiStyles;
-using Discord.Interactions;
+﻿using Discord.Interactions;
 using Discord.WebSocket;
-using Microsoft.Extensions.Logging;
 using OPZBackup.Logger;
 using OPZBackup.ResponseHandlers.Backup;
 using BackupService = OPZBackup.Services.Backup.BackupService;
@@ -16,9 +14,9 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
     private static readonly SemaphoreSlim CommandLock = new(1, 1);
     private readonly BackupService _backupService;
     private readonly ILogger _logger;
-    private readonly ServiceResponseHandlerFactory _responseHandlerFactory;
 
     private readonly ModuleResponseHandler _responseHandler;
+    private readonly ServiceResponseHandlerFactory _responseHandlerFactory;
 
     public BackupModule(
         BackupService backupService,
@@ -29,7 +27,7 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
         _responseHandler = responseHandler;
         _backupService = backupService;
         _responseHandlerFactory = responseHandlerFactory;
-        
+
         _logger = logger.ForContext("System", LoggerUtils.ColorText("BackupModule", 12));
     }
 

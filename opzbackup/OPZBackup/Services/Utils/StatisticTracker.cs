@@ -1,12 +1,11 @@
 ﻿using System.Collections.Frozen;
-using OPZBackup.Data.Models;
 
 namespace OPZBackup.Services.Utils;
 
 public class StatisticTracker
 {
-    private readonly Dictionary<ulong, Statistics> _usersStatistics = new();
     private readonly Statistics _channelStatistics = new();
+    private readonly Dictionary<ulong, Statistics> _usersStatistics = new();
 
     public void IncrementMessageCounter(ulong userId)
     {
@@ -34,6 +33,13 @@ public class StatisticTracker
         _channelStatistics.ByteSize += byteSize;
     }
 
-    public FrozenDictionary<ulong, Statistics> GetStatistics() => _usersStatistics.ToFrozenDictionary();
-    public Statistics GetTotalStatistics() => _channelStatistics;
+    public FrozenDictionary<ulong, Statistics> GetStatistics()
+    {
+        return _usersStatistics.ToFrozenDictionary();
+    }
+
+    public Statistics GetTotalStatistics()
+    {
+        return _channelStatistics;
+    }
 }

@@ -6,19 +6,26 @@ public class PerformanceProfiler
 
     public Timer Subscribe(string timerName)
     {
-        var profiler = new Timer();
-        Timers.Add(timerName, profiler);
+        var timer = new Timer();
 
-        return profiler;
+        Timers.Add(timerName, timer);
+        return timer;
     }
 
-    public TimeSpan TotalElapsed()
+    public TimeSpan TotalElapsed(bool exclude = false, params string[] args)
     {
         var total = TimeSpan.Zero;
 
-        foreach (var timer in Timers.Values)
-            total += timer.Total();
-        
+        foreach (var timer in Timers)
+            if (!args.Any())
+                total += timer.Value.Total;
+
+            else if (!exclude && args.Contains(timer.Key))
+                total += timer.Value.Total;
+
+            else if (!args.Contains(timer.Key))
+                total += timer.Value.Total;
+
         return total;
     }
 }

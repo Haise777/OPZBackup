@@ -2,12 +2,11 @@
 using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
 using OPZBackup.Data;
-using OPZBackup.Exceptions;
+using OPZBackup.Extensions;
 using OPZBackup.FileManagement;
 using OPZBackup.Logger;
 using OPZBackup.ResponseHandlers.Backup;
 using OPZBackup.Services.Utils;
-using Serilog;
 
 // ReSharper disable PossibleMultipleEnumeration TODO-4
 
@@ -16,15 +15,15 @@ namespace OPZBackup.Services.Backup;
 public class BackupService : IAsyncDisposable
 {
     private readonly AttachmentDownloader _attachmentDownloader;
+    private readonly CancellationToken _cancelToken;
+    private readonly CancellationTokenSource _cancelTokenSource;
     private readonly BackupContextFactory _contextFactory;
     private readonly MyDbContext _dbContext;
     private readonly DirCompressor _dirCompressor;
+    private readonly FileCleaner _fileCleaner;
+    private readonly BackupLogger _logger;
     private readonly MessageFetcher _messageFetcher;
     private readonly MessageProcessor _messageProcessor;
-    private readonly BackupLogger _logger;
-    private readonly FileCleaner _fileCleaner;
-    private readonly CancellationTokenSource _cancelTokenSource;
-    private readonly CancellationToken _cancelToken;
     private readonly PerformanceProfiler _profiler;
     private BackupContext _context = null!;
     private ServiceResponseHandler _responseHandler = null!;
@@ -48,6 +47,14 @@ public class BackupService : IAsyncDisposable
         _profiler = profiler;
         _cancelTokenSource = new CancellationTokenSource();
         _cancelToken = _cancelTokenSource.Token;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _dbContext.DisposeAsync();
+        await _logger.DisposeAsync();
+        await _context.DisposeAsync();
+        _cancelTokenSource.Dispose();
     }
 
     public async Task StartBackupAsync(SocketInteractionContext interactionContext,
@@ -89,14 +96,15 @@ public class BackupService : IAsyncDisposable
             throw;
         }
 
-        _logger.Log.Information("Backup finished in {time}", _profiler.TotalElapsed().Milliseconds);
+        _logger.Log.Information("Backup finished in {time}",
+            _profiler.TotalElapsed(true, nameof(SaveBatch), nameof(DownloadMessageAttachments)).Formatted());
         await _responseHandler.SendCompletedAsync(_context);
     }
 
     private async Task IncrementStatistics()
     {
         _logger.Log.Information("Updating statistic data.");
-        
+
         var tracker = _context.StatisticTracker;
 
         foreach (var userStatistics in tracker.GetStatistics())
@@ -112,7 +120,7 @@ public class BackupService : IAsyncDisposable
         channel.MessageCount += total.MessageCount;
         channel.FileCount += total.FileCount;
         channel.ByteSize += total.ByteSize;
-        
+
         await _dbContext.SaveChangesAsync();
     }
 
@@ -152,10 +160,10 @@ public class BackupService : IAsyncDisposable
 
             await SaveBatch(backupBatch);
 
-            var batchTime = timer.Stop();
+            timer.Stop();
             _context.MessageCount += backupBatch.Messages.Count();
             _logger.Log.Information("Batch '{n}' finished in {elapsed} | {mean}",
-                ++_context.BatchNumber, batchTime.Milliseconds, timer.Mean().Milliseconds);
+                ++_context.BatchNumber, timer.Elapsed.Formatted(), timer.Mean.Formatted());
             await _responseHandler.SendBatchFinishedAsync(_context, backupBatch);
         }
     }
@@ -171,8 +179,9 @@ public class BackupService : IAsyncDisposable
 
         //TODO-4 Execute in parallel the db save and download
         await _dbContext.SaveChangesAsync();
-        var time = timer.Stop();
-        _logger.Log.Information("Batch saved in {seconds} | {mean}", time.Milliseconds, timer.Mean().Milliseconds);
+        timer.Stop();
+        _logger.Log.Information("Batch saved in {seconds} | {mean}", timer.Elapsed.Formatted(),
+            timer.Mean.Formatted());
 
         if (batch.ToDownload.Any())
             await DownloadMessageAttachments(batch.ToDownload);
@@ -190,9 +199,9 @@ public class BackupService : IAsyncDisposable
         _logger.Log.Information("Downloading {fileCount} attachments", fileCount);
         _context.FileCount += fileCount;
         await _attachmentDownloader.DownloadRangeAsync(toDownload, _cancelToken);
-        var time = timer.Stop();
-        _logger.Log.Information("Download finished in {seconds} | {mean}", time.Milliseconds,
-            timer.Mean().Milliseconds);
+        timer.Stop();
+        _logger.Log.Information("Download finished in {seconds} | {mean}", timer.Elapsed.Formatted(),
+            timer.Mean.Formatted());
     }
 
     private async Task<IEnumerable<IMessage>> FetchMessages(ulong lastMessageId)
@@ -222,21 +231,13 @@ public class BackupService : IAsyncDisposable
             $"{App.BackupPath}",
             _cancelToken
         );
-        var time = timer.Stop();
-        _logger.Log.Information("Files compressed in {seconds} | {mean}", time.Milliseconds, timer.Mean().Milliseconds);
+        timer.Stop();
+        _logger.Log.Information("Files compressed in {seconds}", timer.Elapsed.Formatted());
         await _fileCleaner.DeleteDirAsync(App.TempPath);
     }
 
     public async Task CancelAsync()
     {
         await _cancelTokenSource.CancelAsync();
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await _dbContext.DisposeAsync();
-        await _logger.DisposeAsync();
-        await _context.DisposeAsync();
-        _cancelTokenSource.Dispose();
     }
 }

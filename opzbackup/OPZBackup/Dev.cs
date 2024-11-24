@@ -32,7 +32,7 @@ public static class Dev
     {
         if (!IsCleanRun)
             throw new InvalidStartupException("Attempted to perform a clean run besides the flag being set to false");
-        
+
         var prefix = "CLEAN RUN:";
 
         File.Delete("opzbackup.db");

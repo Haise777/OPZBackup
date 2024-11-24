@@ -5,8 +5,12 @@ namespace OPZBackup.Services.Utils;
 public class Timer
 {
     private readonly Stopwatch _stopWatch = new();
-    public TimeSpan TotalElapsed = TimeSpan.Zero;
     private int _totalFrames;
+
+    public TimeSpan Mean => Total / _totalFrames;
+    public TimeSpan Total { get; private set; } = TimeSpan.Zero;
+
+    public TimeSpan Elapsed => _stopWatch.Elapsed;
 
     public void StartTimer()
     {
@@ -16,16 +20,9 @@ public class Timer
     public TimeSpan Stop()
     {
         _stopWatch.Stop();
-        TotalElapsed += _stopWatch.Elapsed;
+        Total += _stopWatch.Elapsed;
         _totalFrames++;
-        
+
         return _stopWatch.Elapsed;
     }
-
-    public TimeSpan Mean()
-    {
-        return TotalElapsed / _totalFrames;
-    }
-
-    public TimeSpan Total() => TotalElapsed;
 }

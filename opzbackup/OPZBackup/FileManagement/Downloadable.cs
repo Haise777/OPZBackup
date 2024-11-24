@@ -1,7 +1,5 @@
 ﻿using Discord;
 using OPZBackup.Data.Dto;
-using OPZBackup.Logger;
-using Serilog;
 
 namespace OPZBackup.FileManagement;
 
@@ -33,7 +31,7 @@ public class Downloadable
 
         Attachments = [attachment];
     }
-    
+
     private static IEnumerable<OnlineFile> GetAttachments(IEnumerable<IAttachment> attachments)
     {
         var attachmentList = new List<OnlineFile>();

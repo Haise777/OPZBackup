@@ -8,7 +8,6 @@ public record OnlineFile
     public readonly string FileExtension;
     public readonly string FileName;
     public readonly string Url;
-    public string FullFileName => $"{FileName}.{FileExtension}";
 
     public OnlineFile(string url, string fileName)
     {
@@ -16,6 +15,8 @@ public record OnlineFile
         FileName = fileName;
         FileExtension = GetExtension(url);
     }
+
+    public string FullFileName => $"{FileName}.{FileExtension}";
 
     private static string GetExtension(string fileUrl)
     {

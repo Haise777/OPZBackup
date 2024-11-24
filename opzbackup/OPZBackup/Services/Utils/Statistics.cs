@@ -2,7 +2,6 @@
 
 public class Statistics
 {
-
     public Statistics(int messageCount = 0, int fileCount = 0, ulong byteSize = 0)
     {
         MessageCount = messageCount;

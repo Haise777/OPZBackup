@@ -8,9 +8,9 @@ public class AttachmentDownloader
     private static readonly SemaphoreSlim
         _downloadLimiter = new(50, 50); //TODO-3 Make the value be configurable in the appsettings
 
-    private readonly ILogger _logger;
-
     private readonly HttpClient _client;
+
+    private readonly ILogger _logger;
 
     public AttachmentDownloader(HttpClient client, ILogger logger)
     {
