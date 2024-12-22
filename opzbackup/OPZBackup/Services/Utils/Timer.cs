@@ -12,17 +12,19 @@ public class Timer
 
     public TimeSpan Elapsed => _stopWatch.Elapsed;
 
-    public void StartTimer()
+    public Timer StartTimer()
     {
         _stopWatch.Restart();
+        return this;
     }
 
-    public TimeSpan Stop()
+    public Timer Stop()
     {
         _stopWatch.Stop();
         Total += _stopWatch.Elapsed;
         _totalFrames++;
 
-        return _stopWatch.Elapsed;
+        return this;
     }
+    
 }

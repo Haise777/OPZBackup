@@ -11,13 +11,13 @@ public static class LoggerConfig
 
     public static LoggerConfiguration GetMainConfiguration(LoggerConfiguration configuration)
     {
-        return configuration.WriteTo.Logger(l => l //TODO-3 Place this elsewhere
+        return configuration.WriteTo.Logger(l => l //TODO: Place this elsewhere
             .Filter.ByIncludingOnly(Matching.WithProperty("System"))
             .Enrich.FromLogContext()
             .MinimumLevel.Information()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
             .WriteTo.Async(f => f.File($"{LogFilePath}/session/session_{App.SessionDate.ToString(_fileDateFormat)}.txt",
-                outputTemplate: OutputTemplate.SplitDefaultTemplate("System")))
+                outputTemplate: OutputTemplate.DefaultTemplateSplitted("System")))
             .WriteTo.Console(outputTemplate: OutputTemplate.DefaultTemplate("System"))
         );
     }

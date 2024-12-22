@@ -12,8 +12,7 @@ public class StatisticTracker
     {
         if (!_usersStatistics.ContainsKey(userId))
             _usersStatistics.Add(userId, new Statistics());
-
-
+        
         _usersStatistics[userId].MessageCount++;
         _channelStatistics.MessageCount++;
     }
@@ -22,8 +21,7 @@ public class StatisticTracker
     {
         if (!_usersStatistics.ContainsKey(userId))
             _usersStatistics.Add(userId, new Statistics());
-
-
+        
         _usersStatistics[userId].FileCount += fileCount;
         _channelStatistics.FileCount += fileCount;
     }

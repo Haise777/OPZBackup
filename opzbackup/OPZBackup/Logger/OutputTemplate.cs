@@ -15,7 +15,7 @@ public static class OutputTemplate
         return builder.ToString();
     }
 
-    public static string SplitDefaultTemplate(string propertyName)
+    public static string DefaultTemplateSplitted(string propertyName)
     {
         var builder = new StringBuilder();
 

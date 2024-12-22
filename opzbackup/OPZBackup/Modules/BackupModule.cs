@@ -51,7 +51,7 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
             return;
         }
 
-        //TODO-2 Tempo desde o ultimo backup (se com cooldowns)
+        //TODO: Tempo desde o ultimo backup (se com cooldowns)
 
         await CommandLock.WaitAsync();
         try
@@ -59,6 +59,13 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
             _currentBackup = _backupService;
             var serviceResponseHandler = _responseHandlerFactory.Create(Context);
             await _currentBackup.StartBackupAsync(Context, serviceResponseHandler, choice == 0);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Fazer");
+            //TODO: Handle Unhandled Exceptions coming from Service layer
+            //TODO: Notify the client of internal error.
+            throw;
         }
         finally
         {
@@ -93,7 +100,7 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
         "DELETAR todas as informações presentes no armazenamento relacionadas ao usuario PERMANENTEMENTE")]
     public async Task DeleteUserInStorage()
     {
-        //TODO-3 Implement DeleteUserInStorage
+        //TODO: Implement DeleteUserInStorage
         throw new NotImplementedException();
     }
 

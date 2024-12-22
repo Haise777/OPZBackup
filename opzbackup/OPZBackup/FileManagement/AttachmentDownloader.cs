@@ -7,7 +7,7 @@ namespace OPZBackup.FileManagement;
 public class AttachmentDownloader
 {
     private static readonly SemaphoreSlim
-        _downloadLimiter = new(50, 50); //TODO-3 Make the value be configurable in the appsettings
+        _downloadLimiter = new(50, 50); //TODO: Make the value be configurable in the appsettings
 
     private readonly HttpClient _client;
 
@@ -36,10 +36,10 @@ public class AttachmentDownloader
         }
         catch (Exception ex)
         {
-            //TODO log exception
+            //TODO: log exception
             if (ex is AggregateException aggr)
             {
-                //TODO log all aggregated exceptions
+                //TODO: log all aggregated exceptions
             }
 
             throw;
@@ -118,7 +118,7 @@ public class AttachmentDownloader
                     onlineFile.FileExtension
                 );
             }
-            catch (HttpRequestException ex) //TODO-3 Deal with httpclient exceptions
+            catch (HttpRequestException ex) //TODO: Deal with httpclient exceptions
             {
                 //Log.
                 if (++attempts >= 3) throw;

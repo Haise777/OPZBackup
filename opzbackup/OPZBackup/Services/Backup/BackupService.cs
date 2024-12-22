@@ -7,6 +7,7 @@ using OPZBackup.FileManagement;
 using OPZBackup.Logger;
 using OPZBackup.ResponseHandlers.Backup;
 using OPZBackup.Services.Utils;
+using Timer = OPZBackup.Services.Utils.Timer;
 
 // ReSharper disable PossibleMultipleEnumeration TODO-4
 
@@ -100,7 +101,7 @@ public class BackupService : IAsyncDisposable
                                 " | Occupying {compressedTotal} in saved attachments",
             _context.BackupRegistry.Id,
             _profiler.TotalElapsed(true, nameof(SaveBatch), nameof(DownloadMessageAttachments)).Formatted(),
-            _context.StatisticTracker.CompressedFilesSize
+            ByteSizeConversor.ToFormattedString(_context.StatisticTracker.CompressedFilesSize)
         );
 
         await _responseHandler.SendCompletedAsync(_context, _context.BackupRegistry.Channel);
@@ -166,37 +167,38 @@ public class BackupService : IAsyncDisposable
 
             await SaveBatch(backupBatch);
 
+            if (backupBatch.ToDownload.Any())
+                await DownloadMessageAttachments(backupBatch.ToDownload);
+
             timer.Stop();
-            _context.MessageCount += backupBatch.Messages.Count();
-            _logger.Log.Information("Batch '{n}' finished in {elapsed} | {mean}",
-                ++_context.BatchNumber, timer.Elapsed.Formatted(), timer.Mean.Formatted());
-            await _responseHandler.SendBatchFinishedAsync(_context, backupBatch, timer.Mean);
+            await FinishBatch(timer, backupBatch);
         }
     }
 
+    private async Task FinishBatch(Timer timer, BackupBatch backupBatch)
+    {
+        _context.MessageCount += backupBatch.Messages.Count();
+        _logger.BatchFinished(timer, ++_context.BatchNumber);
+        await _responseHandler.SendBatchFinishedAsync(_context, backupBatch, timer.Mean);
+    }
+
+    //TODO: Execute in parallel the db save and download
     private async Task SaveBatch(BackupBatch batch)
     {
-        var timer = _profiler.Timers[nameof(SaveBatch)];
-        timer.StartTimer();
-        _dbContext.Messages.AddRange(batch.Messages);
+        var timer = _profiler.Timers[nameof(SaveBatch)].StartTimer();
 
+        _dbContext.Messages.AddRange(batch.Messages);
         if (batch.Users.Any())
             _dbContext.Users.AddRange(batch.Users);
 
-        //TODO-4 Execute in parallel the db save and download
         await _dbContext.SaveChangesAsync();
-        timer.Stop();
-        _logger.Log.Information("Batch saved in {seconds} | {mean}", timer.Elapsed.Formatted(),
-            timer.Mean.Formatted());
 
-        if (batch.ToDownload.Any())
-            await DownloadMessageAttachments(batch.ToDownload);
+        _logger.BatchSaved(timer.Stop());
     }
 
     private async Task DownloadMessageAttachments(IEnumerable<Downloadable> toDownload)
     {
-        var timer = _profiler.Timers[nameof(DownloadMessageAttachments)];
-        timer.StartTimer();
+        var timer = _profiler.Timers[nameof(DownloadMessageAttachments)].StartTimer();
 
         var fileCount = 0;
         foreach (var downloadable in toDownload)
@@ -205,9 +207,8 @@ public class BackupService : IAsyncDisposable
         _logger.Log.Information("Downloading {fileCount} attachments", fileCount);
         _context.FileCount += fileCount;
         await _attachmentDownloader.DownloadRangeAsync(toDownload, _cancelToken);
-        timer.Stop();
-        _logger.Log.Information("Download finished in {seconds} | {mean}", timer.Elapsed.Formatted(),
-            timer.Mean.Formatted());
+
+        _logger.FilesDownloaded(timer.Stop());
     }
 
     private async Task<IEnumerable<IMessage>> FetchMessages(ulong lastMessageId)
