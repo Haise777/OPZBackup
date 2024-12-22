@@ -9,7 +9,7 @@ using OPZBackup.ResponseHandlers.Backup;
 using OPZBackup.Services.Utils;
 using Timer = OPZBackup.Services.Utils.Timer;
 
-// ReSharper disable PossibleMultipleEnumeration TODO-4
+// ReSharper disable PossibleMultipleEnumeration TODO
 
 namespace OPZBackup.Services.Backup;
 
@@ -107,28 +107,9 @@ public class BackupService : IAsyncDisposable
         await _responseHandler.SendCompletedAsync(_context, _context.BackupRegistry.Channel);
     }
 
-    private async Task IncrementStatistics()
+    public async Task CancelAsync()
     {
-        _logger.Log.Information("Updating statistic data.");
-
-        var tracker = _context.StatisticTracker;
-
-        foreach (var userStatistics in tracker.GetStatistics())
-        {
-            var user = await _dbContext.Users.FirstAsync(u => u.Id == userStatistics.Key);
-            user.MessageCount += userStatistics.Value.MessageCount;
-            user.FileCount += userStatistics.Value.FileCount;
-            user.ByteSize += userStatistics.Value.ByteSize;
-        }
-
-        var channel = await _dbContext.Channels.FirstAsync(c => c.Id == _context.BackupRegistry.ChannelId);
-        var total = tracker.GetTotalStatistics();
-        channel.MessageCount += total.MessageCount;
-        channel.FileCount += total.FileCount;
-        channel.ByteSize += total.ByteSize;
-        channel.CompressedByteSize += tracker.CompressedFilesSize;
-
-        await _dbContext.SaveChangesAsync();
+        await _cancelTokenSource.CancelAsync();
     }
 
     private async Task BackupMessages()
@@ -166,23 +147,23 @@ public class BackupService : IAsyncDisposable
             }
 
             await SaveBatch(backupBatch);
-
-            if (backupBatch.ToDownload.Any())
-                await DownloadMessageAttachments(backupBatch.ToDownload);
-
-            timer.Stop();
+            await DownloadMessageAttachments(backupBatch.ToDownload);
             await FinishBatch(timer, backupBatch);
         }
     }
 
-    private async Task FinishBatch(Timer timer, BackupBatch backupBatch)
+    private async Task<IEnumerable<IMessage>> FetchMessages(ulong lastMessageId)
     {
-        _context.MessageCount += backupBatch.Messages.Count();
-        _logger.BatchFinished(timer, ++_context.BatchNumber);
-        await _responseHandler.SendBatchFinishedAsync(_context, backupBatch, timer.Mean);
+        var channelContext = _context.InteractionContext.Channel;
+        _logger.Log.Information("Fetching messages...");
+
+        return lastMessageId switch
+        {
+            0 => await _messageFetcher.FetchAsync(channelContext),
+            _ => await _messageFetcher.FetchAsync(channelContext, lastMessageId)
+        };
     }
 
-    //TODO: Execute in parallel the db save and download
     private async Task SaveBatch(BackupBatch batch)
     {
         var timer = _profiler.Timers[nameof(SaveBatch)].StartTimer();
@@ -196,8 +177,12 @@ public class BackupService : IAsyncDisposable
         _logger.BatchSaved(timer.Stop());
     }
 
+    //TODO: Execute in parallel the db save and download
     private async Task DownloadMessageAttachments(IEnumerable<Downloadable> toDownload)
     {
+        if (!toDownload.Any())
+            return;
+
         var timer = _profiler.Timers[nameof(DownloadMessageAttachments)].StartTimer();
 
         var fileCount = 0;
@@ -211,16 +196,12 @@ public class BackupService : IAsyncDisposable
         _logger.FilesDownloaded(timer.Stop());
     }
 
-    private async Task<IEnumerable<IMessage>> FetchMessages(ulong lastMessageId)
+    private async Task FinishBatch(Timer timer, BackupBatch backupBatch)
     {
-        var channelContext = _context.InteractionContext.Channel;
-        _logger.Log.Information("Fetching messages...");
-
-        return lastMessageId switch
-        {
-            0 => await _messageFetcher.FetchAsync(channelContext),
-            _ => await _messageFetcher.FetchAsync(channelContext, lastMessageId)
-        };
+        timer.Stop();
+        _context.MessageCount += backupBatch.Messages.Count();
+        _logger.BatchFinished(timer, ++_context.BatchNumber);
+        await _responseHandler.SendBatchFinishedAsync(_context, backupBatch, timer.Mean);
     }
 
     private async Task CompressFiles()
@@ -245,8 +226,27 @@ public class BackupService : IAsyncDisposable
         await _fileCleaner.DeleteDirAsync(App.TempPath);
     }
 
-    public async Task CancelAsync()
+    private async Task IncrementStatistics()
     {
-        await _cancelTokenSource.CancelAsync();
+        _logger.Log.Information("Updating statistic data.");
+
+        var tracker = _context.StatisticTracker;
+
+        foreach (var userStatistics in tracker.GetStatistics())
+        {
+            var user = await _dbContext.Users.FirstAsync(u => u.Id == userStatistics.Key);
+            user.MessageCount += userStatistics.Value.MessageCount;
+            user.FileCount += userStatistics.Value.FileCount;
+            user.ByteSize += userStatistics.Value.ByteSize;
+        }
+
+        var channel = await _dbContext.Channels.FirstAsync(c => c.Id == _context.BackupRegistry.ChannelId);
+        var total = tracker.GetTotalStatistics();
+        channel.MessageCount += total.MessageCount;
+        channel.FileCount += total.FileCount;
+        channel.ByteSize += total.ByteSize;
+        channel.CompressedByteSize += tracker.CompressedFilesSize;
+
+        await _dbContext.SaveChangesAsync();
     }
 }
