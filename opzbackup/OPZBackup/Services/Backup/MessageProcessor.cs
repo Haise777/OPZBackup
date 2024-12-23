@@ -18,7 +18,7 @@ public class MessageProcessor
         _mapper = mapper;
     }
 
-    public async Task<BackupBatch> ProcessAsync(IEnumerable<IMessage> fetchedMessages, BackupContext context,
+    public async Task<BackupBatch2> ProcessAsync(IEnumerable<IMessage> fetchedMessages, BackupContext context,
         CancellationToken cancellationToken)
     {
         //TODO-3 Separate this to get its 'needed values' from some sort of 'caching system'
@@ -72,7 +72,7 @@ public class MessageProcessor
             messages.Add(mappedMessage);
         }
 
-        return new BackupBatch(users, messages, toDownload);
+        return new BackupBatch2(users, messages, toDownload);
     }
 
     private static int GetAttachmentsAsDownloadable(IMessage message, List<Downloadable> toDownload,

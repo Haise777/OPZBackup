@@ -77,7 +77,7 @@ public class BackupService : IAsyncDisposable
         }
         catch (OperationCanceledException)
         {
-            //TODO-2 Log cancellation
+            //TODO: Log cancellation
             _logger.Log.Information("Backup canceled.");
             var sendCancelled = _responseHandler.SendProcessCancelledAsync();
             var rollBack = _context.RollbackAsync();
@@ -87,7 +87,7 @@ public class BackupService : IAsyncDisposable
         }
         catch (Exception e)
         {
-            //TODO-2 Log exception and also send the error name back to the client
+            //TODO: Log exception and also send the error name back to the client
             _logger.Log.Error(e, "Backup failed.");
             var sendFailed = _responseHandler.SendFailedAsync(_context);
             var rollBack = _context.RollbackAsync();
@@ -118,9 +118,13 @@ public class BackupService : IAsyncDisposable
         var timer = _profiler.Subscribe("batch");
 
         ulong lastMessageId = 0;
+        var attemptNumber = 0;
 
         while (true)
         {
+            try 
+            {
+                
             _cancelToken.ThrowIfCancellationRequested();
             timer.StartTimer();
 
@@ -137,8 +141,6 @@ public class BackupService : IAsyncDisposable
                 break;
             }
 
-            lastMessageId = fetchedMessages.Last().Id;
-
             var backupBatch = await _messageProcessor.ProcessAsync(fetchedMessages, _context, _cancelToken);
             if (!backupBatch.Messages.Any())
             {
@@ -149,6 +151,20 @@ public class BackupService : IAsyncDisposable
             await SaveBatch(backupBatch);
             await DownloadMessageAttachments(backupBatch.ToDownload);
             await FinishBatch(timer, backupBatch);
+            lastMessageId = fetchedMessages.Last().Id;
+            attemptNumber = 0;
+            }
+            catch (OperationCanceledException) 
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                if (++attemptNumber > 3)
+                    throw;
+
+                _logger.Log.Error("Batch {batchNumber} failed, attempting again...", _context.BatchNumber);
+            }
         }
     }
 
@@ -164,7 +180,7 @@ public class BackupService : IAsyncDisposable
         };
     }
 
-    private async Task SaveBatch(BackupBatch batch)
+    private async Task SaveBatch(BackupBatch2 batch)
     {
         var timer = _profiler.Timers[nameof(SaveBatch)].StartTimer();
 
@@ -196,7 +212,7 @@ public class BackupService : IAsyncDisposable
         _logger.FilesDownloaded(timer.Stop());
     }
 
-    private async Task FinishBatch(Timer timer, BackupBatch backupBatch)
+    private async Task FinishBatch(Timer timer, BackupBatch2 backupBatch)
     {
         timer.Stop();
         _context.MessageCount += backupBatch.Messages.Count();

@@ -31,7 +31,7 @@ public class ServiceResponseHandler
         _interaction = await _interactionContext.Interaction.FollowupAsync(embed: embedResponse);
     }
 
-    public async Task SendBatchFinishedAsync(BackupContext context, BackupBatch batch, TimeSpan averageBatchTime)
+    public async Task SendBatchFinishedAsync(BackupContext context, BackupBatch2 batch, TimeSpan averageBatchTime)
     {
         if (_interaction == null) throw new InvalidOperationException("The interaction has not been created yet.");
 
