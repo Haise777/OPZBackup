@@ -169,6 +169,7 @@ public class BackupService : IAsyncDisposable
     private async Task SaveCurrentBatch(BackupBatcher batch)
     {
         //TODO: Implement a transaction here
+        //TODO: Execute in parallel the db save and download
         var messageTimer = _profiler.Timers[nameof(SaveCurrentBatch)].StartTimer();
 
         _dbContext.Messages.AddRange(batch.ProcessedMessages);
@@ -187,7 +188,6 @@ public class BackupService : IAsyncDisposable
         }
     }
 
-    //TODO: Execute in parallel the db save and download
     private async Task DownloadMessageAttachments(IEnumerable<Downloadable> toDownload)
     {
         var fileCount = 0;
@@ -210,7 +210,7 @@ public class BackupService : IAsyncDisposable
     private async Task CompressFiles()
     {
         var timer = _profiler.Timers[nameof(CompressFiles)];
-        //TODO-3 Implement a way of tracking the progress of the compression
+        //TODO: Implement a way of tracking the progress of the compression
         if (_context.FileCount == 0)
             return;
 
