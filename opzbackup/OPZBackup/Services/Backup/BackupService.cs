@@ -2,6 +2,7 @@
 using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
 using OPZBackup.Data;
+using OPZBackup.Data.Models;
 using OPZBackup.Extensions;
 using OPZBackup.FileManagement;
 using OPZBackup.Logger;
@@ -23,22 +24,18 @@ public class BackupService : IAsyncDisposable
     private readonly DirCompressor _dirCompressor;
     private readonly FileCleaner _fileCleaner;
     private readonly BackupLogger _logger;
-    private readonly MessageFetcher _messageFetcher;
-    private readonly MessageProcessor _messageProcessor;
     private readonly PerformanceProfiler _profiler;
+    private readonly BackupBatcherFactory _batcherFactory;
     private BackupContext _context = null!;
     private ServiceResponseHandler _responseHandler = null!;
 
-    public BackupService(MessageFetcher messageFetcher,
-        MessageProcessor messageProcessor,
+    public BackupService(
         BackupContextFactory contextFactory,
         MyDbContext dbContext,
         AttachmentDownloader attachmentDownloader,
         DirCompressor dirCompressor, FileCleaner fileCleaner,
-        BackupLogger logger, PerformanceProfiler profiler)
+        BackupLogger logger, PerformanceProfiler profiler, BackupBatcherFactory backupBatcherFactory)
     {
-        _messageFetcher = messageFetcher;
-        _messageProcessor = messageProcessor;
         _contextFactory = contextFactory;
         _dbContext = dbContext;
         _attachmentDownloader = attachmentDownloader;
@@ -48,6 +45,7 @@ public class BackupService : IAsyncDisposable
         _profiler = profiler;
         _cancelTokenSource = new CancellationTokenSource();
         _cancelToken = _cancelTokenSource.Token;
+        _batcherFactory = backupBatcherFactory;
     }
 
     public async ValueTask DisposeAsync()
@@ -63,7 +61,7 @@ public class BackupService : IAsyncDisposable
     {
         _responseHandler = responseHandler;
         _context = await _contextFactory.RegisterNewBackup(interactionContext, isUntilLast);
-        _profiler.Subscribe(nameof(SaveBatch));
+        _profiler.Subscribe(nameof(SaveCurrentBatch));
         _profiler.Subscribe(nameof(DownloadMessageAttachments));
         _profiler.Subscribe(nameof(CompressFiles));
 
@@ -100,7 +98,7 @@ public class BackupService : IAsyncDisposable
         _logger.Log.Information("Backup {id} finished in {time}\n" +
                                 " | Occupying {compressedTotal} in saved attachments",
             _context.BackupRegistry.Id,
-            _profiler.TotalElapsed(true, nameof(SaveBatch), nameof(DownloadMessageAttachments)).Formatted(),
+            _profiler.TotalElapsed(true, nameof(SaveCurrentBatch), nameof(DownloadMessageAttachments)).Formatted(),
             ByteSizeConversor.ToFormattedString(_context.StatisticTracker.CompressedFilesSize)
         );
 
@@ -116,45 +114,45 @@ public class BackupService : IAsyncDisposable
     {
         _logger.Log.Information("Starting backup");
         var timer = _profiler.Subscribe("batch");
+        var channelContext = _context.InteractionContext.Channel;
 
         ulong lastMessageId = 0;
         var attemptNumber = 0;
 
         while (true)
         {
-            try 
+            try
             {
-                
-            _cancelToken.ThrowIfCancellationRequested();
-            timer.StartTimer();
+                _cancelToken.ThrowIfCancellationRequested();
+                timer.StartTimer();
 
-            if (_context.IsStopped)
-            {
-                _logger.Log.Information("Reached last saved message, finishing backup...");
-                break;
-            }
+                if (_context.IsStopped)
+                {
+                    _logger.Log.Information("Reached last saved message, finishing backup...");
+                    break;
+                }
 
-            var fetchedMessages = await FetchMessages(lastMessageId);
-            if (!fetchedMessages.Any())
-            {
-                _logger.Log.Information("Reached the end of the channel, finishing backup...");
-                break;
-            }
+                var batch = _batcherFactory.Create(_context, channelContext);
+                await batch.StartBatchingAsync(lastMessageId, _cancelToken);
 
-            var backupBatch = await _messageProcessor.ProcessAsync(fetchedMessages, _context, _cancelToken);
-            if (!backupBatch.Messages.Any())
-            {
-                _logger.Log.Information("No messages in current batch, skipping...");
-                continue;
-            }
+                if (!batch.RawMessages.Any())
+                {
+                    _logger.Log.Information("Reached the end of the channel, finishing backup...");
+                    break;
+                }
+                if (!batch.ProcessedMessages.Any())
+                {
+                    _logger.Log.Information("No messages in current batch, skipping...");
+                    continue;
+                }
 
-            await SaveBatch(backupBatch);
-            await DownloadMessageAttachments(backupBatch.ToDownload);
-            await FinishBatch(timer, backupBatch);
-            lastMessageId = fetchedMessages.Last().Id;
-            attemptNumber = 0;
+                await SaveCurrentBatch(batch);
+                await FinishBatch(timer, batch);
+
+                lastMessageId = batch.RawMessages.Last().Id;
+                attemptNumber = 0;
             }
-            catch (OperationCanceledException) 
+            catch (OperationCanceledException)
             {
                 throw;
             }
@@ -168,39 +166,30 @@ public class BackupService : IAsyncDisposable
         }
     }
 
-    private async Task<IEnumerable<IMessage>> FetchMessages(ulong lastMessageId)
+    private async Task SaveCurrentBatch(BackupBatcher batch)
     {
-        var channelContext = _context.InteractionContext.Channel;
-        _logger.Log.Information("Fetching messages...");
+        //TODO: Implement a transaction here
+        var messageTimer = _profiler.Timers[nameof(SaveCurrentBatch)].StartTimer();
 
-        return lastMessageId switch
-        {
-            0 => await _messageFetcher.FetchAsync(channelContext),
-            _ => await _messageFetcher.FetchAsync(channelContext, lastMessageId)
-        };
-    }
+        _dbContext.Messages.AddRange(batch.ProcessedMessages);
 
-    private async Task SaveBatch(BackupBatch2 batch)
-    {
-        var timer = _profiler.Timers[nameof(SaveBatch)].StartTimer();
-
-        _dbContext.Messages.AddRange(batch.Messages);
-        if (batch.Users.Any())
-            _dbContext.Users.AddRange(batch.Users);
+        if (batch.NewUsers.Any())
+            _dbContext.Users.AddRange(batch.NewUsers);
 
         await _dbContext.SaveChangesAsync();
+        _logger.BatchSaved(messageTimer.Stop());
 
-        _logger.BatchSaved(timer.Stop());
+        if (batch.Attachments.Any())
+        {
+            var downloadTimer = _profiler.Timers[nameof(DownloadMessageAttachments)].StartTimer();
+            await DownloadMessageAttachments(batch.Attachments);
+            _logger.FilesDownloaded(downloadTimer.Stop());
+        }
     }
 
     //TODO: Execute in parallel the db save and download
     private async Task DownloadMessageAttachments(IEnumerable<Downloadable> toDownload)
     {
-        if (!toDownload.Any())
-            return;
-
-        var timer = _profiler.Timers[nameof(DownloadMessageAttachments)].StartTimer();
-
         var fileCount = 0;
         foreach (var downloadable in toDownload)
             fileCount += downloadable.Attachments.Count();
@@ -208,16 +197,14 @@ public class BackupService : IAsyncDisposable
         _logger.Log.Information("Downloading {fileCount} attachments", fileCount);
         _context.FileCount += fileCount;
         await _attachmentDownloader.DownloadRangeAsync(toDownload, _cancelToken);
-
-        _logger.FilesDownloaded(timer.Stop());
     }
 
-    private async Task FinishBatch(Timer timer, BackupBatch2 backupBatch)
+    private async Task FinishBatch(Timer timer, BackupBatcher batch)
     {
         timer.Stop();
-        _context.MessageCount += backupBatch.Messages.Count();
+        _context.MessageCount += batch.ProcessedMessages.Count();
         _logger.BatchFinished(timer, ++_context.BatchNumber);
-        await _responseHandler.SendBatchFinishedAsync(_context, backupBatch, timer.Mean);
+        await _responseHandler.SendBatchFinishedAsync(_context, batch, timer.Mean);
     }
 
     private async Task CompressFiles()
