@@ -117,65 +117,51 @@ public class BackupService : IAsyncDisposable
         var channelContext = _context.InteractionContext.Channel;
 
         ulong lastMessageId = 0;
-        var attemptNumber = 0;
 
         while (true)
         {
-            try
+            _cancelToken.ThrowIfCancellationRequested();
+            timer.StartTimer();
+
+            if (_context.IsStopped)
             {
-                _cancelToken.ThrowIfCancellationRequested();
-                timer.StartTimer();
-
-                if (_context.IsStopped)
-                {
-                    _logger.Log.Information("Reached last saved message, finishing backup...");
-                    break;
-                }
-
-                var batch = _batcherFactory.Create(_context, channelContext);
-                await batch.StartBatchingAsync(lastMessageId, _cancelToken);
-
-                if (!batch.RawMessages.Any())
-                {
-                    _logger.Log.Information("Reached the end of the channel, finishing backup...");
-                    break;
-                }
-                if (!batch.ProcessedMessages.Any())
-                {
-                    _logger.Log.Information("No messages in current batch, skipping...");
-                    continue;
-                }
-
-                await SaveCurrentBatch(batch);
-                await FinishBatch(timer, batch);
-
-                lastMessageId = batch.RawMessages.Last().Id;
-                attemptNumber = 0;
+                _logger.Log.Information("Reached last saved message, finishing backup...");
+                break;
             }
-            catch (OperationCanceledException)
+
+            var batch = _batcherFactory.Create(_context, channelContext);
+            await batch.StartBatchingAsync(lastMessageId, _cancelToken);
+
+            if (!batch.RawMessages.Any())
             {
-                throw;
+                _logger.Log.Information("Reached the end of the channel, finishing backup...");
+                break;
             }
-            catch (Exception)
-            {
-                if (++attemptNumber > 3)
-                    throw;
 
-                _logger.Log.Error("Batch {batchNumber} failed, attempting again...", _context.BatchNumber);
+            if (!batch.ProcessedMessages.Any())
+            {
+                _logger.Log.Information("No messages in current batch, skipping...");
+                continue;
             }
+
+            await SaveCurrentBatch(batch);
+            await FinishBatch(timer, batch);
+
+            lastMessageId = batch.RawMessages.Last().Id;
         }
     }
 
-    private async Task SaveCurrentBatch(BackupBatcher batch)
+    //TODO: Implement a transaction here
+    //TODO: Execute in parallel the db save and download
+    private async Task SaveCurrentBatch(BackupBatch batch)
     {
-        //TODO: Implement a transaction here
-        //TODO: Execute in parallel the db save and download
         var messageTimer = _profiler.Timers[nameof(SaveCurrentBatch)].StartTimer();
 
         _dbContext.Messages.AddRange(batch.ProcessedMessages);
-
         if (batch.NewUsers.Any())
+        {
             _dbContext.Users.AddRange(batch.NewUsers);
+        }
 
         await _dbContext.SaveChangesAsync();
         _logger.BatchSaved(messageTimer.Stop());
@@ -199,7 +185,7 @@ public class BackupService : IAsyncDisposable
         await _attachmentDownloader.DownloadRangeAsync(toDownload, _cancelToken);
     }
 
-    private async Task FinishBatch(Timer timer, BackupBatcher batch)
+    private async Task FinishBatch(Timer timer, BackupBatch batch)
     {
         timer.Stop();
         _context.MessageCount += batch.ProcessedMessages.Count();
@@ -207,14 +193,14 @@ public class BackupService : IAsyncDisposable
         await _responseHandler.SendBatchFinishedAsync(_context, batch, timer.Mean);
     }
 
+    //TODO: Implement a way of tracking the progress of the compression
     private async Task CompressFiles()
     {
-        var timer = _profiler.Timers[nameof(CompressFiles)];
-        //TODO: Implement a way of tracking the progress of the compression
         if (_context.FileCount == 0)
             return;
-
-        timer.StartTimer();
+        
+        var timer = _profiler.Timers[nameof(CompressFiles)].StartTimer();
+        
         _logger.Log.Information("Compressing files");
         await _responseHandler.SendCompressingFilesAsync(_context);
         var compressedSize = await _dirCompressor.CompressAsync(

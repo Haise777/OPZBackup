@@ -16,9 +16,9 @@ public class BackupBatcherFactory
         _messageProcessor = messageProcessor;
     }
 
-    public BackupBatcher Create(BackupContext backupContext, ISocketMessageChannel socketMessageChannel)
+    public BackupBatch Create(BackupContext backupContext, ISocketMessageChannel socketMessageChannel)
     {
-        return new BackupBatcher(_messageFetcher, _messageProcessor, backupContext, socketMessageChannel);
+        return new BackupBatch(_messageFetcher, _messageProcessor, backupContext, socketMessageChannel);
     }
 
 }

@@ -31,15 +31,15 @@ public class ServiceResponseHandler
         _interaction = await _interactionContext.Interaction.FollowupAsync(embed: embedResponse);
     }
 
-    public async Task SendBatchFinishedAsync(BackupContext context, BackupBatch2 batch, TimeSpan averageBatchTime)
+    public async Task SendBatchFinishedAsync(BackupContext context, BackupBatch batch, TimeSpan averageBatchTime)
     {
         if (_interaction == null) throw new InvalidOperationException("The interaction has not been created yet.");
 
         if (_responseBuilder.StartMessage == null)
             _responseBuilder.SetStartMessage(
-                await _interactionContext.Channel.GetMessageAsync(batch.Messages.First().Id));
+                await _interactionContext.Channel.GetMessageAsync(batch.ProcessedMessages.First().Id));
 
-        var currentMessage = await _interactionContext.Channel.GetMessageAsync(batch.Messages.Last().Id);
+        var currentMessage = await _interactionContext.Channel.GetMessageAsync(batch.ProcessedMessages.Last().Id);
 
         var embedResponse = _responseBuilder
             .SetCurrentMessage(currentMessage)

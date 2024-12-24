@@ -46,7 +46,7 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
         if (CommandLock.CurrentCount < 1)
         {
             // _logger.LogInformation("There is already a backup in progress.");
-            _logger.Information("Fazer");
+            _logger.Information("Already in progress");
             await _responseHandler.SendAlreadyInProgressAsync(Context);
             return;
         }
@@ -62,8 +62,7 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
         }
         catch (Exception ex)
         {
-            _logger.Error(ex, "Fazer");
-            //TODO: Handle Unhandled Exceptions coming from Service layer
+            _logger.Error(ex, "Failed");
             //TODO: Notify the client of internal error.
             throw;
         }

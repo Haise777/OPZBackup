@@ -1,5 +1,6 @@
 using Discord;
 using Discord.WebSocket;
+using OPZBackup.Data.Dto;
 using OPZBackup.Data.Models;
 using OPZBackup.FileManagement;
 using OPZBackup.Services.Utils;
@@ -7,7 +8,7 @@ using OPZBackup.Services.Utils;
 namespace OPZBackup.Services.Backup;
 
 
-public class BackupBatcher
+public class BackupBatch
 {
     private readonly MessageFetcher _messageFetcher;
     private readonly MessageProcessor _messageProcessor;
@@ -20,7 +21,7 @@ public class BackupBatcher
     public IEnumerable<User> NewUsers = [];
 
 
-    public BackupBatcher(MessageFetcher messageFetcher, MessageProcessor messageProcessor, BackupContext backupContext, ISocketMessageChannel socketMessageChannel)
+    public BackupBatch(MessageFetcher messageFetcher, MessageProcessor messageProcessor, BackupContext backupContext, ISocketMessageChannel socketMessageChannel)
     {
         _messageFetcher = messageFetcher;
         _messageProcessor = messageProcessor;
@@ -52,7 +53,7 @@ public class BackupBatcher
         };
     }
 
-    private async Task<BackupBatch2> ProcessAsync(CancellationToken cancellationToken)
+    private async Task<ProcessedBatch> ProcessAsync(CancellationToken cancellationToken)
     {
         return await _messageProcessor.ProcessAsync(RawMessages, _backupContext, cancellationToken);
     }
