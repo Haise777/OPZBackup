@@ -17,6 +17,7 @@ using OPZBackup.Services.Utils;
 using Serilog;
 using Serilog.Events;
 using ILogger = Serilog.ILogger;
+using Timer = OPZBackup.Services.Utils.Timer;
 
 namespace OPZBackup;
 
@@ -110,9 +111,10 @@ public abstract class StartupBase
                 .AddScoped<ModuleResponseHandler>()
                 .AddScoped<FileCleaner>()
                 .AddScoped<StatisticTracker>()
-                .AddScoped<PerformanceProfiler>()
                 .AddScoped<BatchManagerFactory>()
                 .AddScoped<BackupCompressor>()
+                .AddTransient<PerformanceProfiler>()
+                .AddTransient<Timer>()
                 .AddTransient<BackupContextFactory>()
                 .AddTransient<ResponseBuilder>()
                 .RemoveAll<IHttpMessageHandlerBuilderFilter>();

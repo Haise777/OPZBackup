@@ -19,7 +19,7 @@ public class BackupContextFactory
         _statisticTracker = statisticTracker;
     }
 
-    public BackupContext RegisterNewBackup(SocketInteractionContext interactionContext,
+    public BackupContext Create(SocketInteractionContext interactionContext,
         bool isUntilLastBackup, BackupRegistry backupRegistry)
     {
         var backupContext = new BackupContext(isUntilLastBackup, _fileCleaner, _statisticTracker, backupRegistry);

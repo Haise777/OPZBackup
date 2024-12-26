@@ -17,18 +17,12 @@ namespace OPZBackup.Services.Backup;
 
 public class BackupProcess : IAsyncDisposable
 {
-    private const string TimerSaveMessageId = "save-messages";
-    private const string TimerDownloadId = "download";
-
-    private readonly AttachmentDownloader _attachmentDownloader;
     private readonly CancellationToken _cancelToken;
     private readonly CancellationTokenSource _cancelTokenSource;
     private readonly BackupContextFactory _contextFactory;
     private readonly MyDbContext _dbContext;
-    private readonly DirCompressor _dirCompressor;
-    private readonly FileCleaner _fileCleaner;
     private readonly BackupLogger _logger;
-    private readonly PerformanceProfiler _profiler;
+    private readonly Timer _performanceTimer;
     private readonly BatchManagerFactory _batchManagerFactory;
     private readonly Mapper _mapper;
     private readonly BackupCompressor _backupCompressor;
@@ -37,29 +31,26 @@ public class BackupProcess : IAsyncDisposable
     private ServiceResponseHandler _responseHandler = null!;
 
     #region constructor
+    
     public BackupProcess(
         BackupContextFactory contextFactory,
         MyDbContext dbContext,
-        AttachmentDownloader attachmentDownloader,
-        DirCompressor dirCompressor, FileCleaner fileCleaner,
-        BackupLogger logger, PerformanceProfiler profiler,
+        BackupLogger logger,
         BatchManagerFactory batchManagerFactory,
         Mapper mapper,
-        BackupCompressor backupCompressor)
+        BackupCompressor backupCompressor, Timer performanceTimer)
     {
         _contextFactory = contextFactory;
         _dbContext = dbContext;
-        _attachmentDownloader = attachmentDownloader;
-        _dirCompressor = dirCompressor;
-        _fileCleaner = fileCleaner;
         _logger = logger;
-        _profiler = profiler;
         _cancelTokenSource = new CancellationTokenSource();
         _cancelToken = _cancelTokenSource.Token;
         _batchManagerFactory = batchManagerFactory;
         _mapper = mapper;
         _backupCompressor = backupCompressor;
+        _performanceTimer = performanceTimer;
     }
+
     #endregion
 
     public async ValueTask DisposeAsync()
@@ -77,17 +68,7 @@ public class BackupProcess : IAsyncDisposable
     public async Task StartBackupAsync(SocketInteractionContext interactionContext,
         ServiceResponseHandler responseHandler, bool isUntilLast)
     {
-        _responseHandler = responseHandler;
-        var author = _mapper.Map(interactionContext.User);
-        var channel = _mapper.Map(interactionContext.Channel);
-        var backupRegistry = await RegisterNewBackup(channel, author);
-        _context = _contextFactory.RegisterNewBackup(interactionContext, isUntilLast, backupRegistry);
-
-        _profiler.Subscribe(nameof(CompressFiles));
-        var saveTimer = _profiler.Subscribe(TimerSaveMessageId);
-        var downloadTimer = _profiler.Subscribe(TimerDownloadId);
-
-        _batchManager = _batchManagerFactory.Create(_context, interactionContext.Channel, saveTimer, downloadTimer);
+        await InitialSetup(interactionContext, responseHandler, isUntilLast);
 
         try
         {
@@ -122,24 +103,34 @@ public class BackupProcess : IAsyncDisposable
         _logger.Log.Information("Backup {id} finished in {time}\n" +
                                 " | Occupying {compressedTotal} in saved attachments",
             _context.BackupRegistry.Id,
-            _profiler.TotalElapsed(true, TimerSaveMessageId, TimerDownloadId).Formatted(),
+            _performanceTimer.Total.Formatted(),
             ByteSizeConversor.ToFormattedString(_context.StatisticTracker.CompressedFilesSize)
         );
 
         await _responseHandler.SendCompletedAsync(_context, _context.BackupRegistry.Channel);
     }
 
+    private async Task InitialSetup(SocketInteractionContext interactionContext,
+        ServiceResponseHandler responseHandler, bool isUntilLast)
+    {
+        var author = _mapper.Map(interactionContext.User);
+        var channel = _mapper.Map(interactionContext.Channel);
+        var backupRegistry = await RegisterNewBackup(channel, author);
+        
+        _responseHandler = responseHandler;
+        _context = _contextFactory.Create(interactionContext, isUntilLast, backupRegistry);
+        _batchManager = _batchManagerFactory.Create(_context, interactionContext.Channel);
+    }
+
     private async Task BackupMessages()
     {
         _logger.Log.Information("Starting backup");
-        var timer = _profiler.Subscribe("batch");
-
         ulong lastMessageId = 0;
 
         while (true)
         {
             _cancelToken.ThrowIfCancellationRequested();
-            timer.StartTimer();
+            _performanceTimer.StartTimer();
 
             if (_context.IsStopped)
             {
@@ -162,32 +153,25 @@ public class BackupProcess : IAsyncDisposable
             }
 
             await _batchManager.SaveBatchAsync(batch, _cancelToken);
-            timer.Stop();
+            _performanceTimer.Stop();
 
-            await FinishBatch(timer, batch);
+            await FinishBatch(batch);
             lastMessageId = batch.RawMessages.Last().Id;
         }
     }
 
-    private async Task FinishBatch(Timer timer, BackupBatch batch)
+    private async Task FinishBatch(BackupBatch batch)
     {
         _context.MessageCount += batch.ProcessedMessages.Count();
-        _logger.BatchFinished(timer, batch.Number);
-        await _responseHandler.SendBatchFinishedAsync(_context, batch, timer.Mean);
+        _logger.BatchFinished(_performanceTimer, batch.Number);
+        await _responseHandler.SendBatchFinishedAsync(_context, batch, _performanceTimer.Mean);
     }
 
     //TODO: Implement a way of tracking the progress of the compression
-    private async Task CompressFiles() 
+    private async Task CompressFiles()
     {
-        _logger.Log.Information("Compressing files");
         await _responseHandler.SendCompressingFilesAsync(_context);
-
-        var timer = _profiler.Timers[nameof(CompressFiles)].StartTimer();
-
         await _backupCompressor.CompressAsync(_context, _cancelToken);
-        
-        timer.Stop();
-        _logger.Log.Information("Files compressed in {seconds}", timer.Elapsed.Formatted());
     }
 
     private async Task UpdateFullStatisticData()
