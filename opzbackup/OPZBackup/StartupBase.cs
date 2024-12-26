@@ -100,7 +100,7 @@ public abstract class StartupBase
                 .AddSingleton<Mapper>()
                 .AddScoped<InteractionHandler>()
                 .AddScoped<BackupLogger>()
-                .AddScoped<BackupService>()
+                .AddScoped<BackupProcess>()
                 .AddScoped<MessageProcessor>()
                 .AddScoped<MessageFetcher>()
                 .AddScoped<BackupModule>()
@@ -111,6 +111,8 @@ public abstract class StartupBase
                 .AddScoped<FileCleaner>()
                 .AddScoped<StatisticTracker>()
                 .AddScoped<PerformanceProfiler>()
+                .AddScoped<BatchManagerFactory>()
+                .AddScoped<BackupCompressor>()
                 .AddTransient<BackupContextFactory>()
                 .AddTransient<ResponseBuilder>()
                 .RemoveAll<IHttpMessageHandlerBuilderFilter>();

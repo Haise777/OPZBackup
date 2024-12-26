@@ -2,7 +2,7 @@
 using Discord.WebSocket;
 using OPZBackup.Logger;
 using OPZBackup.ResponseHandlers.Backup;
-using BackupService = OPZBackup.Services.Backup.BackupService;
+using BackupProcess = OPZBackup.Services.Backup.BackupProcess;
 using ILogger = Serilog.ILogger;
 
 namespace OPZBackup.Modules;
@@ -10,16 +10,16 @@ namespace OPZBackup.Modules;
 [Group("backup", "utilizar a função de backup")]
 public class BackupModule : InteractionModuleBase<SocketInteractionContext>
 {
-    private static BackupService? _currentBackup;
+    private static BackupProcess? _currentBackup;
     private static readonly SemaphoreSlim CommandLock = new(1, 1);
-    private readonly BackupService _backupService;
+    private readonly BackupProcess _backupService;
     private readonly ILogger _logger;
 
     private readonly ModuleResponseHandler _responseHandler;
     private readonly ServiceResponseHandlerFactory _responseHandlerFactory;
 
     public BackupModule(
-        BackupService backupService,
+        BackupProcess backupService,
         ILogger logger,
         ModuleResponseHandler responseHandler,
         ServiceResponseHandlerFactory responseHandlerFactory)

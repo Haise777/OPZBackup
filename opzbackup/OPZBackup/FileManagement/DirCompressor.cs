@@ -4,7 +4,7 @@ namespace OPZBackup.FileManagement;
 
 public class DirCompressor
 {
-    public async Task<long> CompressAsync(string channelDirPath, string targetDirPath,
+    public virtual async Task<long> CompressAsync(string channelDirPath, string targetDirPath,
         CancellationToken cancellationToken)
     {
         var fileName = Path.GetFileName(channelDirPath.TrimEnd(Path.DirectorySeparatorChar));
