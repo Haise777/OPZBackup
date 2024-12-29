@@ -15,7 +15,7 @@ public class BackupLogger : IAsyncDisposable
         var basePath = $"{LoggerConfig.LogFilePath}";
         var statisticPath = $"{basePath}/statistics/statistics{date}.txt";
         _filePath = $"{basePath}/backups/backup_{date}.txt";
-        
+
 
         var newLogger = new LoggerConfiguration()
             .Enrich.FromLogContext()
@@ -41,6 +41,18 @@ public class BackupLogger : IAsyncDisposable
     public Serilog.Core.Logger Log { get; set; }
     public Serilog.Core.Logger StatisticLogger { get; set; }
 
+    public async ValueTask DisposeAsync()
+    {
+        await Log.DisposeAsync();
+        var fileInfo = new FileInfo(_filePath);
+        if (fileInfo.Length == 0)
+        {
+            //TODO: File.Delete(_filePath);
+        }
+
+        GC.SuppressFinalize(this);
+    }
+
     public void BatchFinished(Timer timer, int batchNumber)
     {
         Log.Information("Batch '{n}' finished in {elapsed} | {mean}",
@@ -63,18 +75,6 @@ public class BackupLogger : IAsyncDisposable
             timer.Mean.Formatted());
         StatisticLogger.Information("Completing batch took: {seconds} / avg: {mean}",
             timer.Elapsed.Formatted(), timer.Mean.Formatted());
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await Log.DisposeAsync();
-        var fileInfo = new FileInfo(_filePath);
-        if (fileInfo.Length == 0)
-        {
-            //TODO: File.Delete(_filePath);
-        }
-
-        GC.SuppressFinalize(this);
     }
 
     public void MessagesSaved(Timer timer)

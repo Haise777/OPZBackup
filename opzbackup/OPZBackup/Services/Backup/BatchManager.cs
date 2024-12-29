@@ -16,23 +16,15 @@ public class BatchManager
     private const string SaveTimerId = "save-timer";
     private const string DownloadTimerId = "download-timer";
     private const string SaveMessagesId = "messages-timer";
+    private readonly AttachmentDownloader _attachmentDownloader;
+    private readonly BackupContext _backupContext;
+    private readonly MyDbContext _dbContext;
+    private readonly BackupLogger _logger;
 
     private readonly MessageFetcher _messageFetcher;
     private readonly MessageProcessor _messageProcessor;
-    private readonly BackupContext _backupContext;
-    private readonly ISocketMessageChannel _socketMessageChannel;
-    private readonly MyDbContext _dbContext;
-    private readonly BackupLogger _logger;
-    private readonly AttachmentDownloader _attachmentDownloader;
     private readonly PerformanceProfiler _performanceProfiler;
-
-    public int BatchNumber { get; set; }
-    public Timer FetchTimer => _performanceProfiler.Timers[FetchTimerId];
-    public Timer ProcessTimer => _performanceProfiler.Timers[ProcessTimerId];
-    public Timer SaveTimer => _performanceProfiler.Timers[SaveTimerId];
-    public Timer DownloadTimer => _performanceProfiler.Timers[DownloadTimerId];
-    public Timer SaveMessagesTimer => _performanceProfiler.Timers[SaveMessagesId];
-    public TimeSpan TotalElapsed => _performanceProfiler.TotalElapsed();
+    private readonly ISocketMessageChannel _socketMessageChannel;
 
     public BatchManager(MessageFetcher messageFetcher, MessageProcessor messageProcessor, MyDbContext dbContext,
         BackupLogger logger, AttachmentDownloader attachmentDownloader, ISocketMessageChannel socketChannel,
@@ -53,6 +45,14 @@ public class BatchManager
         _performanceProfiler.Subscribe(DownloadTimerId);
         _performanceProfiler.Subscribe(SaveMessagesId);
     }
+
+    public int BatchNumber { get; set; }
+    public Timer FetchTimer => _performanceProfiler.Timers[FetchTimerId];
+    public Timer ProcessTimer => _performanceProfiler.Timers[ProcessTimerId];
+    public Timer SaveTimer => _performanceProfiler.Timers[SaveTimerId];
+    public Timer DownloadTimer => _performanceProfiler.Timers[DownloadTimerId];
+    public Timer SaveMessagesTimer => _performanceProfiler.Timers[SaveMessagesId];
+    public TimeSpan TotalElapsed => _performanceProfiler.TotalElapsed();
 
 
     //TODO: Implement retries in each main step of this process
@@ -84,14 +84,14 @@ public class BatchManager
 
         if (batch.Downloadables.Any())
             await DownloadMessageAttachments(batch.Downloadables, cancelToken);
-        
+
         _logger.BatchSaved(SaveTimer.Stop());
     }
 
     private async Task SaveMessages(BackupBatch batch)
     {
         SaveMessagesTimer.StartTimer();
-        
+
         _dbContext.Messages.AddRange(batch.ProcessedMessages);
 
         if (batch.NewUsers.Any())

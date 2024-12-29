@@ -1,5 +1,4 @@
 ﻿using Discord.Interactions;
-using OPZBackup.Data;
 using OPZBackup.Data.Models;
 using OPZBackup.FileManagement;
 using OPZBackup.Services.Utils;

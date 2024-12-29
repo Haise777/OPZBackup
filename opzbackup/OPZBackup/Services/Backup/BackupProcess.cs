@@ -1,11 +1,8 @@
-﻿using Discord;
-using Discord.Interactions;
-using Discord.WebSocket;
+﻿using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
 using OPZBackup.Data;
 using OPZBackup.Data.Models;
 using OPZBackup.Extensions;
-using OPZBackup.FileManagement;
 using OPZBackup.Logger;
 using OPZBackup.ResponseHandlers.Backup;
 using OPZBackup.Services.Utils;
@@ -17,21 +14,21 @@ namespace OPZBackup.Services.Backup;
 
 public class BackupProcess : IAsyncDisposable
 {
+    private readonly BackupCompressor _backupCompressor;
+    private readonly BatchManagerFactory _batchManagerFactory;
     private readonly CancellationToken _cancelToken;
     private readonly CancellationTokenSource _cancelTokenSource;
     private readonly BackupContextFactory _contextFactory;
     private readonly MyDbContext _dbContext;
     private readonly BackupLogger _logger;
-    private readonly Timer _performanceTimer;
-    private readonly BatchManagerFactory _batchManagerFactory;
     private readonly Mapper _mapper;
-    private readonly BackupCompressor _backupCompressor;
+    private readonly Timer _performanceTimer;
     private BatchManager _batchManager = null!;
     private BackupContext _context = null!;
     private ServiceResponseHandler _responseHandler = null!;
 
     #region constructor
-    
+
     public BackupProcess(
         BackupContextFactory contextFactory,
         MyDbContext dbContext,
@@ -60,10 +57,9 @@ public class BackupProcess : IAsyncDisposable
         _cancelTokenSource.Dispose();
     }
 
-    public async Task CancelAsync()
-    {
+    public async Task CancelAsync() =>
         await _cancelTokenSource.CancelAsync();
-    }
+
 
     public async Task StartBackupAsync(SocketInteractionContext interactionContext,
         ServiceResponseHandler responseHandler, bool isUntilLast)
@@ -104,7 +100,7 @@ public class BackupProcess : IAsyncDisposable
                                 " | Occupying {compressedTotal} in saved attachments",
             _context.BackupRegistry.Id,
             _performanceTimer.Total.Formatted(),
-            ByteSizeConversor.ToFormattedString(_context.StatisticTracker.CompressedFilesSize)
+            _context.StatisticTracker.CompressedFilesSize.ToFormattedString()
         );
 
         await _responseHandler.SendCompletedAsync(_context, _context.BackupRegistry.Channel);
@@ -116,7 +112,7 @@ public class BackupProcess : IAsyncDisposable
         var author = _mapper.Map(interactionContext.User);
         var channel = _mapper.Map(interactionContext.Channel);
         var backupRegistry = await RegisterNewBackup(channel, author);
-        
+
         _responseHandler = responseHandler;
         _context = _contextFactory.Create(interactionContext, isUntilLast, backupRegistry);
         _batchManager = _batchManagerFactory.Create(_context, interactionContext.Channel);

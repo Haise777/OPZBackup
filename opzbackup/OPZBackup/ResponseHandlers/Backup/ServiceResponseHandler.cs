@@ -1,7 +1,6 @@
 ﻿using Discord.Interactions;
 using Discord.Rest;
 using OPZBackup.Data.Models;
-using OPZBackup.Services;
 using OPZBackup.Services.Backup;
 
 namespace OPZBackup.ResponseHandlers.Backup;

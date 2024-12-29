@@ -26,7 +26,7 @@ public class ResponseBuilder
     public int ChannelNumberOfFiles { get; private set; }
 
     public int ChannelMessages { get; private set; }
-    
+
     public ulong ChannelCompressedSize { get; private set; }
 
     private string ElapsedTimeString => $"{ElapsedTime:hh\\:mm\\:ss}";
@@ -48,7 +48,7 @@ public class ResponseBuilder
         ChannelMessages = channelMessages;
         return this;
     }
-    
+
     public ResponseBuilder SetChannelNumberOfFiles(int channelNumberOfFiles)
     {
         ChannelNumberOfFiles = channelNumberOfFiles;
@@ -138,7 +138,7 @@ public class ResponseBuilder
         var progressString =
             $"Decorrido: {ElapsedTimeString}\n" +
             $"N de mensagens: {NumberOfMessages}\n" +
-            $"N de arquivos: {NumberOfFiles} [{ByteSizeConversor.ToFormattedString(TotalFileSize)}]\n" +
+            $"N de arquivos: {NumberOfFiles} [{TotalFileSize.ToFormattedString()}]\n" +
             $"Ciclos realizados: {BatchNumber} [{AverageBatchTime.Formatted()}]\n";
 
         if (withActual)
@@ -160,8 +160,8 @@ public class ResponseBuilder
             $"Decorrido: {ElapsedTimeString}\n" +
             $"N de mensagens: {ChannelMessages} [+{NumberOfMessages}]\n" +
             $"N de arquivos: {ChannelNumberOfFiles} [+{NumberOfFiles}]\n" +
-            $"T. Armazenados: {ByteSizeConversor.ToFormattedString(ChannelByteSize)} [+{ByteSizeConversor.ToFormattedString(TotalFileSize)}]\n" +
-            $"T. Comprimidos: {ByteSizeConversor.ToFormattedString(ChannelCompressedSize)}\n" +
+            $"T. Armazenados: {ChannelByteSize.ToFormattedString()} [+{TotalFileSize.ToFormattedString()}]\n" +
+            $"T. Comprimidos: {ChannelCompressedSize.ToFormattedString()}\n" +
             $"Ciclos realizados: {BatchNumber}\n";
 
         return progressString;

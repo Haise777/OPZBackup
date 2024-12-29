@@ -26,5 +26,4 @@ public class Timer
 
         return this;
     }
-    
 }

@@ -1,5 +1,4 @@
-﻿using System.Collections.Frozen;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 
 namespace OPZBackup.Services.Utils;
 
@@ -25,10 +24,10 @@ public class StatisticTracker
     public void IncrementByteSize(ulong userId, ulong byteSize)
     {
         AddEntryIfNotExists(userId);
-        
+
         _usersStatistics[userId].ByteSize += byteSize;
     }
-    
+
     public ImmutableDictionary<ulong, Statistics> GetStatistics()
     {
         return _usersStatistics.ToImmutableDictionary();
@@ -47,7 +46,7 @@ public class StatisticTracker
 
         return totalStatistics;
     }
-    
+
     private void AddEntryIfNotExists(ulong userId)
     {
         if (!_usersStatistics.ContainsKey(userId))

@@ -16,7 +16,7 @@ public class DirCompressor
         await Task.Run(() =>
         {
             using var fileStream = new FileStream(zipPath, fileMode);
-            using var zip = new ZipArchive(fileStream, ZipArchiveMode.Update, leaveOpen: false);
+            using var zip = new ZipArchive(fileStream, ZipArchiveMode.Update, false);
 
 
             foreach (var filePath in Directory.GetFiles(channelDirPath))

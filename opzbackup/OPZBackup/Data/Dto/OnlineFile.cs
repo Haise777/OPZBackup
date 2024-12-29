@@ -5,9 +5,9 @@ namespace OPZBackup.Data.Dto;
 public record OnlineFile
 {
     private static readonly Regex MatchFileExtension = new(@"\.([^\.]+?)(?=\?ex)");
-    public readonly ulong SenderId; 
     public readonly string FileExtension;
     public readonly string FileName;
+    public readonly ulong SenderId;
     public readonly string Url;
 
     public OnlineFile(string url, string fileName, ulong senderId)

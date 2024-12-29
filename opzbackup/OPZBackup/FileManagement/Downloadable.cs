@@ -44,7 +44,7 @@ public class Downloadable
             attachmentList.Add(new OnlineFile(
                 attachment1.Url,
                 $"file{count++}",
-               message.Author.Id 
+                message.Author.Id
             ));
 
         return attachmentList;
