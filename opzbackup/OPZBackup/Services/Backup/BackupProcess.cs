@@ -174,6 +174,8 @@ public class BackupProcess : IAsyncDisposable
         await _backupCompressor.CompressAsync(_context, _cancelToken);
     }
 
+
+    /// Update user statistics on the persistence layer
     private async Task UpdateFullStatisticData()
     {
         _logger.Log.Information("Updating statistic data.");

@@ -1,4 +1,5 @@
 ﻿using OPZBackup.Data.Dto;
+using OPZBackup.Services.Backup;
 using OPZBackup.Services.Utils;
 using Serilog;
 
@@ -13,22 +14,20 @@ public class AttachmentDownloader
 
     private readonly ILogger _logger;
 
-    private readonly StatisticTracker _statisticTracker;
-
     public AttachmentDownloader(HttpClient client, ILogger logger, StatisticTracker statisticTracker)
     {
         _client = client;
         _logger = logger;
-        _statisticTracker = statisticTracker;
     }
 
-    public async Task DownloadRangeAsync(IEnumerable<Downloadable> toDownload, CancellationToken cancellationToken)
+    public async Task DownloadRangeAsync(IEnumerable<Downloadable> toDownload, BackupContext context,
+        CancellationToken cancellationToken)
     {
         var concurrentDownloads = new List<Task>();
         await CreateChannelDirIfNotExists(toDownload.First().ChannelId);
 
         foreach (var downloadable in toDownload)
-            concurrentDownloads.Add(DownloadAndWriteFile(downloadable, cancellationToken));
+            concurrentDownloads.Add(DownloadAndWriteFile(downloadable, context.StatisticTracker, cancellationToken));
 
         try
         {
@@ -46,7 +45,8 @@ public class AttachmentDownloader
         }
     }
 
-    private async Task DownloadAndWriteFile(Downloadable downloadable, CancellationToken cancellationToken)
+    private async Task DownloadAndWriteFile(Downloadable downloadable, StatisticTracker statisticTracker,
+        CancellationToken cancellationToken)
     {
         var files = await DownloadAttachments(downloadable, cancellationToken);
         var channelPath = $"{App.TempPath}/{downloadable.ChannelId}/";
@@ -56,7 +56,7 @@ public class AttachmentDownloader
         if (files.Count() == 1)
         {
             var file = files.First();
-            _statisticTracker.IncrementByteSize(file.SenderId, (ulong)file.FileBytes.Length);            
+            statisticTracker.IncrementByteSize(file.SenderId, (ulong)file.FileBytes.Length);
             await File.WriteAllBytesAsync(channelPath + file.FullFileName, file.FileBytes);
 
             return;
@@ -64,7 +64,7 @@ public class AttachmentDownloader
 
         foreach (var file in files)
         {
-            _statisticTracker.IncrementByteSize(file.SenderId, (ulong)file.FileBytes.Length);            
+            statisticTracker.IncrementByteSize(file.SenderId, (ulong)file.FileBytes.Length);
             await File.WriteAllBytesAsync(channelPath + file.FullFileName, file.FileBytes);
         }
     }

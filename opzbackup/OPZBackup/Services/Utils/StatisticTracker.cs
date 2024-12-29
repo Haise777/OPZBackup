@@ -1,44 +1,56 @@
 ﻿using System.Collections.Frozen;
+using System.Collections.Immutable;
 
 namespace OPZBackup.Services.Utils;
 
 public class StatisticTracker
 {
-    private readonly Statistics _channelStatistics = new();
     private readonly Dictionary<ulong, Statistics> _usersStatistics = new();
     public ulong CompressedFilesSize; //TODO change this later
 
-    public void IncrementMessageCounter(ulong userId)
+    public void IncrementMessageCounter(ulong userId, int messageCount = 1)
     {
-        if (!_usersStatistics.ContainsKey(userId))
-            _usersStatistics.Add(userId, new Statistics());
-        
-        _usersStatistics[userId].MessageCount++;
-        _channelStatistics.MessageCount++;
+        AddEntryIfNotExists(userId);
+
+        _usersStatistics[userId].MessageCount += messageCount;
     }
 
     public void IncrementFileCounter(ulong userId, int fileCount = 1)
     {
-        if (!_usersStatistics.ContainsKey(userId))
-            _usersStatistics.Add(userId, new Statistics());
-        
+        AddEntryIfNotExists(userId);
+
         _usersStatistics[userId].FileCount += fileCount;
-        _channelStatistics.FileCount += fileCount;
     }
 
     public void IncrementByteSize(ulong userId, ulong byteSize)
     {
+        AddEntryIfNotExists(userId);
+        
         _usersStatistics[userId].ByteSize += byteSize;
-        _channelStatistics.ByteSize += byteSize;
     }
-
-    public FrozenDictionary<ulong, Statistics> GetStatistics()
+    
+    public ImmutableDictionary<ulong, Statistics> GetStatistics()
     {
-        return _usersStatistics.ToFrozenDictionary();
+        return _usersStatistics.ToImmutableDictionary();
     }
 
     public Statistics GetTotalStatistics()
     {
-        return _channelStatistics;
+        var totalStatistics = new Statistics();
+
+        foreach (var entry in _usersStatistics.Keys)
+        {
+            totalStatistics.MessageCount += _usersStatistics[entry].MessageCount;
+            totalStatistics.FileCount += _usersStatistics[entry].FileCount;
+            totalStatistics.ByteSize += _usersStatistics[entry].ByteSize;
+        }
+
+        return totalStatistics;
+    }
+    
+    private void AddEntryIfNotExists(ulong userId)
+    {
+        if (!_usersStatistics.ContainsKey(userId))
+            _usersStatistics.Add(userId, new Statistics());
     }
 }

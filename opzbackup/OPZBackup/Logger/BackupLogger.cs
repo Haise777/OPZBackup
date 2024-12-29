@@ -12,10 +12,14 @@ public class BackupLogger : IAsyncDisposable
     public BackupLogger()
     {
         var date = DateTime.Now.ToString("yyyyMMdd_HH-mm-ss");
-        _filePath = $"{LoggerConfig.LogFilePath}/backup/backup_{date}.txt";
+        var basePath = $"{LoggerConfig.LogFilePath}";
+        var statisticPath = $"{basePath}/statistics/statistics{date}.txt";
+        _filePath = $"{basePath}/backups/backup_{date}.txt";
+        
 
         var newLogger = new LoggerConfiguration()
             .Enrich.FromLogContext()
+            .MinimumLevel.Verbose()
             .WriteTo.Async(f => f.File(_filePath,
                 outputTemplate: OutputTemplate.DefaultTemplateSplitted("Backup")))
             .WriteTo.Console(outputTemplate: OutputTemplate.DefaultTemplate("Backup"))
@@ -28,29 +32,37 @@ public class BackupLogger : IAsyncDisposable
             _first = false;
             DisposeAsync().GetAwaiter().GetResult();
         }
+
+        StatisticLogger = new LoggerConfiguration()
+            .WriteTo.Async(f => f.File(statisticPath, outputTemplate: "{Message}{NewLine}"))
+            .CreateLogger();
     }
-    
+
     public Serilog.Core.Logger Log { get; set; }
+    public Serilog.Core.Logger StatisticLogger { get; set; }
 
-    
-
-        
     public void BatchFinished(Timer timer, int batchNumber)
     {
         Log.Information("Batch '{n}' finished in {elapsed} | {mean}",
             batchNumber, timer.Elapsed.Formatted(), timer.Mean.Formatted());
+        StatisticLogger.Information("Batch '{n}' finished in: {seconds} / avg: {mean}",
+            batchNumber, timer.Elapsed.Formatted(), timer.Mean.Formatted());
     }
-    
+
     public void FilesDownloaded(Timer timer)
     {
         Log.Information("Download finished in {seconds} | {mean}", timer.Elapsed.Formatted(),
             timer.Mean.Formatted());
+        StatisticLogger.Information("Downloading attachments took: {seconds} / avg: {mean}",
+            timer.Elapsed.Formatted(), timer.Mean.Formatted());
     }
-    
+
     public void BatchSaved(Timer timer)
     {
         Log.Information("Batch saved in {seconds} | {mean}", timer.Elapsed.Formatted(),
             timer.Mean.Formatted());
+        StatisticLogger.Information("Completing batch took: {seconds} / avg: {mean}",
+            timer.Elapsed.Formatted(), timer.Mean.Formatted());
     }
 
     public async ValueTask DisposeAsync()
@@ -63,5 +75,29 @@ public class BackupLogger : IAsyncDisposable
         }
 
         GC.SuppressFinalize(this);
+    }
+
+    public void MessagesSaved(Timer timer)
+    {
+        Log.Verbose("Messages saved in {seconds} | {mean}", timer.Elapsed.Formatted(),
+            timer.Mean.Formatted());
+        StatisticLogger.Information("Saving messages took: {seconds} / avg: {mean}",
+            timer.Elapsed.Formatted(), timer.Mean.Formatted());
+    }
+
+    public void MessagesProcessed(Timer timer)
+    {
+        Log.Verbose("Processed messages in {seconds} | {mean}", timer.Elapsed.Formatted(),
+            timer.Mean.Formatted());
+        StatisticLogger.Information("Processing messages took: {seconds} / avg: {mean}",
+            timer.Elapsed.Formatted(), timer.Mean.Formatted());
+    }
+
+    public void MessagesFetched(Timer timer)
+    {
+        Log.Verbose("Fetched messages in {seconds} | {mean}", timer.Elapsed.Formatted(),
+            timer.Mean.Formatted());
+        StatisticLogger.Information("Fetching messages took: {seconds} / avg: {mean}",
+            timer.Elapsed.Formatted(), timer.Mean.Formatted());
     }
 }

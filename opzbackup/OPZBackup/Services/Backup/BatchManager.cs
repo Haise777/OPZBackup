@@ -15,6 +15,7 @@ public class BatchManager
     private const string ProcessTimerId = "process-timer";
     private const string SaveTimerId = "save-timer";
     private const string DownloadTimerId = "download-timer";
+    private const string SaveMessagesId = "messages-timer";
 
     private readonly MessageFetcher _messageFetcher;
     private readonly MessageProcessor _messageProcessor;
@@ -30,6 +31,7 @@ public class BatchManager
     public Timer ProcessTimer => _performanceProfiler.Timers[ProcessTimerId];
     public Timer SaveTimer => _performanceProfiler.Timers[SaveTimerId];
     public Timer DownloadTimer => _performanceProfiler.Timers[DownloadTimerId];
+    public Timer SaveMessagesTimer => _performanceProfiler.Timers[SaveMessagesId];
     public TimeSpan TotalElapsed => _performanceProfiler.TotalElapsed();
 
     public BatchManager(MessageFetcher messageFetcher, MessageProcessor messageProcessor, MyDbContext dbContext,
@@ -49,6 +51,7 @@ public class BatchManager
         _performanceProfiler.Subscribe(ProcessTimerId);
         _performanceProfiler.Subscribe(SaveTimerId);
         _performanceProfiler.Subscribe(DownloadTimerId);
+        _performanceProfiler.Subscribe(SaveMessagesId);
     }
 
 
@@ -76,24 +79,27 @@ public class BatchManager
     //TODO: Execute in parallel the db save and download
     public async Task SaveBatchAsync(BackupBatch batch, CancellationToken cancelToken)
     {
+        SaveTimer.StartTimer();
         await SaveMessages(batch);
-        
+
         if (batch.Downloadables.Any())
             await DownloadMessageAttachments(batch.Downloadables, cancelToken);
+        
+        _logger.BatchSaved(SaveTimer.Stop());
     }
 
     private async Task SaveMessages(BackupBatch batch)
     {
-        SaveTimer.StartTimer();
-
+        SaveMessagesTimer.StartTimer();
+        
         _dbContext.Messages.AddRange(batch.ProcessedMessages);
+
         if (batch.NewUsers.Any())
-        {
             _dbContext.Users.AddRange(batch.NewUsers);
-        }
 
         await _dbContext.SaveChangesAsync();
-        _logger.BatchSaved(SaveTimer.Stop());
+
+        _logger.MessagesSaved(SaveMessagesTimer.Stop());
     }
 
     private async Task<IEnumerable<IMessage>> FetchMessagesAsync(ulong startAfterMessageId)
@@ -107,7 +113,7 @@ public class BatchManager
             _ => await _messageFetcher.FetchAsync(_socketMessageChannel, startAfterMessageId)
         };
 
-        FetchTimer.Stop();
+        _logger.MessagesFetched(FetchTimer.Stop());
         return fetchedMessages;
     }
 
@@ -117,7 +123,7 @@ public class BatchManager
         ProcessTimer.StartTimer();
         var processedMessages = await _messageProcessor.ProcessAsync(rawMessages, _backupContext, cancellationToken);
 
-        ProcessTimer.Stop();
+        _logger.MessagesProcessed(ProcessTimer.Stop());
         return processedMessages;
     }
 
@@ -132,7 +138,7 @@ public class BatchManager
         _logger.Log.Information("Downloading {fileCount} attachments", fileCount);
         _backupContext.FileCount += fileCount;
 
-        await _attachmentDownloader.DownloadRangeAsync(toDownload, cancelToken);
+        await _attachmentDownloader.DownloadRangeAsync(toDownload, _backupContext, cancelToken);
         _logger.FilesDownloaded(DownloadTimer.Stop());
     }
 }
