@@ -110,6 +110,7 @@ public abstract class StartupBase
                 .AddScoped<ServiceResponseHandlerFactory>()
                 .AddScoped<ModuleResponseHandler>()
                 .AddScoped<FileCleaner>()
+                .AddScoped<BackupService>()
                 .AddScoped<StatisticTracker>()
                 .AddScoped<BatchManagerFactory>()
                 .AddScoped<BackupCompressor>()

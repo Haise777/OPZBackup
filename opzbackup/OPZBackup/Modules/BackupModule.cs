@@ -10,26 +10,24 @@ namespace OPZBackup.Modules;
 [Group("backup", "utilizar a função de backup")]
 public class BackupModule : InteractionModuleBase<SocketInteractionContext>
 {
-    private static BackupProcess? _currentBackup;
-    private static readonly SemaphoreSlim CommandLock = new(1, 1);
-    private readonly BackupProcess _backupService;
     private readonly ILogger _logger;
 
     private readonly ModuleResponseHandler _responseHandler;
-    private readonly ServiceResponseHandlerFactory _responseHandlerFactory;
+    private readonly BackupService _backupService;
+    
+    #region constructor
 
     public BackupModule(
-        BackupProcess backupService,
+        BackupService backupService,
         ILogger logger,
-        ModuleResponseHandler responseHandler,
-        ServiceResponseHandlerFactory responseHandlerFactory)
+        ModuleResponseHandler responseHandler)
     {
         _responseHandler = responseHandler;
         _backupService = backupService;
-        _responseHandlerFactory = responseHandlerFactory;
-
         _logger = logger.ForContext("System", LoggerUtils.ColorText("BackupModule", 12));
     }
+
+    #endregion
 
     [SlashCommand("fazer", "efetuar backup deste canal")]
     public async Task MakeBackup([Choice("ate-ultimo", 0)] [Choice("ate-inicio", 1)] int choice)
@@ -37,40 +35,14 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
         await Context.Interaction.DeferAsync();
         //_logger.LogCommandExecution(Context, nameof(MakeBackup), choice.ToString());
         _logger.Information("Fazer");
+
         if (!IsInAdminRole())
         {
             await ForbiddenAsync(nameof(MakeBackup));
             return;
         }
 
-        if (CommandLock.CurrentCount < 1)
-        {
-            // _logger.LogInformation("There is already a backup in progress.");
-            _logger.Information("Already in progress");
-            await _responseHandler.SendAlreadyInProgressAsync(Context);
-            return;
-        }
-
-        //TODO: Tempo desde o ultimo backup (se com cooldowns)
-
-        await CommandLock.WaitAsync();
-        try
-        {
-            _currentBackup = _backupService;
-            var serviceResponseHandler = _responseHandlerFactory.Create(Context);
-            await _currentBackup.StartBackupAsync(Context, serviceResponseHandler, choice == 0);
-        }
-        catch (Exception ex)
-        {
-            _logger.Error(ex, "Failed");
-            //TODO: Notify the client of internal error.
-            throw;
-        }
-        finally
-        {
-            _currentBackup = null;
-            CommandLock.Release();
-        }
+        await _backupService.ExecuteBackupAsync(Context, choice);
     }
 
     [SlashCommand("cancelar", "Cancela o processo de backup atual")]
@@ -84,15 +56,8 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
             await ForbiddenAsync(nameof(CancelBackupProcess));
             return;
         }
-
-        if (!(CommandLock.CurrentCount < 1) || _currentBackup == null)
-        {
-            // _logger.LogInformation("There is no backup in progress.");
-            await _responseHandler.SendNoBackupInProgressAsync(Context);
-            return;
-        }
-
-        await _currentBackup.CancelAsync();
+        
+        await _backupService.CancelAsync(Context);
     }
 
     [SlashCommand("deletar-proprio",
