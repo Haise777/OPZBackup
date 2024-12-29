@@ -33,8 +33,6 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
     public async Task MakeBackup([Choice("ate-ultimo", 0)] [Choice("ate-inicio", 1)] int choice)
     {
         await Context.Interaction.DeferAsync();
-        //_logger.LogCommandExecution(Context, nameof(MakeBackup), choice.ToString());
-        _logger.Information("Fazer");
 
         if (!IsInAdminRole())
         {
@@ -49,7 +47,6 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
     public async Task CancelBackupProcess()
     {
         await Context.Interaction.DeferAsync();
-        //_logger.LogCommandExecution(Context, nameof(CancelBackupProcess));
 
         if (!IsInAdminRole())
         {
