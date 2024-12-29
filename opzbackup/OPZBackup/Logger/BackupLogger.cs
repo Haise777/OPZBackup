@@ -63,7 +63,7 @@ public class BackupLogger : IAsyncDisposable
 
     public void BatchSaved(Timer timer)
     {
-        Log.Information("Batch saved in {seconds} | {mean}", timer.Elapsed.Formatted(),
+        Log.Verbose("Batch saved in {seconds} | {mean}", timer.Elapsed.Formatted(),
             timer.Mean.Formatted());
         StatisticLogger.Information("Completing batch took: {seconds} / avg: {mean}",
             timer.Elapsed.Formatted(), timer.Mean.Formatted());

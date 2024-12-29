@@ -169,8 +169,7 @@ public class BackupProcess : IAsyncDisposable
         await _responseHandler.SendCompressingFilesAsync(_context);
         await _backupCompressor.CompressAsync(_context, _cancelToken, _logger);
     }
-
-
+    
     /// Update user statistics on the persistence layer
     private async Task UpdateFullStatisticData()
     {
