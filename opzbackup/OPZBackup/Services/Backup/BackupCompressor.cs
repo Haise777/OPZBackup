@@ -9,24 +9,21 @@ public class BackupCompressor
 {
     private readonly DirCompressor _dirCompressor;
     private readonly FileCleaner _fileCleaner;
-    private readonly BackupLogger _logger;
     public readonly Timer PerformanceTimer;
 
-    public BackupCompressor(DirCompressor dirCompressor, FileCleaner fileCleaner, Timer performanceTimer,
-        BackupLogger logger)
+    public BackupCompressor(DirCompressor dirCompressor, FileCleaner fileCleaner, Timer performanceTimer)
     {
         _dirCompressor = dirCompressor;
         _fileCleaner = fileCleaner;
         PerformanceTimer = performanceTimer;
-        _logger = logger;
     }
 
-    public async Task CompressAsync(BackupContext context, CancellationToken cancelToken)
+    public async Task CompressAsync(BackupContext context, CancellationToken cancelToken, BackupLogger logger)
     {
         if (context.FileCount == 0)
             return;
 
-        _logger.Log.Information("Compressing files");
+        logger.Log.Information("Compressing files");
         PerformanceTimer.StartTimer();
 
         var compressedSize = await _dirCompressor.CompressAsync(
@@ -35,7 +32,7 @@ public class BackupCompressor
             cancelToken
         );
 
-        _logger.Log.Information("Files compressed in {seconds}", PerformanceTimer.Stop().Elapsed.Formatted());
+        logger.Log.Information("Files compressed in {seconds}", PerformanceTimer.Stop().Elapsed.Formatted());
 
         context.StatisticTracker.CompressedFilesSize += (ulong)compressedSize;
         await _fileCleaner.DeleteDirAsync(App.TempPath);

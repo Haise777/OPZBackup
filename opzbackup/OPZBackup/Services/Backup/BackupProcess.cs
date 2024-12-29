@@ -20,26 +20,27 @@ public class BackupProcess : IAsyncDisposable
     private readonly CancellationTokenSource _cancelTokenSource;
     private readonly BackupContextFactory _contextFactory;
     private readonly MyDbContext _dbContext;
-    private readonly BackupLogger _logger;
+    private readonly BackupLoggerFactory _loggerFactory;
     private readonly Mapper _mapper;
     private readonly Timer _performanceTimer;
+    private BackupLogger _logger = null!;
     private BatchManager _batchManager = null!;
     private BackupContext _context = null!;
     private ServiceResponseHandler _responseHandler = null!;
 
-    #region constructor
+    #region class-setup
 
     public BackupProcess(
         BackupContextFactory contextFactory,
         MyDbContext dbContext,
-        BackupLogger logger,
+        BackupLoggerFactory loggerFactory,
         BatchManagerFactory batchManagerFactory,
         Mapper mapper,
         BackupCompressor backupCompressor, Timer performanceTimer)
     {
         _contextFactory = contextFactory;
         _dbContext = dbContext;
-        _logger = logger;
+        _loggerFactory = loggerFactory;
         _cancelTokenSource = new CancellationTokenSource();
         _cancelToken = _cancelTokenSource.Token;
         _batchManagerFactory = batchManagerFactory;
@@ -48,8 +49,6 @@ public class BackupProcess : IAsyncDisposable
         _performanceTimer = performanceTimer;
     }
 
-    #endregion
-
     public async ValueTask DisposeAsync()
     {
         await _dbContext.DisposeAsync();
@@ -57,9 +56,10 @@ public class BackupProcess : IAsyncDisposable
         _cancelTokenSource.Dispose();
     }
 
+    #endregion
+
     public async Task CancelAsync() =>
         await _cancelTokenSource.CancelAsync();
-
 
     public async Task StartBackupAsync(SocketInteractionContext interactionContext,
         ServiceResponseHandler responseHandler, bool isUntilLast)
@@ -76,8 +76,7 @@ public class BackupProcess : IAsyncDisposable
         }
         catch (OperationCanceledException)
         {
-            //TODO: Log cancellation
-            _logger.Log.Information("Backup canceled.");
+            _logger.BackupCancelled();
             var sendCancelled = _responseHandler.SendProcessCancelledAsync();
             var rollBack = _context.RollbackAsync();
             await rollBack;
@@ -86,8 +85,8 @@ public class BackupProcess : IAsyncDisposable
         }
         catch (Exception e)
         {
-            //TODO: Log exception and also send the error name back to the client
-            _logger.Log.Error(e, "Backup failed.");
+            //TODO: Send the error name back to the client
+            _logger.BackupFailed(e);
             var sendFailed = _responseHandler.SendFailedAsync(_context);
             var rollBack = _context.RollbackAsync();
             await rollBack;
@@ -115,7 +114,8 @@ public class BackupProcess : IAsyncDisposable
 
         _responseHandler = responseHandler;
         _context = _contextFactory.Create(interactionContext, isUntilLast, backupRegistry);
-        _batchManager = _batchManagerFactory.Create(_context, interactionContext.Channel);
+        _logger = _loggerFactory.Create(_context);
+        _batchManager = _batchManagerFactory.Create(_context, interactionContext.Channel, _logger);
     }
 
     private async Task BackupMessages()
@@ -167,7 +167,7 @@ public class BackupProcess : IAsyncDisposable
     private async Task CompressFiles()
     {
         await _responseHandler.SendCompressingFilesAsync(_context);
-        await _backupCompressor.CompressAsync(_context, _cancelToken);
+        await _backupCompressor.CompressAsync(_context, _cancelToken, _logger);
     }
 
 

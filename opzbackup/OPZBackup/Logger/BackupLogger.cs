@@ -1,4 +1,5 @@
 ﻿using OPZBackup.Extensions;
+using OPZBackup.Services.Backup;
 using Serilog;
 using Timer = OPZBackup.Services.Utils.Timer;
 
@@ -6,15 +7,17 @@ namespace OPZBackup.Logger;
 
 public class BackupLogger : IAsyncDisposable
 {
-    private static bool _first = true;
     private readonly string _filePath;
+    private readonly BackupContext _context;
 
-    public BackupLogger()
+    public BackupLogger(BackupContext context)
     {
+        _context = context;
+
         var date = DateTime.Now.ToString("yyyyMMdd_HH-mm-ss");
-        var basePath = $"{LoggerConfig.LogFilePath}";
-        var statisticPath = $"{basePath}/statistics/statistics{date}.txt";
-        _filePath = $"{basePath}/backups/backup_{date}.txt";
+        var basePath = $"{LoggerConfig.LogFilePath}/backups/{_context.BackupRegistry.Id}_backup_{date}";
+        var statisticPath = $"{basePath}/performance.txt";
+        _filePath = $"{basePath}/log_history.txt";
 
 
         var newLogger = new LoggerConfiguration()
@@ -25,33 +28,22 @@ public class BackupLogger : IAsyncDisposable
             .WriteTo.Console(outputTemplate: OutputTemplate.DefaultTemplate("Backup"))
             .CreateLogger();
 
-        Log = (Serilog.Core.Logger)newLogger.ForContext("Backup", LoggerUtils.ColorText("Backup", 63));
-
-        if (_first)
-        {
-            _first = false;
-            DisposeAsync().GetAwaiter().GetResult();
-        }
+        Log = (Serilog.Core.Logger)newLogger.ForContext("Backup",
+            LoggerUtils.ColorText($"Backup [{_context.BackupRegistry.Id}]", 63));
 
         StatisticLogger = new LoggerConfiguration()
             .WriteTo.Async(f => f.File(statisticPath, outputTemplate: "{Message}{NewLine}"))
             .CreateLogger();
     }
 
-    public Serilog.Core.Logger Log { get; set; }
-    public Serilog.Core.Logger StatisticLogger { get; set; }
-
     public async ValueTask DisposeAsync()
     {
         await Log.DisposeAsync();
-        var fileInfo = new FileInfo(_filePath);
-        if (fileInfo.Length == 0)
-        {
-            //TODO: File.Delete(_filePath);
-        }
-
         GC.SuppressFinalize(this);
     }
+
+    public Serilog.Core.Logger Log { get; set; }
+    public Serilog.Core.Logger StatisticLogger { get; set; }
 
     public void BatchFinished(Timer timer, int batchNumber)
     {
@@ -99,5 +91,17 @@ public class BackupLogger : IAsyncDisposable
             timer.Mean.Formatted());
         StatisticLogger.Information("Fetching messages took: {seconds} / avg: {mean}",
             timer.Elapsed.Formatted(), timer.Mean.Formatted());
+    }
+
+    public void BackupCancelled()
+    {
+        Log.Information("Backup was cancelled in Batch '{n}, with {messageCount} messages'",
+            _context.BatchNumber, _context.MessageCount);
+    }
+
+    public void BackupFailed(Exception exception)
+    {
+        Log.Error(exception, "Backup failed at Batch '{n}' after {messageCount} messages",
+            _context.BatchNumber, _context.MessageCount);
     }
 }

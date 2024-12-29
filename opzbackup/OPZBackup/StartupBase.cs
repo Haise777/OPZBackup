@@ -100,7 +100,7 @@ public abstract class StartupBase
                 )
                 .AddSingleton<Mapper>()
                 .AddScoped<InteractionHandler>()
-                .AddScoped<BackupLogger>()
+                .AddScoped<BackupLoggerFactory>()
                 .AddScoped<BackupProcess>()
                 .AddScoped<MessageProcessor>()
                 .AddScoped<MessageFetcher>()
