@@ -159,6 +159,7 @@ public class BackupProcess : IAsyncDisposable
     private async Task FinishBatch(BackupBatch batch)
     {
         _context.MessageCount += batch.ProcessedMessages.Count();
+        _context.BatchNumber = batch.Number;
         _logger.BatchFinished(_performanceTimer, batch.Number);
         await _responseHandler.SendBatchFinishedAsync(_context, batch, _performanceTimer.Mean);
     }
