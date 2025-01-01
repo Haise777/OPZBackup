@@ -1,4 +1,5 @@
-﻿using OPZBackup.Data.Models;
+﻿using Discord;
+using OPZBackup.Data.Models;
 using OPZBackup.FileManagement;
 using OPZBackup.Services.Utils;
 
@@ -25,6 +26,9 @@ public class BackupContext
     public int FileCount { get; set; }
     public bool IsUntilLastBackup { get; }
     public int BatchNumber { get; set; }
+    public TimeSpan AverageBatchTime { get; set; }
+    public Message? StartMessage { get; set; }
+    public Message? LastMessage { get; set; }
 
     public async Task RollbackAsync()
     {

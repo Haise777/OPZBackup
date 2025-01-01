@@ -160,6 +160,11 @@ public class BackupProcess : IAsyncDisposable
     {
         _context.MessageCount += batch.ProcessedMessages.Count();
         _context.BatchNumber = batch.Number;
+        _context.LastMessage = batch.ProcessedMessages.Last();
+
+        if (_context.StartMessage == null)
+            _context.StartMessage = batch.ProcessedMessages.First();
+
         _logger.BatchFinished(_performanceTimer, batch.Number);
         await _responseHandler.SendBatchFinishedAsync(_context, batch, _performanceTimer.Mean);
     }
@@ -170,7 +175,7 @@ public class BackupProcess : IAsyncDisposable
         await _responseHandler.SendCompressingFilesAsync(_context);
         await _backupCompressor.CompressAsync(_context, _cancelToken, _logger);
     }
-    
+
     /// Update user statistics on the persistence layer
     private async Task UpdateFullStatisticData()
     {

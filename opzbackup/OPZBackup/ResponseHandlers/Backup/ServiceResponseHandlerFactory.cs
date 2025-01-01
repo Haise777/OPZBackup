@@ -4,15 +4,15 @@ namespace OPZBackup.ResponseHandlers.Backup;
 
 public class ServiceResponseHandlerFactory
 {
-    private readonly ResponseBuilder _responseBuilder;
+    private readonly EmbedResponseFactory _embedResponseFactory;
 
-    public ServiceResponseHandlerFactory(ResponseBuilder responseBuilder)
+    public ServiceResponseHandlerFactory(EmbedResponseFactory embedResponseFactory)
     {
-        _responseBuilder = responseBuilder;
+        _embedResponseFactory = embedResponseFactory;
     }
 
     public ServiceResponseHandler Create(SocketInteractionContext interactionContext)
     {
-        return new ServiceResponseHandler(interactionContext, _responseBuilder);
+        return new ServiceResponseHandler(interactionContext, _embedResponseFactory);
     }
 }

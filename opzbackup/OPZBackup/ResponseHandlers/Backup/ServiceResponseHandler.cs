@@ -1,4 +1,5 @@
-﻿using Discord.Interactions;
+﻿using Discord;
+using Discord.Interactions;
 using Discord.Rest;
 using OPZBackup.Data.Models;
 using OPZBackup.Services.Backup;
@@ -8,25 +9,21 @@ namespace OPZBackup.ResponseHandlers.Backup;
 public class ServiceResponseHandler
 {
     private readonly SocketInteractionContext _interactionContext;
-    private readonly ResponseBuilder _responseBuilder;
+    private readonly EmbedResponseFactory _embedResponseFactory;
+    private IMessage? _startMessage;
+    private IMessage? _lastMessage;
     private RestFollowupMessage? _interaction;
 
     public ServiceResponseHandler(SocketInteractionContext interactionContext,
-        ResponseBuilder responseBuilder)
+        EmbedResponseFactory embedResponseFactory)
     {
         _interactionContext = interactionContext;
-        _responseBuilder = responseBuilder;
+        _embedResponseFactory = embedResponseFactory;
     }
 
     public async Task SendStartNotificationAsync(BackupContext context)
     {
-        var embedResponse = _responseBuilder
-            .SetStartTime(DateTime.Now)
-            .SetBatchNumber(context.BatchNumber)
-            .SetMessageCount(context.MessageCount)
-            .SetFileCount(context.FileCount)
-            .Build(ProgressStage.Started);
-
+        var embedResponse = _embedResponseFactory.StartMessageEmbed(context);
         _interaction = await _interactionContext.Interaction.FollowupAsync(embed: embedResponse);
     }
 
@@ -34,22 +31,16 @@ public class ServiceResponseHandler
     {
         if (_interaction == null) throw new InvalidOperationException("The interaction has not been created yet.");
 
-        if (_responseBuilder.StartMessage == null)
-            _responseBuilder.SetStartMessage(
-                await _interactionContext.Channel.GetMessageAsync(batch.ProcessedMessages.First().Id));
+        if (_startMessage is null)
+        {
+            var startMessage = await _interactionContext.Channel.GetMessageAsync(batch.ProcessedMessages.First().Id);
+            _startMessage = startMessage;
+        }
 
         var currentMessage = await _interactionContext.Channel.GetMessageAsync(batch.ProcessedMessages.Last().Id);
+        _lastMessage = currentMessage;
 
-        var embedResponse = _responseBuilder
-            .SetCurrentMessage(currentMessage)
-            .SetBatchNumber(context.BatchNumber)
-            .SetMessageCount(context.MessageCount)
-            .SetFileCount(context.FileCount)
-            .SetTotalFileSize(context.StatisticTracker.GetTotalStatistics().ByteSize)
-            .SetAverageBatchTime(averageBatchTime)
-            .UpdateElapsedTime()
-            .Build(ProgressStage.InProgress);
-
+        var embedResponse = _embedResponseFactory.BatchFinishedEmbed(context, _startMessage, currentMessage);
         await _interaction.ModifyAsync(m => m.Embed = embedResponse);
     }
 
@@ -57,18 +48,7 @@ public class ServiceResponseHandler
     {
         if (_interaction == null) throw new InvalidOperationException("The interaction has not been created yet.");
 
-        var embedResponse = _responseBuilder
-            .CurrentAsLastMessage()
-            .SetBatchNumber(context.BatchNumber)
-            .SetMessageCount(context.MessageCount)
-            .SetFileCount(context.FileCount)
-            .UpdateElapsedTime()
-            .SetChannelMessages(channel.MessageCount)
-            .SetChannelByteSize(channel.ByteSize)
-            .SetChannelNumberOfFiles(channel.FileCount)
-            .SetChannelCompressedSize(channel.CompressedByteSize)
-            .Build(ProgressStage.Finished);
-
+        var embedResponse = _embedResponseFactory.CompletedEmbed(context, _startMessage, _lastMessage, channel);
         await _interaction.ModifyAsync(m => m.Embed = embedResponse);
         await GhostPing();
     }
@@ -77,13 +57,7 @@ public class ServiceResponseHandler
     {
         if (_interaction == null) throw new InvalidOperationException("The interaction has not been created yet.");
 
-        var embedResponse = _responseBuilder
-            .SetBatchNumber(context.BatchNumber)
-            .SetMessageCount(context.MessageCount)
-            .SetFileCount(context.FileCount)
-            .UpdateElapsedTime()
-            .Build(ProgressStage.Failed);
-
+        var embedResponse = _embedResponseFactory.FailedEmbed(context);
         await _interaction.ModifyAsync(m => m.Embed = embedResponse);
         await GhostPing();
     }

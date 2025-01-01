@@ -63,7 +63,6 @@ public class BackupService
         catch (Exception ex)
         {
             _logger.Error(ex, "Backup attempt failed");
-            //TODO: Notify the client of internal error.
             throw;
         }
         finally

@@ -117,7 +117,7 @@ public abstract class StartupBase
                 .AddTransient<PerformanceProfiler>()
                 .AddTransient<Timer>()
                 .AddTransient<BackupContextFactory>()
-                .AddTransient<ResponseBuilder>()
+                .AddTransient<EmbedResponseFactory>()
                 .RemoveAll<IHttpMessageHandlerBuilderFilter>();
         });
     }

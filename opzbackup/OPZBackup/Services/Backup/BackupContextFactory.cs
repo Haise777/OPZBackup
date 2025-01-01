@@ -5,7 +5,6 @@ using OPZBackup.Services.Utils;
 
 namespace OPZBackup.Services.Backup;
 
-#pragma warning disable CS0618 // Type or member is obsolete
 public class BackupContextFactory
 {
     private readonly FileCleaner _fileCleaner;
