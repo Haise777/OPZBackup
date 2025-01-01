@@ -38,14 +38,25 @@ public class EmbedResponseFactory
         return embedBuilder.Build();
     }
 
-    public Embed FailedEmbed(BackupContext context)
+    public Embed FailedEmbed(BackupContext context, Exception e)
     {
         var parsedValues = ParseValuesToStrings(context);
 
         var embedBuilder = CreateNewEmbed(parsedValues);
         AddFailedStage(embedBuilder);
         AddProgressField(embedBuilder, context);
+        AddErrorField(embedBuilder, e);
         return embedBuilder.Build();
+    }
+
+    private void AddErrorField(EmbedBuilder builder, Exception e)
+    {
+        var type = e.GetType().Name;
+        var message = $"\n```js\n" +
+                      $"{e.GetType().Name} \n" +
+                      $"'{e.Message}'```";
+
+        builder.AddField("Assinatura do erro: ", message);
     }
 
     private string GetElapsedTime(DateTime startTime)

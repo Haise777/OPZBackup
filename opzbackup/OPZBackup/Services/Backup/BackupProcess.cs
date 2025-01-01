@@ -87,7 +87,7 @@ public class BackupProcess : IAsyncDisposable
         {
             //TODO: Send the error name back to the client
             _logger.BackupFailed(e);
-            var sendFailed = _responseHandler.SendFailedAsync(_context);
+            var sendFailed = _responseHandler.SendFailedAsync(_context, e);
             var rollBack = _context.RollbackAsync();
             await rollBack;
             await sendFailed;
@@ -147,7 +147,7 @@ public class BackupProcess : IAsyncDisposable
                 _logger.Log.Information("No messages in current batch, skipping...");
                 continue;
             }
-
+            
             await _batchManager.SaveBatchAsync(batch, _cancelToken);
             _performanceTimer.Stop();
 
