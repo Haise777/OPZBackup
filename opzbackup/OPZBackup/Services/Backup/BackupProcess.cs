@@ -142,6 +142,7 @@ public class BackupProcess : IAsyncDisposable
                 break;
             }
 
+            lastMessageId = batch.RawMessages.Last().Id;
             if (!batch.ProcessedMessages.Any())
             {
                 _logger.Log.Information("No messages in current batch, skipping...");
@@ -152,24 +153,17 @@ public class BackupProcess : IAsyncDisposable
             _performanceTimer.Stop();
 
             await FinishBatch(batch);
-            lastMessageId = batch.RawMessages.Last().Id;
         }
     }
 
     private async Task FinishBatch(BackupBatch batch)
     {
-        _context.MessageCount += batch.ProcessedMessages.Count();
         _context.BatchNumber = batch.Number;
-        _context.LastMessage = batch.ProcessedMessages.Last();
-
-        if (_context.StartMessage == null)
-            _context.StartMessage = batch.ProcessedMessages.First();
-
+        _context.AverageBatchTime = _performanceTimer.Mean;
         _logger.BatchFinished(_performanceTimer, batch.Number);
-        await _responseHandler.SendBatchFinishedAsync(_context, batch, _performanceTimer.Mean);
+        await _responseHandler.SendBatchFinishedAsync(_context, batch);
     }
-
-    //TODO: Implement a way of tracking the progress of the compression
+    
     private async Task CompressFiles()
     {
         await _responseHandler.SendCompressingFilesAsync(_context);

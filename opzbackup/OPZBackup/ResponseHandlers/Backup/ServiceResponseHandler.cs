@@ -10,7 +10,7 @@ public class ServiceResponseHandler
 {
     private readonly SocketInteractionContext _interactionContext;
     private readonly EmbedResponseFactory _embedResponseFactory;
-    private IMessage? _startMessage;
+    private IMessage? _startMessage; //TODO: Make a way to not keep these here
     private IMessage? _lastMessage;
     private RestFollowupMessage? _interaction;
 
@@ -27,7 +27,7 @@ public class ServiceResponseHandler
         _interaction = await _interactionContext.Interaction.FollowupAsync(embed: embedResponse);
     }
 
-    public async Task SendBatchFinishedAsync(BackupContext context, BackupBatch batch, TimeSpan averageBatchTime)
+    public async Task SendBatchFinishedAsync(BackupContext context, BackupBatch batch)
     {
         if (_interaction == null) throw new InvalidOperationException("The interaction has not been created yet.");
 
@@ -64,7 +64,7 @@ public class ServiceResponseHandler
 
     public async Task SendCompressingFilesAsync(BackupContext context)
     {
-        //TODO-2 Work in a better message for this
+        //TODO: Work in a better message for this
         await _interaction!.ModifyAsync(m =>
         {
             m.Content = "*Arquivos estao sendo comprimidos agora*";

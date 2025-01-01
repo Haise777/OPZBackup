@@ -136,7 +136,6 @@ public class BatchManager
             fileCount += downloadable.Attachments.Count();
 
         _logger.Log.Information("Downloading {fileCount} attachments", fileCount);
-        _backupContext.FileCount += fileCount;
 
         await _attachmentDownloader.DownloadRangeAsync(toDownload, _backupContext, cancelToken);
         _logger.FilesDownloaded(DownloadTimer.Stop());

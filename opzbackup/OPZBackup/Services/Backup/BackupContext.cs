@@ -22,13 +22,13 @@ public class BackupContext
     public BackupRegistry BackupRegistry { get; private set; }
     public StatisticTracker StatisticTracker { get; private set; }
     public bool IsStopped { get; private set; }
-    public int MessageCount { get; set; }
-    public int FileCount { get; set; }
+    public int MessageCount => StatisticTracker.GetTotalStatistics().MessageCount;
+    public int FileCount => StatisticTracker.GetTotalStatistics().FileCount;
     public bool IsUntilLastBackup { get; }
     public int BatchNumber { get; set; }
     public TimeSpan AverageBatchTime { get; set; }
-    public Message? StartMessage { get; set; }
-    public Message? LastMessage { get; set; }
+    // public Message? StartMessage { get; set; }
+    // public Message? LastMessage { get; set; }
 
     public async Task RollbackAsync()
     {
