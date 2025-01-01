@@ -85,7 +85,6 @@ public class BackupProcess : IAsyncDisposable
         }
         catch (Exception e)
         {
-            //TODO: Send the error name back to the client
             _logger.BackupFailed(e);
             var sendFailed = _responseHandler.SendFailedAsync(_context, e);
             var rollBack = _context.RollbackAsync();
