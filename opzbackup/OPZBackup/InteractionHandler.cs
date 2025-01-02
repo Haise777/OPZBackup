@@ -1,8 +1,7 @@
 ﻿using System.Reflection;
-using System.Text;
-using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using OPZBackup.Logger;
 using Serilog;
 
 namespace OPZBackup;
@@ -12,17 +11,17 @@ public class InteractionHandler
     private readonly DiscordSocketClient _client;
     private readonly InteractionService _commands;
     private readonly IServiceProvider _services;
-    private readonly ILogger _logger;
+    private readonly CommandExecutionLogger _logger;
 
     public InteractionHandler(DiscordSocketClient client,
         InteractionService commands,
         IServiceProvider services,
-        ILogger logger)
+        CommandExecutionLogger logger)
     {
         _client = client;
         _commands = commands;
         _services = services;
-        _logger = logger.ForContext("System", "InteractionHandler");
+        _logger = logger;
     }
 
     public async Task InitializeAsync()
@@ -39,12 +38,7 @@ public class InteractionHandler
         {
             var ctx = new SocketInteractionContext(_client, arg);
 
-            var interactionData = ((ISlashCommandInteraction)arg).Data;
-            var command = GetCommandString(interactionData);
-
-            _logger.Information("[{username}:{userId}] -> [{command}]",
-                ctx.User.Username, ctx.User.Id, command);
-
+            _logger.LogExecution(arg, ctx.User);
             await _commands.ExecuteCommandAsync(ctx, _services);
         }
         catch (Exception ex)
@@ -52,33 +46,5 @@ public class InteractionHandler
             Log.Fatal(ex, "Fatal error on redirecting interaction to it's module");
             throw;
         }
-    }
-
-    private static string GetCommandString(IApplicationCommandInteractionData interaction)
-    {
-        var builder = new StringBuilder();
-        builder.Append(interaction.Name + " ");
-
-        var options = interaction.Options;
-        RecursiveStringBuild(builder, options);
-
-        return builder.ToString();
-    }
-
-    private static StringBuilder RecursiveStringBuild(StringBuilder builder,
-        IReadOnlyCollection<IApplicationCommandInteractionDataOption> options)
-    {
-        foreach (var option in options)
-        {
-            builder.Append(" > " + $"{option.Name}");
-            
-            if (option.Value != null)
-                builder.Append($":{option.Value}");
-            
-            if (option.Options.Any())
-                RecursiveStringBuild(builder, option.Options);
-        }
-
-        return builder;
     }
 }

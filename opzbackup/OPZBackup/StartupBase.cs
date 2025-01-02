@@ -114,6 +114,7 @@ public abstract class StartupBase
                 .AddScoped<StatisticTracker>()
                 .AddScoped<BatchManagerFactory>()
                 .AddScoped<BackupCompressor>()
+                .AddScoped<CommandExecutionLogger>()
                 .AddTransient<PerformanceProfiler>()
                 .AddTransient<Timer>()
                 .AddTransient<BackupContextFactory>()
