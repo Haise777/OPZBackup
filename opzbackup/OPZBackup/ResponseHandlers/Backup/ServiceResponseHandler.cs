@@ -10,8 +10,6 @@ public class ServiceResponseHandler
 {
     private readonly SocketInteractionContext _interactionContext;
     private readonly EmbedResponseFactory _embedResponseFactory;
-    private IMessage? _startMessage; //TODO: Make a way to not keep these here
-    private IMessage? _lastMessage;
     private RestFollowupMessage? _interaction;
 
     public ServiceResponseHandler(SocketInteractionContext interactionContext,
@@ -27,28 +25,19 @@ public class ServiceResponseHandler
         _interaction = await _interactionContext.Interaction.FollowupAsync(embed: embedResponse);
     }
 
-    public async Task SendBatchFinishedAsync(BackupContext context, BackupBatch batch)
+    public async Task SendBatchFinishedAsync(BackupContext context, IMessage startMessage, IMessage currentMessage)
     {
         if (_interaction == null) throw new InvalidOperationException("The interaction has not been created yet.");
 
-        if (_startMessage is null)
-        {
-            var startMessage = await _interactionContext.Channel.GetMessageAsync(batch.ProcessedMessages.First().Id);
-            _startMessage = startMessage;
-        }
-
-        var currentMessage = await _interactionContext.Channel.GetMessageAsync(batch.ProcessedMessages.Last().Id);
-        _lastMessage = currentMessage;
-
-        var embedResponse = _embedResponseFactory.BatchFinishedEmbed(context, _startMessage, currentMessage);
+        var embedResponse = _embedResponseFactory.BatchFinishedEmbed(context, startMessage, currentMessage);
         await _interaction.ModifyAsync(m => m.Embed = embedResponse);
     }
 
-    public async Task SendCompletedAsync(BackupContext context, Channel channel)
+    public async Task SendCompletedAsync(BackupContext context, Channel channel, IMessage startMessage, IMessage lastMessage)
     {
         if (_interaction == null) throw new InvalidOperationException("The interaction has not been created yet.");
 
-        var embedResponse = _embedResponseFactory.CompletedEmbed(context, _startMessage, _lastMessage, channel);
+        var embedResponse = _embedResponseFactory.CompletedEmbed(context, startMessage, lastMessage, channel);
         await _interaction.ModifyAsync(m => m.Embed = embedResponse);
         await GhostPing();
     }

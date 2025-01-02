@@ -1,4 +1,5 @@
-﻿using Discord.Interactions;
+﻿using Discord;
+using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
 using OPZBackup.Data;
 using OPZBackup.Data.Models;
@@ -27,6 +28,8 @@ public class BackupProcess : IAsyncDisposable
     private BatchManager _batchManager = null!;
     private BackupContext _context = null!;
     private ServiceResponseHandler _responseHandler = null!;
+    private IMessage? _startMessage;
+    private IMessage? _lastMessage;
 
     #region class-setup
 
@@ -101,7 +104,7 @@ public class BackupProcess : IAsyncDisposable
             _context.StatisticTracker.CompressedFilesSize.ToFormattedString()
         );
 
-        await _responseHandler.SendCompletedAsync(_context, _context.BackupRegistry.Channel);
+        await _responseHandler.SendCompletedAsync(_context, _context.BackupRegistry.Channel, _startMessage!, _lastMessage!);
     }
 
     private async Task InitialSetup(SocketInteractionContext interactionContext,
@@ -147,7 +150,7 @@ public class BackupProcess : IAsyncDisposable
                 _logger.Log.Information("No messages in current batch, skipping...");
                 continue;
             }
-            
+
             await _batchManager.SaveBatchAsync(batch, _cancelToken);
             _performanceTimer.Stop();
 
@@ -159,10 +162,21 @@ public class BackupProcess : IAsyncDisposable
     {
         _context.BatchNumber = batch.Number;
         _context.AverageBatchTime = _performanceTimer.Mean;
+
+        if (_startMessage is null)
+        {
+            _startMessage = batch.RawMessages
+                .First(m => m.Id.Equals(batch.ProcessedMessages.First().Id));
+        }
+
+        _lastMessage = batch.RawMessages
+            .First(m => m.Id.Equals(batch.ProcessedMessages.Last().Id));
+
+
         _logger.BatchFinished(_performanceTimer, batch.Number);
-        await _responseHandler.SendBatchFinishedAsync(_context, batch);
+        await _responseHandler.SendBatchFinishedAsync(_context, _startMessage, _lastMessage);
     }
-    
+
     private async Task CompressFiles()
     {
         await _responseHandler.SendCompressingFilesAsync(_context);
