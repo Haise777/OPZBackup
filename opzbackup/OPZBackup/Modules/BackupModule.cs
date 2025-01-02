@@ -61,7 +61,7 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
         "DELETAR todas as informações presentes no armazenamento relacionadas ao usuario PERMANENTEMENTE")]
     public async Task DeleteUserInStorage()
     {
-        //TODO: Implement DeleteUserInStorage
+        //FEATURE: Implement DeleteUserInStorage
         throw new NotImplementedException();
     }
 

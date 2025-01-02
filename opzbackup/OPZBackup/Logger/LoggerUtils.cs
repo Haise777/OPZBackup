@@ -20,8 +20,7 @@ public static class LoggerUtils
             _ => throw new InvalidOperationException($"Unable to parse argument '{logSeverity}' to target value")
         };
     }
-
-    //TODO-4 Move this to a more appropriate place
+    
     public static string ColorText(string text, ushort color)
     {
         var colorCode = StringStyle.Foreground[color];

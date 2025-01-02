@@ -22,7 +22,7 @@ public class MessageProcessor
     public async Task<ProcessedBatch> ProcessAsync(IEnumerable<IMessage> fetchedMessages, BackupContext context,
         CancellationToken cancellationToken)
     {
-        //TODO-3 Separate this to get its 'needed values' from some sort of 'caching system'
+        //TODO: Separate this to get its 'needed values' from some sort of 'caching system'
         var existingMessageIds = await _dbContext.Messages
             .Where(x => x.ChannelId == fetchedMessages.First().Channel.Id)
             .Select(m => m.Id)
@@ -61,7 +61,7 @@ public class MessageProcessor
                 context.StatisticTracker.IncrementFileCounter(message.Author.Id, fileCount);
             }
 
-            //TODO-4 If the author of this message needs to be saved
+            //TODO: If the author of this message needs to be saved
             if (!existingUserIds.Contains(message.Author.Id))
             {
                 var user = _mapper.Map(message.Author);
@@ -84,7 +84,7 @@ public class MessageProcessor
 
         return downloadable.Attachments.Count();
 
-        //TODO-Feature Make so that the messages saved on the database points to their correct files
+        //FEATURE: Make so that the messages saved on the database points to their correct files
         // var downloadableAttachments = downloadable.Attachments.ToArray();
 
         // if (downloadableAttachments.Count() == 1)

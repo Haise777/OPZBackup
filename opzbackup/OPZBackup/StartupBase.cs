@@ -23,7 +23,7 @@ namespace OPZBackup;
 
 public abstract class StartupBase
 {
-    //TODO-4 Rethink the whole startup class organization
+    //TODO: Rethink the whole startup class organization
     protected static Task<bool> CreateDbFileIfNotExists(IHost host)
     {
         using var serviceScope = host.Services.CreateScope();

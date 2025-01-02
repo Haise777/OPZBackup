@@ -16,7 +16,7 @@ public class Program : StartupBase
 
     private static async Task MainAsync(string[] args)
     {
-        //TODO-Feature Implement a terminal to perform some commands to the bot
+        //TODO: Implement a terminal to perform some commands to the bot
         ConfigureStaticLogger();
 
         try

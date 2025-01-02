@@ -6,7 +6,7 @@ public class Channel
 
     public string Name { get; set; } = null!;
 
-    //TODO move these metadata fields to a base class
+    //TODO: move these metadata fields to a base class
 
     public int MessageCount { get; set; }
 
