@@ -1,10 +1,13 @@
 ﻿using Discord.Interactions;
+using Discord.WebSocket;
+using Microsoft.EntityFrameworkCore;
+using OPZBackup.Data;
 using OPZBackup.Logger;
 using OPZBackup.ResponseHandlers.Backup;
 using OPZBackup.Services.Backup;
 using Serilog;
 
-namespace OPZBackup.Modules;
+namespace OPZBackup.Services.Backup;
 
 public class BackupService
 {

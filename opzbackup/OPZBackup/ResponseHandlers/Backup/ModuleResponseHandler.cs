@@ -92,8 +92,7 @@ public class ModuleResponseHandler
             }
             catch (Exception ex)
             {
-                Log.Error(ex, ex.Message);
-                //TODO: await LogWritter.LogError(ex, ex.Message);
+                Log.Error(ex, "Error while attempting a delayed interaction delete");
             }
         });
     }

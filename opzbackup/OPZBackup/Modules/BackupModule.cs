@@ -2,7 +2,7 @@
 using Discord.WebSocket;
 using OPZBackup.Logger;
 using OPZBackup.ResponseHandlers.Backup;
-using BackupProcess = OPZBackup.Services.Backup.BackupProcess;
+using OPZBackup.Services.Backup;
 using ILogger = Serilog.ILogger;
 
 namespace OPZBackup.Modules;

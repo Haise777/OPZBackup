@@ -9,8 +9,6 @@ using OPZBackup.ResponseHandlers.Backup;
 using OPZBackup.Services.Utils;
 using Timer = OPZBackup.Services.Utils.Timer;
 
-// ReSharper disable PossibleMultipleEnumeration TODO
-
 namespace OPZBackup.Services.Backup;
 
 public class BackupProcess : IAsyncDisposable
