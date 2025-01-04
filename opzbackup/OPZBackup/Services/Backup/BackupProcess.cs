@@ -21,7 +21,7 @@ public class BackupProcess : IAsyncDisposable
     private readonly MyDbContext _dbContext;
     private readonly BackupLoggerFactory _loggerFactory;
     private readonly Mapper _mapper;
-    private readonly Timer _performanceTimer;
+    private readonly Timer _batchTimer;
     private BackupLogger _logger = null!;
     private BatchManager _batchManager = null!;
     private BackupContext _context = null!;
@@ -37,7 +37,7 @@ public class BackupProcess : IAsyncDisposable
         BackupLoggerFactory loggerFactory,
         BatchManagerFactory batchManagerFactory,
         Mapper mapper,
-        BackupCompressor backupCompressor, Timer performanceTimer)
+        BackupCompressor backupCompressor, Timer batchTimer)
     {
         _contextFactory = contextFactory;
         _dbContext = dbContext;
@@ -47,7 +47,7 @@ public class BackupProcess : IAsyncDisposable
         _batchManagerFactory = batchManagerFactory;
         _mapper = mapper;
         _backupCompressor = backupCompressor;
-        _performanceTimer = performanceTimer;
+        _batchTimer = batchTimer;
     }
 
     public async ValueTask DisposeAsync()
@@ -94,14 +94,8 @@ public class BackupProcess : IAsyncDisposable
 
             throw;
         }
-
-        _logger.Log.Information("Backup {id} finished in {time}\n" +
-                                " | Occupying {compressedTotal} in saved attachments",
-            _context.BackupRegistry.Id,
-            _performanceTimer.Total.Formatted(),
-            _context.StatisticTracker.CompressedFilesSize.ToFormattedString()
-        );
-
+        
+        _logger.BackupFinished(_batchTimer, _batchManager.GetTimers);
         await _responseHandler.SendCompletedAsync(_context, _context.BackupRegistry.Channel, _startMessage!, _lastMessage!);
     }
 
@@ -126,7 +120,7 @@ public class BackupProcess : IAsyncDisposable
         while (true)
         {
             _cancelToken.ThrowIfCancellationRequested();
-            _performanceTimer.StartTimer();
+            _batchTimer.StartTimer();
 
             if (_context.IsStopped)
             {
@@ -150,7 +144,7 @@ public class BackupProcess : IAsyncDisposable
             }
             
             await _batchManager.SaveBatchAsync(batch, _cancelToken);
-            _performanceTimer.Stop();
+            _batchTimer.Stop();
 
             await FinishBatch(batch);
         }
@@ -159,7 +153,7 @@ public class BackupProcess : IAsyncDisposable
     private async Task FinishBatch(BackupBatch batch)
     {
         _context.BatchNumber = batch.Number;
-        _context.AverageBatchTime = _performanceTimer.Mean;
+        _context.AverageBatchTime = _batchTimer.Mean;
 
         if (_startMessage is null)
         {
@@ -171,7 +165,7 @@ public class BackupProcess : IAsyncDisposable
             .First(m => m.Id.Equals(batch.ProcessedMessages.Last().Id));
 
 
-        _logger.BatchFinished(_performanceTimer, batch.Number);
+        _logger.BatchFinished(_batchTimer, batch.Number);
         await _responseHandler.SendBatchFinishedAsync(_context, _startMessage, _lastMessage);
     }
 

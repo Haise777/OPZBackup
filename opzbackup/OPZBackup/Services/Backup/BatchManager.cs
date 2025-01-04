@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using Discord;
 using Discord.WebSocket;
 using OPZBackup.Data;
@@ -11,11 +12,11 @@ namespace OPZBackup.Services.Backup;
 
 public class BatchManager
 {
-    private const string FetchTimerId = "fetch-timer";
-    private const string ProcessTimerId = "process-timer";
-    private const string SaveTimerId = "save-timer";
-    private const string DownloadTimerId = "download-timer";
-    private const string SaveMessagesId = "messages-timer";
+    public const string FetchTimerId = "fetch-timer";
+    public const string ProcessTimerId = "process-timer";
+    public const string SaveTimerId = "save-timer";
+    public const string DownloadTimerId = "download-timer";
+    public const string SaveMessagesId = "messages-timer";
     private readonly AttachmentDownloader _attachmentDownloader;
     private readonly BackupContext _backupContext;
     private readonly MyDbContext _dbContext;
@@ -47,13 +48,14 @@ public class BatchManager
     }
 
     public int BatchNumber { get; set; }
-    public Timer FetchTimer => _performanceProfiler.Timers[FetchTimerId];
-    public Timer ProcessTimer => _performanceProfiler.Timers[ProcessTimerId];
-    public Timer SaveTimer => _performanceProfiler.Timers[SaveTimerId];
-    public Timer DownloadTimer => _performanceProfiler.Timers[DownloadTimerId];
-    public Timer SaveMessagesTimer => _performanceProfiler.Timers[SaveMessagesId];
+    private Timer FetchTimer => _performanceProfiler.Timers[FetchTimerId];
+    private Timer ProcessTimer => _performanceProfiler.Timers[ProcessTimerId];
+    private Timer SaveTimer => _performanceProfiler.Timers[SaveTimerId];
+    private Timer DownloadTimer => _performanceProfiler.Timers[DownloadTimerId];
+    private Timer SaveMessagesTimer => _performanceProfiler.Timers[SaveMessagesId];
     public TimeSpan TotalElapsed => _performanceProfiler.TotalElapsed();
-    
+    public ImmutableDictionary<string, TimeValue> GetTimers => _performanceProfiler.GetAllTimers();
+
     public async Task<BackupBatch> StartBatchingAsync(ulong startAfterMessageId, CancellationToken cancellationToken)
     {
         var rawMessages = await FetchMessagesAsync(startAfterMessageId);
@@ -121,7 +123,7 @@ public class BatchManager
     {
         var attempts = 0;
         ProcessTimer.StartTimer();
-    
+
         while (true)
         {
             try

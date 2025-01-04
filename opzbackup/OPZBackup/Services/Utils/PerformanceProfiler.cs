@@ -1,4 +1,6 @@
-﻿namespace OPZBackup.Services.Utils;
+﻿using System.Collections.Immutable;
+
+namespace OPZBackup.Services.Utils;
 
 public class PerformanceProfiler
 {
@@ -27,5 +29,15 @@ public class PerformanceProfiler
                 total += timer.Value.Total;
 
         return total;
+    }
+
+    public ImmutableDictionary<string, TimeValue> GetAllTimers()
+    {
+        var dictionary = new Dictionary<string, TimeValue>();
+
+        foreach (var timer in Timers)
+            dictionary.Add(timer.Key, timer.Value);
+        
+        return dictionary.ToImmutableDictionary();
     }
 }
