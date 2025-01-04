@@ -10,6 +10,7 @@ using OPZBackup.Services.Utils;
 using Timer = OPZBackup.Services.Utils.Timer;
 
 namespace OPZBackup.Services.Backup;
+//BUG: TimeZone is VERY incorrect on the processed messages
 
 public class BackupProcess : IAsyncDisposable
 {
@@ -87,9 +88,9 @@ public class BackupProcess : IAsyncDisposable
         catch (Exception e)
         {
             _logger.BackupFailed(e);
-            var sendFailed = _responseHandler.SendFailedAsync(_context, e, _startMessage);
-            var rollBack = _context.RollbackAsync();
-            await rollBack;
+            var sendFailed = _responseHandler.SendFailedAsync(_context, e, _startMessage, _lastMessage);
+            // var rollBack = _context.RollbackAsync();
+            // await rollBack;
             await sendFailed;
 
             throw;

@@ -17,7 +17,7 @@ public class AttachmentDownloader
     public AttachmentDownloader(HttpClient client, ILogger logger, StatisticTracker statisticTracker)
     {
         _client = client;
-        _logger = logger;
+        _logger = logger.ForContext("System", "FILE MANAGEMENT");
     }
 
     public async Task DownloadRangeAsync(IEnumerable<Downloadable> toDownload, BackupContext context,
@@ -35,6 +35,7 @@ public class AttachmentDownloader
         }
         catch (Exception ex)
         {
+            _logger.Error(ex, ex.Message);
             //TODO: log exception
             if (ex is AggregateException aggr)
             {
@@ -57,16 +58,26 @@ public class AttachmentDownloader
         {
             var file = files.First();
             statisticTracker.IncrementByteSize(file.SenderId, (ulong)file.FileBytes.Length);
+            
             await File.WriteAllBytesAsync(channelPath + file.FullFileName, file.FileBytes);
 
             return;
         }
 
+        var basePath = $"{channelPath}/{downloadable.MessageId}";
+        await CreateDirAsync(basePath);
+
         foreach (var file in files)
         {
             statisticTracker.IncrementByteSize(file.SenderId, (ulong)file.FileBytes.Length);
-            await File.WriteAllBytesAsync(channelPath + file.FullFileName, file.FileBytes);
+            
+            await File.WriteAllBytesAsync(basePath + '/' + file.FullFileName, file.FileBytes);
         }
+    }
+
+    private Task CreateDirAsync(string dirPath)
+    {
+        return Task.Run(() => Directory.CreateDirectory(dirPath));
     }
 
     private Task CreateChannelDirIfNotExists(ulong channelId)

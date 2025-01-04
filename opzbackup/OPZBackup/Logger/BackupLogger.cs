@@ -173,7 +173,8 @@ public class BackupLogger : IAsyncDisposable
 
             """,
             _context.BackupRegistry.ChannelId,
-            batchTimer.Total.Formatted(),
+            batchTimer.Total
+                .Formatted(), //BUG: Its not registering time correctly, for some reason a ton of time can become "9.321s" instead of the actual time span
             _context.MessageCount,
             _context.FileCount, totalStatistics.ByteSize,
             _context.BatchNumber,

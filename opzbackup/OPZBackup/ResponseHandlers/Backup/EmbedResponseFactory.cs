@@ -38,13 +38,13 @@ public class EmbedResponseFactory
         return embedBuilder.Build();
     }
 
-    public Embed FailedEmbed(BackupContext context, Exception e, IMessage? startMessage)
+    public Embed FailedEmbed(BackupContext context, Exception e, IMessage? startMessage, IMessage? lastMessage)
     {
         var parsedValues = ParseValuesToStrings(context, startMessage);
 
         var embedBuilder = CreateNewEmbed(parsedValues);
         AddFailedStage(embedBuilder);
-        AddProgressField(embedBuilder, context);
+        AddProgressField(embedBuilder, context, lastMessage);
         AddErrorField(embedBuilder, e);
         return embedBuilder.Build();
     }

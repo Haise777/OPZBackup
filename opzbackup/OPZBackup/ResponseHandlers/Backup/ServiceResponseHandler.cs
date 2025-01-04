@@ -43,11 +43,11 @@ public class ServiceResponseHandler
         await GhostPing();
     }
 
-    public async Task SendFailedAsync(BackupContext context, Exception e, IMessage? startMessage)
+    public async Task SendFailedAsync(BackupContext context, Exception e, IMessage? startMessage, IMessage? lastMessage)
     {
         if (_interaction == null) throw new InvalidOperationException("The interaction has not been created yet.");
 
-        var embedResponse = _embedResponseFactory.FailedEmbed(context, e, startMessage);
+        var embedResponse = _embedResponseFactory.FailedEmbed(context, e, startMessage, lastMessage);
         await _interaction.ModifyAsync(m => m.Embed = embedResponse);
         await GhostPing();
     }

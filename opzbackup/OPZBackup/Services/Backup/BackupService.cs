@@ -14,16 +14,18 @@ public class BackupService
     private static BackupProcess? _currentBackup;
     private static readonly SemaphoreSlim CommandLock = new(1, 1);
     private readonly BackupProcess _backupProcess;
-    private readonly ILogger _logger;
     private readonly ModuleResponseHandler _responseHandler;
     private readonly ServiceResponseHandlerFactory _responseHandlerFactory;
+    private readonly MyDbContext _dbContext;
+    private readonly ILogger _logger;
 
     public BackupService(BackupProcess backupProcess, ILogger logger, ModuleResponseHandler responseHandler,
-        ServiceResponseHandlerFactory responseHandlerFactory)
+        ServiceResponseHandlerFactory responseHandlerFactory, MyDbContext dbContext)
     {
         _backupProcess = backupProcess;
         _responseHandler = responseHandler;
         _responseHandlerFactory = responseHandlerFactory;
+        _dbContext = dbContext;
 
         _logger = logger.ForContext("System", LoggerUtils.ColorText("BackupService", 12));
     }
@@ -37,7 +39,12 @@ public class BackupService
             return;
         }
 
-        //TODO: Tempo desde o ultimo backup (se com cooldowns)
+        // if (await CheckIfInCooldown(context.Channel))
+        // {
+        //     _logger.Information("Backup in this channel is on cooldown.");
+        //     await _responseHandler.SendInvalidAttemptAsync(context, TimeSpan.Zero); //TODO
+        //     return;
+        // }
 
         await AttemptBackup(context, choice);
     }
@@ -53,6 +60,20 @@ public class BackupService
 
         await _currentBackup.CancelAsync();
     }
+
+    // private async Task<bool> CheckIfInCooldown(ISocketMessageChannel channel)
+    // {
+    //     var channelId = channel.Id;
+    //     var lastBackupInThisChannel = await _dbContext.BackupRegistries //TODO: Make a better query for this
+    //         .FirstOrDefaultAsync(x => x.ChannelId == channelId);
+    //
+    //     if (lastBackupInThisChannel == null)
+    //         return false;
+    //     else if (lastBackupInThisChannel.Date > DateTime.Now - TimeSpan.FromDays(1))
+    //         return true;
+    //
+    //     return false;
+    // }
 
     private async Task AttemptBackup(SocketInteractionContext context, int choice)
     {
