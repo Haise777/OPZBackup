@@ -95,7 +95,7 @@ public class BackupProcess : IAsyncDisposable
             throw;
         }
         
-        _logger.BackupFinished(_batchTimer, _batchManager.GetTimers);
+        _logger.BackupFinished(_batchTimer, _backupCompressor.PerformanceTimer, _batchManager.GetTimers);
         await _responseHandler.SendCompletedAsync(_context, _context.BackupRegistry.Channel, _startMessage!, _lastMessage!);
     }
 

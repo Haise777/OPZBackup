@@ -107,7 +107,8 @@ public class BackupLogger : IAsyncDisposable
             _context.BatchNumber, _context.MessageCount);
     }
 
-    public void BackupFinished(TimeValue batchTimer, ImmutableDictionary<string, TimeValue> performanceTimers)
+    public void BackupFinished(TimeValue batchTimer, TimeValue compressTimer,
+        ImmutableDictionary<string, TimeValue> performanceTimers)
     {
         Log.Information("Backup {id} finished in {time}\n" +
                         " | Occupying {compressedTotal} in saved attachments",
@@ -116,10 +117,11 @@ public class BackupLogger : IAsyncDisposable
             _context.StatisticTracker.CompressedFilesSize.ToFormattedString()
         );
 
-        LogStatisticalPerformance(batchTimer, performanceTimers);
+        LogStatisticalPerformance(batchTimer, compressTimer, performanceTimers);
     }
 
-    private void LogStatisticalPerformance(TimeValue batchTimer, ImmutableDictionary<string, TimeValue> performanceTimers)
+    private void LogStatisticalPerformance(TimeValue batchTimer, TimeValue compressTimer,
+        ImmutableDictionary<string, TimeValue> performanceTimers)
     {
         var totalStatistics = _context.StatisticTracker.GetTotalStatistics();
         var fetchPerformance = performanceTimers[BatchManager.FetchTimerId];
@@ -163,6 +165,12 @@ public class BackupLogger : IAsyncDisposable
             Total time: {downloadTime} (s)
             Mean time: {downloadMean} (s)
 
+            --- Compression performance
+            Compressor: {compressorType}
+            Level: {strengthType}
+            Total saved: {compressedSavedSize} bytes
+            Total time: {compressionTime} (s)
+
             """,
             _context.BackupRegistry.ChannelId,
             batchTimer.Total.Formatted(),
@@ -181,6 +189,11 @@ public class BackupLogger : IAsyncDisposable
             50,
             _context.FileCount, totalStatistics.ByteSize,
             downloadPerformance.Total.TotalSeconds,
-            downloadPerformance.Mean.TotalSeconds);
+            downloadPerformance.Mean.TotalSeconds,
+            "System.IO.Compression.ZipFile",
+            App.CompressionLevel,
+            totalStatistics.ByteSize - _context.StatisticTracker.CompressedFilesSize,
+            compressTimer.Total.TotalSeconds
+        );
     }
 }
