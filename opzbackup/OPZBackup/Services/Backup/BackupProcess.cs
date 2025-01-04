@@ -89,7 +89,7 @@ public class BackupProcess : IAsyncDisposable
         catch (Exception e)
         {
             _logger.BackupFailed(e);
-            var sendFailed = _responseHandler.SendFailedAsync(_context, e);
+            var sendFailed = _responseHandler.SendFailedAsync(_context, e, _startMessage);
             var rollBack = _context.RollbackAsync();
             await rollBack;
             await sendFailed;
@@ -150,7 +150,7 @@ public class BackupProcess : IAsyncDisposable
                 _logger.Log.Information("No messages in current batch, skipping...");
                 continue;
             }
-
+            
             await _batchManager.SaveBatchAsync(batch, _cancelToken);
             _performanceTimer.Stop();
 
@@ -179,7 +179,7 @@ public class BackupProcess : IAsyncDisposable
 
     private async Task CompressFiles()
     {
-        await _responseHandler.SendCompressingFilesAsync(_context);
+        await _responseHandler.SendCompressingFilesAsync(_context, _startMessage!, _lastMessage!);
         await _backupCompressor.CompressAsync(_context, _cancelToken, _logger);
     }
 

@@ -3,7 +3,6 @@ using OPZBackup.Data.Dto;
 
 namespace OPZBackup.FileManagement;
 
-//TODO: Rethink the whole Downloadable/AttachmentOnline/AttachmentFile logic and separate the download functionality from the Downloadable
 public class Downloadable
 {
     public readonly IEnumerable<OnlineFile> Attachments;

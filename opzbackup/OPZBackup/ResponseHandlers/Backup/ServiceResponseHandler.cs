@@ -33,7 +33,8 @@ public class ServiceResponseHandler
         await _interaction.ModifyAsync(m => m.Embed = embedResponse);
     }
 
-    public async Task SendCompletedAsync(BackupContext context, Channel channel, IMessage startMessage, IMessage lastMessage)
+    public async Task SendCompletedAsync(BackupContext context, Channel channel, IMessage startMessage,
+        IMessage lastMessage)
     {
         if (_interaction == null) throw new InvalidOperationException("The interaction has not been created yet.");
 
@@ -42,23 +43,19 @@ public class ServiceResponseHandler
         await GhostPing();
     }
 
-    public async Task SendFailedAsync(BackupContext context, Exception e)
+    public async Task SendFailedAsync(BackupContext context, Exception e, IMessage? startMessage)
     {
         if (_interaction == null) throw new InvalidOperationException("The interaction has not been created yet.");
 
-        var embedResponse = _embedResponseFactory.FailedEmbed(context, e);
+        var embedResponse = _embedResponseFactory.FailedEmbed(context, e, startMessage);
         await _interaction.ModifyAsync(m => m.Embed = embedResponse);
         await GhostPing();
     }
 
-    public async Task SendCompressingFilesAsync(BackupContext context)
+    public async Task SendCompressingFilesAsync(BackupContext context, IMessage startMessage, IMessage currentMessage)
     {
-        //TODO: Work in a better message for this
-        await _interaction!.ModifyAsync(m =>
-        {
-            m.Content = "*Arquivos estao sendo comprimidos agora*";
-            m.Embed = null;
-        });
+        var embedResponse = _embedResponseFactory.CompressingEmbed(context, startMessage, currentMessage);
+        await _interaction!.ModifyAsync(m => m.Embed = embedResponse);
     }
 
     public async Task SendProcessCancelledAsync()

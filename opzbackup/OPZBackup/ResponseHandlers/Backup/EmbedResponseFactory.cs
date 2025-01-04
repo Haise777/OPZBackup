@@ -20,11 +20,11 @@ public class EmbedResponseFactory
 
     public Embed BatchFinishedEmbed(BackupContext context, IMessage startMessage, IMessage lastMessage)
     {
-        var parsedValues = ParseValuesToStrings(context, startMessage, lastMessage);
+        var parsedValues = ParseValuesToStrings(context, startMessage);
 
         var embedBuilder = CreateNewEmbed(parsedValues);
         AddInProgressStage(embedBuilder);
-        AddProgressField(embedBuilder, context);
+        AddProgressField(embedBuilder, context, lastMessage);
         return embedBuilder.Build();
     }
 
@@ -38,9 +38,9 @@ public class EmbedResponseFactory
         return embedBuilder.Build();
     }
 
-    public Embed FailedEmbed(BackupContext context, Exception e)
+    public Embed FailedEmbed(BackupContext context, Exception e, IMessage? startMessage)
     {
-        var parsedValues = ParseValuesToStrings(context);
+        var parsedValues = ParseValuesToStrings(context, startMessage);
 
         var embedBuilder = CreateNewEmbed(parsedValues);
         AddFailedStage(embedBuilder);
@@ -49,9 +49,18 @@ public class EmbedResponseFactory
         return embedBuilder.Build();
     }
 
+    public Embed CompressingEmbed(BackupContext context, IMessage startMessage, IMessage lastMessage)
+    {
+        var parsedValues = ParseValuesToStrings(context, startMessage);
+
+        var embedBuilder = CreateNewEmbed(parsedValues);
+        AddCompressingStage(embedBuilder);
+        AddProgressField(embedBuilder, context, lastMessage);
+        return embedBuilder.Build();
+    }
+    
     private void AddErrorField(EmbedBuilder builder, Exception e)
     {
-        var type = e.GetType().Name;
         var message = $"\n```js\n" +
                       $"{e.GetType().Name} \n" +
                       $"'{e.Message}'```";
@@ -70,6 +79,13 @@ public class EmbedResponseFactory
         builder
             .WithTitle("Falhou")
             .WithColor(Color.Red);
+    }
+    
+    private void AddCompressingStage(EmbedBuilder builder)
+    {
+        builder
+            .WithTitle("Comprimindo...")
+            .WithColor(Color.LighterGrey);
     }
 
     private void AddFinishedStage(EmbedBuilder builder)
@@ -103,18 +119,22 @@ public class EmbedResponseFactory
             $"N de arquivos: {context.FileCount} [{totalFileSize.ToFormattedString()}]\n" +
             $"Ciclos realizados: {context.BatchNumber} [{context.AverageBatchTime.Formatted()}]\n";
 
+        var current = "";
+
         if (currentMessage != null)
         {
-            progressString +=
-                $"Atual: {currentMessage.Author.Username} {currentMessage.TimestampWithFixedTimezone().ToShortDateString()} {currentMessage.Timestamp.DateTime.ToShortTimeString()}" +
-                $"\n{currentMessage.Content}";
+            current +=
+                $"\n```\n" +
+                $"{currentMessage.Author.Username} {currentMessage.TimestampWithFixedTimezone().ToShortDateString()} {currentMessage.Timestamp.DateTime.ToShortTimeString()}" +
+                $"\n{currentMessage.Content}```";
         }
         else
         {
-            progressString += "Atual: ...";
+            current += "...";
         }
 
-        builder.AddField("progresso:", progressString);
+        builder.AddField("Progresso:", progressString);
+        builder.AddField("Atual:", current);
     }
 
     private void AddFinishedField(EmbedBuilder builder, BackupContext context, Channel channel)
