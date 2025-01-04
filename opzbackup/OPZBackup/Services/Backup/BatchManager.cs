@@ -53,9 +53,7 @@ public class BatchManager
     public Timer DownloadTimer => _performanceProfiler.Timers[DownloadTimerId];
     public Timer SaveMessagesTimer => _performanceProfiler.Timers[SaveMessagesId];
     public TimeSpan TotalElapsed => _performanceProfiler.TotalElapsed();
-
-
-    //TODO: Implement retries in each main step of this process
+    
     public async Task<BackupBatch> StartBatchingAsync(ulong startAfterMessageId, CancellationToken cancellationToken)
     {
         var rawMessages = await FetchMessagesAsync(startAfterMessageId);
@@ -88,6 +86,67 @@ public class BatchManager
         _logger.BatchSaved(SaveTimer.Stop());
     }
 
+    private async Task<IEnumerable<IMessage>> FetchMessagesAsync(ulong startAfterMessageId)
+    {
+        var attempts = 0;
+        FetchTimer.StartTimer();
+
+        while (true)
+        {
+            try
+            {
+                _logger.Log.Information("Fetching messages...");
+
+                var fetchedMessages = startAfterMessageId switch
+                {
+                    0 => await _messageFetcher.FetchAsync(_socketMessageChannel),
+                    _ => await _messageFetcher.FetchAsync(_socketMessageChannel, startAfterMessageId)
+                };
+
+                _logger.MessagesFetched(FetchTimer.Stop());
+                return fetchedMessages;
+            }
+            catch (Exception e)
+            {
+                //Log here
+
+                if (++attempts > 3)
+                    throw;
+            }
+        }
+    }
+
+    private async Task<ProcessedBatch> ProcessAsync(IEnumerable<IMessage> rawMessages,
+        CancellationToken cancellationToken)
+    {
+        var attempts = 0;
+        ProcessTimer.StartTimer();
+    
+        while (true)
+        {
+            try
+            {
+                ProcessTimer.StartTimer();
+                var processedMessages =
+                    await _messageProcessor.ProcessAsync(rawMessages, _backupContext, cancellationToken);
+
+                _logger.MessagesProcessed(ProcessTimer.Stop());
+                return processedMessages;
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                //Log here
+
+                if (++attempts > 3)
+                    throw;
+            }
+        }
+    }
+
     private async Task SaveMessages(BackupBatch batch)
     {
         SaveMessagesTimer.StartTimer();
@@ -100,31 +159,6 @@ public class BatchManager
         await _dbContext.SaveChangesAsync();
 
         _logger.MessagesSaved(SaveMessagesTimer.Stop());
-    }
-
-    private async Task<IEnumerable<IMessage>> FetchMessagesAsync(ulong startAfterMessageId)
-    {
-        _logger.Log.Information("Fetching messages...");
-        FetchTimer.StartTimer();
-
-        var fetchedMessages = startAfterMessageId switch
-        {
-            0 => await _messageFetcher.FetchAsync(_socketMessageChannel),
-            _ => await _messageFetcher.FetchAsync(_socketMessageChannel, startAfterMessageId)
-        };
-
-        _logger.MessagesFetched(FetchTimer.Stop());
-        return fetchedMessages;
-    }
-
-    private async Task<ProcessedBatch> ProcessAsync(IEnumerable<IMessage> rawMessages,
-        CancellationToken cancellationToken)
-    {
-        ProcessTimer.StartTimer();
-        var processedMessages = await _messageProcessor.ProcessAsync(rawMessages, _backupContext, cancellationToken);
-
-        _logger.MessagesProcessed(ProcessTimer.Stop());
-        return processedMessages;
     }
 
     private async Task DownloadMessageAttachments(IEnumerable<Downloadable> toDownload, CancellationToken cancelToken)
