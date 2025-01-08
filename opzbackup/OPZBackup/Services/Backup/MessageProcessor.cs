@@ -12,25 +12,18 @@ public class MessageProcessor
 {
     private readonly MyDbContext _dbContext;
     private readonly Mapper _mapper;
+    private readonly CacheManager _cacheManager;
 
-    public MessageProcessor(MyDbContext dbContext, Mapper mapper)
+    public MessageProcessor(MyDbContext dbContext, Mapper mapper, CacheManager cacheManager)
     {
         _dbContext = dbContext;
         _mapper = mapper;
+        _cacheManager = cacheManager;
     }
 
     public async Task<ProcessedBatch> ProcessAsync(IEnumerable<IMessage> fetchedMessages, BackupContext context,
         CancellationToken cancellationToken)
     {
-        //TODO: Separate this to get its 'needed values' from some sort of 'caching system'
-        var existingMessageIds = await _dbContext.Messages
-            .Where(x => x.ChannelId == fetchedMessages.First().Channel.Id)
-            .Select(m => m.Id)
-            .ToArrayAsync();
-        var existingUserIds = await _dbContext.Users
-            .Select(u => u.Id)
-            .ToListAsync();
-
         var users = new List<User>();
         var messages = new List<Message>();
         var toDownload = new List<Downloadable>();
@@ -42,7 +35,7 @@ public class MessageProcessor
                 continue;
 
             //Checks if the message already exists on the db
-            if (existingMessageIds.Any(m => m == message.Id))
+            if (_cacheManager.IsMessageIdCached(message.Id))
             {
                 if (context.IsUntilLastBackup)
                 {
@@ -62,10 +55,9 @@ public class MessageProcessor
             }
 
             //TODO: If the author of this message needs to be saved
-            if (!existingUserIds.Contains(message.Author.Id))
+            if (!_cacheManager.IsUserIdCached(message.Author.Id))
             {
                 var user = _mapper.Map(message.Author);
-                existingUserIds.Add(user.Id);
                 users.Add(user);
             }
 
