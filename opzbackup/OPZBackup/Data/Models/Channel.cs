@@ -1,18 +1,10 @@
 ﻿namespace OPZBackup.Data.Models;
 
-public class Channel
+public class Channel : MetadataBase
 {
     public ulong Id { get; set; }
 
     public string Name { get; set; } = null!;
-
-    //TODO: move these metadata fields to a base class
-
-    public int MessageCount { get; set; }
-
-    public int FileCount { get; set; }
-
-    public ulong ByteSize { get; set; }
 
     public ulong CompressedByteSize { get; set; }
 

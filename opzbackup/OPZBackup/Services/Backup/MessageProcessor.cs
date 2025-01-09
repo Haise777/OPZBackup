@@ -52,7 +52,7 @@ public class MessageProcessor
                 context.StatisticTracker.IncrementFileCounter(message.Author.Id, fileCount);
             }
 
-            //TODO: If the author of this message needs to be saved
+            //If the author of this message needs to be saved
             if (!_cacheManager.IsUserIdCached(message.Author.Id))
             {
                 var user = _mapper.Map(message.Author);
