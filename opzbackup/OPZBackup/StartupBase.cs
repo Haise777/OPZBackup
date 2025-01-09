@@ -31,6 +31,22 @@ public abstract class StartupBase
         return context.Database.EnsureCreatedAsync();
     }
 
+    protected static async Task LoadCacheAsync(IHost host)
+    {
+        using var serviceScope = host.Services.CreateScope();
+        var context = serviceScope.ServiceProvider.GetRequiredService<MyDbContext>();
+        var cacheManager = serviceScope.ServiceProvider.GetRequiredService<CacheManager>();
+
+        var parallelTasks = new Task<List<ulong>>[2];
+
+        parallelTasks[0] = context.Users.Select(u => u.Id).ToListAsync();
+        parallelTasks[1] = context.Messages.Select(m => m.Id).ToListAsync();
+
+        var idLists = await Task.WhenAll(parallelTasks);
+
+        cacheManager.RepopulateCache(idLists[0], idLists[1]);
+    }
+
     protected static void ConfigureStaticLogger()
     {
         Log.Logger = new LoggerConfiguration()
@@ -98,6 +114,7 @@ public abstract class StartupBase
                         }
                     )
                 )
+                .AddSingleton<CacheManager>()
                 .AddSingleton<Mapper>()
                 .AddScoped<InteractionHandler>()
                 .AddScoped<BackupLoggerFactory>()

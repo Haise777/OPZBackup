@@ -37,6 +37,7 @@ public class Program : StartupBase
             }
 
             ConfigureServices(hostBuilder);
+
             using var host = hostBuilder.Build();
             SelfLog.Enable(Console.Out);
 
@@ -45,6 +46,8 @@ public class Program : StartupBase
 
             if (await CreateDbFileIfNotExists(host))
                 Log.Information("Database file has been created");
+
+            await LoadCacheAsync(host);
 
             await RunAsync(host);
         }

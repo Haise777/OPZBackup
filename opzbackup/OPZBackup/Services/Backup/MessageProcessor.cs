@@ -10,13 +10,11 @@ namespace OPZBackup.Services.Backup;
 //This is the class responsible for applying the processing part of bussiness logic to it
 public class MessageProcessor
 {
-    private readonly MyDbContext _dbContext;
     private readonly Mapper _mapper;
     private readonly CacheManager _cacheManager;
 
-    public MessageProcessor(MyDbContext dbContext, Mapper mapper, CacheManager cacheManager)
+    public MessageProcessor(Mapper mapper, CacheManager cacheManager)
     {
-        _dbContext = dbContext;
         _mapper = mapper;
         _cacheManager = cacheManager;
     }
