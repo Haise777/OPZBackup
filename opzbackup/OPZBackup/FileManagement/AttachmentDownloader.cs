@@ -35,11 +35,13 @@ public class AttachmentDownloader
         }
         catch (Exception ex)
         {
-            _logger.Error(ex, ex.Message);
-            //TODO: log exception
+            _logger.Error(ex, "An error occured while attempting to concurrently download and write attachments");
             if (ex is AggregateException aggr)
             {
-                //TODO: log all aggregated exceptions
+                foreach (var aggregate in aggr.InnerExceptions) 
+                {
+                    _logger.Error(aggregate, "Failed to concurrently download and write file");
+                }
             }
 
             throw;
@@ -129,9 +131,8 @@ public class AttachmentDownloader
                     onlineFile.FileExtension
                 );
             }
-            catch (HttpRequestException ex) //TODO: Deal with httpclient exceptions
+            catch (HttpRequestException ex)
             {
-                //Log.
                 if (++attempts >= 3) throw;
                 _logger.Warning(ex, "Failed to download file\n URL: {file}. \nRetrying...", onlineFile.Url);
                 await Task.Delay(5000);
