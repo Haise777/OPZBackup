@@ -1,9 +1,22 @@
 using Discord.Interactions;
+using OPZBackup.Services.Stats;
 
 namespace OPZBackup.Modules;
 
 public class StatsModule : InteractionModuleBase<SocketInteractionContext>
 {
+
+    private readonly StatsService _statsService;
+
+    public StatsModule(StatsService statsService)
+    {
+        _statsService = statsService;
+    }
+
+    //Command structure should be like
+    // Stats -> Channel/User -> ListAll
+    // Stats -> Channel -> InDetails
+    // Stats -> User -> InDetails -> @<userMention>
 
     public async Task ListAllChannelStats()
     {
