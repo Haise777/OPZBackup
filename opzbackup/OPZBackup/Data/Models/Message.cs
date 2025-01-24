@@ -14,11 +14,13 @@ public class Message
 
     public DateTime SentDate { get; set; }
 
-    public string? File { get; set; }
+    public bool HasFile { get; set; }
 
     public virtual User Author { get; set; } = null!;
 
     public virtual BackupRegistry Backup { get; set; } = null!;
 
     public virtual Channel Channel { get; set; } = null!;
+
+    public virtual ICollection<AttachmentFile> Attachments { get; set; } = null!;
 }

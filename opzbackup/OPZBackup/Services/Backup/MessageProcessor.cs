@@ -50,6 +50,7 @@ public class MessageProcessor
             {
                 var fileCount = GetAttachmentsAsDownloadable(message, toDownload, mappedMessage);
                 context.StatisticTracker.IncrementFileCounter(message.Author.Id, fileCount);
+                mappedMessage.HasFile = true;
             }
 
             //If the author of this message needs to be saved

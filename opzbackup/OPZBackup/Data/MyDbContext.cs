@@ -16,6 +16,7 @@ public partial class MyDbContext : DbContext
     public virtual DbSet<Message> Messages { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
+    public virtual DbSet<AttachmentFile> AttachmentFiles{ get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -83,9 +84,8 @@ public partial class MyDbContext : DbContext
             entity.Property(e => e.Content)
                 .HasMaxLength(5000)
                 .HasColumnName("content");
-            entity.Property(e => e.File)
-                .HasMaxLength(256)
-                .HasColumnName("file");
+            entity.Property(e => e.HasFile)
+                .HasColumnName("has_file");
             entity.Property(e => e.SentDate)
                 .HasColumnType("datetime")
                 .HasColumnName("sent_date");
@@ -117,6 +117,38 @@ public partial class MyDbContext : DbContext
                 .HasColumnName("username");
             entity.Property(e => e.IsBlackListed)
                 .HasColumnName("is_blacklisted");
+        });
+
+        modelBuilder.Entity<AttachmentFile>(entity =>
+        {
+
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.HasIndex(e => e.MessageId, "attachment_message_id_fk");
+
+            entity.ToTable("attachment_files");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("id");
+            entity.Property(e => e.Name)
+                .HasMaxLength(255)
+                .HasColumnName("name");
+            entity.Property(e => e.Extension)
+                .HasMaxLength(15)
+                .HasColumnName("extension");
+            entity.Property(e => e.Path)
+                .HasMaxLength(255)
+                .HasColumnName("path");
+            entity.Property(e => e.ByteSize)
+                .HasColumnName("byte_size");       
+            entity.Property(e => e.MessageId)
+                .HasColumnName("message_id");      
+
+            entity.HasOne(e => e.Message).WithMany(e => e.Attachments)
+                .HasForeignKey(e => e.MessageId)
+                .HasConstraintName("attachment_message_id_fk");
+        
         });
 
         OnModelCreatingPartial(modelBuilder);

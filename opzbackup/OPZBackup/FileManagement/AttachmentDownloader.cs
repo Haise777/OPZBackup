@@ -1,4 +1,5 @@
 ﻿using OPZBackup.Data.Dto;
+using OPZBackup.Data.Models;
 using OPZBackup.Services.Backup;
 using OPZBackup.Services.Utils;
 using Serilog;
@@ -20,10 +21,10 @@ public class AttachmentDownloader
         _logger = logger.ForContext("System", "FILE MANAGEMENT");
     }
 
-    public async Task DownloadRangeAsync(IEnumerable<Downloadable> toDownload, BackupContext context,
+    public async Task<IEnumerable<AttachmentFile>> DownloadRangeAsync(IEnumerable<Downloadable> toDownload, BackupContext context,
         CancellationToken cancellationToken)
     {
-        var concurrentDownloads = new List<Task>();
+        var concurrentDownloads = new List<Task<IEnumerable<AttachmentFile>>>();
         await CreateChannelDirIfNotExists(toDownload.First().ChannelId);
 
         foreach (var downloadable in toDownload)
@@ -31,14 +32,22 @@ public class AttachmentDownloader
 
         try
         {
-            await Task.WhenAll(concurrentDownloads);
+            var finishedTasks = await Task.WhenAll(concurrentDownloads);
+            var writtenAttachments = new List<AttachmentFile>();
+            
+            foreach (var attachments in finishedTasks)
+            {
+                writtenAttachments.AddRange(attachments);
+            }
+
+            return writtenAttachments;
         }
         catch (Exception ex)
         {
             _logger.Error(ex, "An error occured while attempting to concurrently download and write attachments");
             if (ex is AggregateException aggr)
             {
-                foreach (var aggregate in aggr.InnerExceptions) 
+                foreach (var aggregate in aggr.InnerExceptions)
                 {
                     _logger.Error(aggregate, "Failed to concurrently download and write file");
                 }
@@ -48,7 +57,7 @@ public class AttachmentDownloader
         }
     }
 
-    private async Task DownloadAndWriteFile(Downloadable downloadable, StatisticTracker statisticTracker,
+    private async Task<IEnumerable<AttachmentFile>> DownloadAndWriteFile(Downloadable downloadable, StatisticTracker statisticTracker,
         CancellationToken cancellationToken)
     {
         var files = await DownloadAttachments(downloadable, cancellationToken);
@@ -60,21 +69,43 @@ public class AttachmentDownloader
         {
             var file = files.First();
             statisticTracker.IncrementByteSize(file.SenderId, (ulong)file.FileBytes.Length);
-            
-            await File.WriteAllBytesAsync(channelPath + file.FullFileName, file.FileBytes);
 
-            return;
+            var filePath = channelPath + file.FullFileName;
+            await File.WriteAllBytesAsync(filePath, file.FileBytes);
+
+            return [new AttachmentFile
+            {
+                Name = file.FileName,
+                Extension = file.FileExtension,
+                Path = filePath,
+                ByteSize = (ulong)file.FileBytes.LongLength,
+                MessageId = downloadable.MessageId
+            }];
         }
 
         var basePath = $"{channelPath}/{downloadable.MessageId}";
         await CreateDirAsync(basePath);
 
+        var writtenAttachments = new List<AttachmentFile>();
+
         foreach (var file in files)
         {
             statisticTracker.IncrementByteSize(file.SenderId, (ulong)file.FileBytes.Length);
-            
-            await File.WriteAllBytesAsync(basePath + '/' + file.FullFileName, file.FileBytes);
+            var filePath = basePath + '/' + file.FullFileName;
+
+            await File.WriteAllBytesAsync(filePath, file.FileBytes);
+
+            writtenAttachments.Add(new AttachmentFile
+            {
+                                Name = file.FileName,
+                Extension = file.FileExtension,
+                Path = filePath,
+                ByteSize = (ulong)file.FileBytes.LongLength,
+                MessageId = downloadable.MessageId
+            });
         }
+
+        return writtenAttachments;
     }
 
     private Task CreateDirAsync(string dirPath)

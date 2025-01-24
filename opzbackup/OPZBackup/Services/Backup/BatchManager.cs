@@ -85,6 +85,7 @@ public class BatchManager
         if (batch.Downloadables.Any())
             await DownloadMessageAttachments(batch.Downloadables, cancelToken);
 
+        await _dbContext.SaveChangesAsync();
         _logger.BatchSaved(SaveTimer.Stop());
     }
 
@@ -158,8 +159,6 @@ public class BatchManager
         if (batch.NewUsers.Any())
             _dbContext.Users.AddRange(batch.NewUsers);
 
-        await _dbContext.SaveChangesAsync();
-
         _logger.MessagesSaved(SaveMessagesTimer.Stop());
     }
 
@@ -173,7 +172,11 @@ public class BatchManager
 
         _logger.Log.Information("Downloading {fileCount} attachments", fileCount);
 
-        await _attachmentDownloader.DownloadRangeAsync(toDownload, _backupContext, cancelToken);
+        var writtenAttachments = await _attachmentDownloader
+            .DownloadRangeAsync(toDownload, _backupContext, cancelToken);
+
+        _dbContext.AddRange(writtenAttachments);
+
         _logger.FilesDownloaded(DownloadTimer.Stop());
     }
 }

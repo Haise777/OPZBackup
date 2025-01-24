@@ -42,10 +42,14 @@ public class StatsService
 
             statisticData[message.AuthorId].MessageCount++;
 
-            if (message.File != null)
+            if (message.HasFile)
             {
-                statisticData[message.AuthorId].FileCount++;
-                // statisticData[message.AuthorId].ByteSize = something;
+                var attachments = await _dbContext.AttachmentFiles
+                .Where(a => a.MessageId == message.Id)
+                .ToListAsync();
+
+                statisticData[message.AuthorId].FileCount += attachments.Count;
+                statisticData[message.AuthorId].ByteSize += (ulong)attachments.Sum(a => (long)a.ByteSize);
             }
         }
 
@@ -59,7 +63,7 @@ public class StatsService
         foreach (var user in userInChannel)
         {
             var statistic = statisticData[user.Id];
-            populatedUsers.Add(new User 
+            populatedUsers.Add(new User
             {
                 Id = user.Id,
                 Username = user.Username,
