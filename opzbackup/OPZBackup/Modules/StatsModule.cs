@@ -24,12 +24,13 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
         // N of messages, N of files, bytesize (for future: active period)
     }
 
+    // Show a embed with all of the above, plus
+    // Each user that sent message at this channel and their
+    // N of messages sent to this channel
+    // N of files sent to this channel
     public async Task GetInDetailChannelStats()
     {
-        // Show a embed with all of the above, plus
-        // Each user that sent message at this channel and their
-        // N of messages sent to this channel
-        // N of files sent to this channel
+
     }
 
     public async Task ListAllUsersStats()

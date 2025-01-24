@@ -1,6 +1,6 @@
 ﻿namespace OPZBackup.Data.Models;
 
-public class Channel : MetadataBase
+public class Channel : Metadata
 {
     public ulong Id { get; set; }
 

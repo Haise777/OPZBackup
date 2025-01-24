@@ -1,6 +1,6 @@
 namespace OPZBackup.Data.Models;
 
-public abstract class MetadataBase
+public class Metadata
 {
     public int MessageCount { get; set; }
 

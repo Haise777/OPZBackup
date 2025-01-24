@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using OPZBackup.Data;
+using OPZBackup.Data.Dto;
+using OPZBackup.Data.Models;
 
 namespace OPZBackup.Services.Stats;
 
@@ -13,32 +15,77 @@ public class StatsService
         _dbContext = dbContext;
     }
 
-
-    public async Task ListAllChannelStats()
+    // Show a embed with all channels, each containing 
+    // N of messages, N of files, bytesize (for future: active period)
+    public async Task<IEnumerable<Channel>> ListAllChannelStats()
     {
-        // Show a embed with all channels, each containing 
-        // N of messages, N of files, bytesize (for future: active period)
+        return await _dbContext.Channels.ToListAsync();
     }
 
-    public async Task GetInDetailChannelStats()
+    // Show a embed with all of the above, plus
+    // Each user that sent message at this channel and their
+    // N of messages sent to this channel
+    // N of files sent to this channel
+    public async Task<ChannelStats> GetInDetailChannelStats(ulong channelId)
     {
-        // Show a embed with all of the above, plus
-        // Each user that sent message at this channel and their
-        // N of messages sent to this channel
-        // N of files sent to this channel
+        var allChannelMessages = await _dbContext.Messages
+        .Where(m => m.ChannelId == channelId)
+        .ToListAsync();
+
+        var statisticData = new Dictionary<ulong, Metadata>();
+
+        foreach (var message in allChannelMessages)
+        {
+            if (statisticData.ContainsKey(message.AuthorId))
+                statisticData.Add(message.AuthorId, new Metadata());
+
+
+            statisticData[message.AuthorId].MessageCount++;
+
+            if (message.File != null)
+            {
+                statisticData[message.AuthorId].FileCount++;
+                // statisticData[message.AuthorId].ByteSize = something;
+            }
+        }
+
+        var userInChannel = await _dbContext.Users
+        .Where(u => statisticData.ContainsKey(u.Id))
+        .Select(u => new { u.Id, u.Username })
+        .ToListAsync();
+
+        var populatedUsers = new List<User>();
+
+        foreach (var user in userInChannel)
+        {
+            var statistic = statisticData[user.Id];
+            populatedUsers.Add(new User 
+            {
+                Id = user.Id,
+                Username = user.Username,
+                MessageCount = statistic.MessageCount,
+                FileCount = statistic.FileCount,
+                ByteSize = statistic.ByteSize,
+            });
+        }
+
+        var channel = await _dbContext.Channels.FirstAsync(c => c.Id == channelId);
+
+        return new ChannelStats(
+            channel.MessageCount,
+            channel.FileCount,
+            channel.ByteSize,
+            populatedUsers
+        );
     }
+
+    //TODO: Create a table in DB that tracks local files with some statistics to it too
 
     // Show a embed with all users, each containing
     // N of messages, N of files, bytesize (for future: active period)
-    public async Task ListAllUsersStats()
+    public async Task<IEnumerable<User>> ListAllUsersStats()
     {
-        var allUsers = await _dbContext.Users.ToListAsync();
-
-        foreach (var user in allUsers)
-        {
-            //Get individual user information here
-        }
-
+        return await _dbContext.Users.ToListAsync();
     }
 
     // Show a embed with all of the above, plus
@@ -47,11 +94,11 @@ public class StatsService
     // like: image: 20, video: 7, audio: 2, others: 34
     // top most common words sent inside a message
     // active period
-    public async Task GetInDetailUserStats()
+    public async Task GetInDetailUserStats(ulong userId)
     {
-        ulong stubUserId = 242142;
-
-        var userMessages = await _dbContext.Messages.Where(m => m.AuthorId == stubUserId).ToListAsync();
+        var userMessages = await _dbContext.Messages
+        .Where(m => m.AuthorId == userId)
+        .ToListAsync();
 
 
 

@@ -1,6 +1,6 @@
 ﻿namespace OPZBackup.Data.Models;
 
-public class User : MetadataBase
+public class User : Metadata
 {
     public ulong Id { get; set; }
 
