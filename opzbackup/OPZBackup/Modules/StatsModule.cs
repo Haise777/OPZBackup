@@ -22,6 +22,10 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
     {
         // Show a embed with all channels, each containing 
         // N of messages, N of files, bytesize (for future: active period)
+
+        var channels = await _statsService.ListAllChannelStats();
+
+        // Response
     }
 
     // Show a embed with all of the above, plus
@@ -30,6 +34,10 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
     // N of files sent to this channel
     public async Task GetInDetailChannelStats()
     {
+        var channelStats = await _statsService.GetInDetailChannelStats(Context.Channel.Id);
+
+        // Response
+        
 
     }
 
@@ -37,6 +45,8 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
     {
         // Show a embed with all users, each containing
         // N of messages, N of files, bytesize (for future: active period)
+
+        // Response
     }
 
     public async Task GetInDetailUserStats()
@@ -47,6 +57,8 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
         // like: image: 20, video: 7, audio: 2, others: 34
         // top most common words sent inside a message
         // active period
+
+        // Response    
     }
 
 }

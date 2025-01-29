@@ -9,10 +9,12 @@ namespace OPZBackup.Services.Stats;
 public class StatsService
 {
     private readonly MyDbContext _dbContext;
+    private readonly MessageStatsProcessor _messageStatsProcessor;
 
-    public StatsService(MyDbContext dbContext)
+    public StatsService(MyDbContext dbContext, MessageStatsProcessor messageStatsProcessor)
     {
         _dbContext = dbContext;
+        _messageStatsProcessor = messageStatsProcessor;
     }
 
     // Show a embed with all channels, each containing 
@@ -22,10 +24,6 @@ public class StatsService
         return await _dbContext.Channels.ToListAsync();
     }
 
-    // Show a embed with all of the above, plus
-    // Each user that sent message at this channel and their
-    // N of messages sent to this channel
-    // N of files sent to this channel
     public async Task<ChannelStats> GetInDetailChannelStats(ulong channelId)
     {
         var allChannelMessages = await _dbContext.Messages
@@ -83,8 +81,6 @@ public class StatsService
         );
     }
 
-    //TODO: Create a table in DB that tracks local files with some statistics to it too
-
     // Show a embed with all users, each containing
     // N of messages, N of files, bytesize (for future: active period)
     public async Task<IEnumerable<User>> ListAllUsersStats()
@@ -104,6 +100,7 @@ public class StatsService
         .Where(m => m.AuthorId == userId)
         .ToListAsync();
 
+        var messageStats = await _messageStatsProcessor.AnalyzeMessageListAsync(userMessages);
 
 
     }
