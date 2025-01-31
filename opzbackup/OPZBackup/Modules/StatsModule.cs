@@ -1,4 +1,5 @@
 using Discord.Interactions;
+using OPZBackup.ResponseHandlers.Stats;
 using OPZBackup.Services.Stats;
 
 namespace OPZBackup.Modules;
@@ -7,10 +8,12 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
 {
 
     private readonly StatsService _statsService;
+    private readonly ResponseHandler _responseHandler;
 
-    public StatsModule(StatsService statsService)
+    public StatsModule(StatsService statsService, ResponseHandler responseHandler)
     {
         _statsService = statsService;
+        _responseHandler = responseHandler;
     }
 
     //Command structure should be like
@@ -18,14 +21,14 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
     // Stats -> Channel -> InDetails
     // Stats -> User -> InDetails -> @<userMention>
 
+    // Show a embed with all channels, each containing 
+    // N of messages, N of files, bytesize (for future: active period)
     public async Task ListAllChannelStats()
     {
-        // Show a embed with all channels, each containing 
-        // N of messages, N of files, bytesize (for future: active period)
+        await Context.Interaction.DeferAsync();
 
         var channels = await _statsService.ListAllChannelStats();
-
-        // Response
+        await _responseHandler.SendChannelsStatsAsync(channels);
     }
 
     // Show a embed with all of the above, plus
@@ -34,31 +37,33 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
     // N of files sent to this channel
     public async Task GetInDetailChannelStats()
     {
+        await Context.Interaction.DeferAsync();
+
         var channelStats = await _statsService.GetInDetailChannelStats(Context.Channel.Id);
-
-        // Response
-        
-
+        await _responseHandler.SendDetailedChannelStatsAsync(channelStats);
     }
 
+    // Show a embed with all users, each containing
+    // N of messages, N of files, bytesize (for future: active period)
     public async Task ListAllUsersStats()
     {
-        // Show a embed with all users, each containing
-        // N of messages, N of files, bytesize (for future: active period)
+        await Context.Interaction.DeferAsync();
 
-        // Response
+        var users = await _statsService.ListAllUsersStats();
+        await _responseHandler.SendUsersStatsAsync(users);
     }
 
+    // Show a embed with all of the above, plus
+    // total num of mention to other users with then number of mention for each individual user
+    // each file type sent with their number of sent
+    // like: image: 20, video: 7, audio: 2, others: 34
+    // top most common words sent inside a message
+    // active period
     public async Task GetInDetailUserStats()
     {
-        // Show a embed with all of the above, plus
-        // total num of mention to other users with then number of mention for each individual user
-        // each file type sent with their number of sent
-        // like: image: 20, video: 7, audio: 2, others: 34
-        // top most common words sent inside a message
-        // active period
+        await Context.Interaction.DeferAsync();
 
-        // Response    
+        var user = await _statsService.GetInDetailUserStats(Context.User.Id);
+        await _responseHandler.SendDetailedUserStatsAsync(user);
     }
-
 }

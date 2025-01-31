@@ -17,8 +17,6 @@ public class StatsService
         _messageStatsProcessor = messageStatsProcessor;
     }
 
-    // Show a embed with all channels, each containing 
-    // N of messages, N of files, bytesize (for future: active period)
     public async Task<IEnumerable<Channel>> ListAllChannelStats()
     {
         return await _dbContext.Channels.ToListAsync();
@@ -81,19 +79,11 @@ public class StatsService
         );
     }
 
-    // Show a embed with all users, each containing
-    // N of messages, N of files, bytesize (for future: active period)
     public async Task<IEnumerable<User>> ListAllUsersStats()
     {
         return await _dbContext.Users.ToListAsync();
     }
 
-    // Show a embed with all of the above, plus
-    // total num of mention to other users with then number of mention for each individual user
-    // each file type sent with their number of sent
-    // like: image: 20, video: 7, audio: 2, others: 34
-    // top most common words sent inside a message
-    // active period
     public async Task<UserStats> GetInDetailUserStats(ulong userId)
     {
         var userMessages = await _dbContext.Messages
