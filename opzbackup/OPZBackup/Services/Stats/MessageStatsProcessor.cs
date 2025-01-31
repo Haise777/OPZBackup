@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using OPZBackup.Data.Dto;
 using OPZBackup.Data.Models;
 
 namespace OPZBackup.Services.Stats;
@@ -25,10 +26,11 @@ public class MessageStatsProcessor
     // top most common words sent inside a message
     // The top most common words, total num of mentions and for whom and 
     // total files with each file type count should all be done in the same loop
-    public async Task<object> AnalyzeMessageListAsync(IEnumerable<Message> messageList)
+    public async Task<UserStats> AnalyzeMessageListAsync(IEnumerable<Message> messageList)
     {
         var wordCounts = new Dictionary<string, int>();
         var mentionCounts = new Dictionary<ulong, int>();
+        var fileTypesCounts = new Dictionary<string, int>();
 
         foreach (var message in messageList)
         {
@@ -36,14 +38,27 @@ public class MessageStatsProcessor
                 continue;
 
             AnalyzeForMentions(message, mentionCounts);
-            AnalyzeForCommonWorlds(message, wordCounts);
+            AnalyzeForCommonWords(message, wordCounts);
+
+            if (message.HasFile)
+                AnalyzeForFileTypes(message, fileTypesCounts);
+
         }
 
-        return wordCounts
-            .OrderByDescending(kvp => kvp.Value)
-            .Take(10)
-            .ToList();
-
+        return new UserStats(
+            mentionCounts,
+            wordCounts,
+            new FileTypeStats(
+                fileTypesCounts["image"],
+                fileTypesCounts["video"],
+                fileTypesCounts["audio"],
+                fileTypesCounts["other"]
+            )
+        );
+        // return wordCounts
+        //     .OrderByDescending(kvp => kvp.Value)
+        //     .Take(10)
+        //     .ToList();
     }
 
     private void AnalyzeForMentions(Message message, Dictionary<ulong, int> mentionCounts)
@@ -51,7 +66,7 @@ public class MessageStatsProcessor
         var mentionMatches = _mentionRegex.Matches(message.Content!);
         foreach (Match match in mentionMatches)
         {
-            var mention = match.Value;
+            var mention = match.Groups[1].Value;
             var userId = ulong.Parse(mention);
 
             if (mentionCounts.TryGetValue(userId, out int count))
@@ -65,7 +80,7 @@ public class MessageStatsProcessor
         }
     }
 
-    private void AnalyzeForCommonWorlds(Message message, Dictionary<string, int> wordCounts)
+    private void AnalyzeForCommonWords(Message message, Dictionary<string, int> wordCounts)
     {
         var wordMatches = _wordRegex.Matches(message.Content!);
         foreach (Match match in wordMatches)
@@ -85,5 +100,34 @@ public class MessageStatsProcessor
                 wordCounts[lowerWord] = 1;
             }
         }
+    }
+
+    private void AnalyzeForFileTypes(Message message, Dictionary<string, int> fileTypesCounts)
+    {
+
+        foreach (var attachment in message.Attachments)
+        {
+            var fileType = GetFileType(attachment.Extension);
+
+            if (fileTypesCounts.TryGetValue(fileType, out int count))
+            {
+                fileTypesCounts[fileType] = count + 1;
+            }
+            else
+            {
+                fileTypesCounts[fileType] = 1;
+            }
+        }
+    }
+
+    private static string GetFileType(string extension)
+    {
+        return extension switch
+        {
+            "jpg" or "jpeg" or "png" or "gif" => "image",
+            "mp4" or "mov" or "avi" => "video",
+            "mp3" or "wav" => "audio",
+            _ => "other"
+        };
     }
 }

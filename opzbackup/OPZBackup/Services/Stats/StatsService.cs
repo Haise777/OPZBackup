@@ -94,14 +94,13 @@ public class StatsService
     // like: image: 20, video: 7, audio: 2, others: 34
     // top most common words sent inside a message
     // active period
-    public async Task GetInDetailUserStats(ulong userId)
+    public async Task<UserStats> GetInDetailUserStats(ulong userId)
     {
         var userMessages = await _dbContext.Messages
         .Where(m => m.AuthorId == userId)
+        .Include(m => m.Attachments)
         .ToListAsync();
 
-        var messageStats = await _messageStatsProcessor.AnalyzeMessageListAsync(userMessages);
-
-
+        return await _messageStatsProcessor.AnalyzeMessageListAsync(userMessages);;
     }
 }
