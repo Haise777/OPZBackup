@@ -8,37 +8,6 @@ namespace OPZBackup.ResponseHandlers.Stats;
 
 public class EmbedResponseFactory
 {
-    // private EmbedBuilder CreateNewEmbed()
-    // {
-    //     var values = parsedValues;
-
-    //     var firstMessageFieldEmbed = new EmbedFieldBuilder()
-    //         .WithName("De:")
-    //         .WithValue(values.StartMessage)
-    //         .WithIsInline(false);
-    //     var lastMessageFieldEmbed = new EmbedFieldBuilder()
-    //         .WithName("Até:")
-    //         .WithValue(values.LastMessage)
-    //         .WithIsInline(false);
-
-    //     var startTimeEmbed = new EmbedFieldBuilder()
-    //         .WithName("Iniciado:")
-    //         .WithValue(values.StartTime)
-    //         .WithIsInline(true);
-    //     var endTimeEmbed = new EmbedFieldBuilder()
-    //         .WithName("Terminado:")
-    //         .WithValue(values.EndTime)
-    //         .WithIsInline(true);
-
-    //     var embedBuilder = new EmbedBuilder()
-    //         .AddField(firstMessageFieldEmbed)
-    //         .AddField(lastMessageFieldEmbed)
-    //         .AddField(startTimeEmbed)
-    //         .AddField(endTimeEmbed);
-
-    //     return embedBuilder;
-    // }
-
     public Embed CreateChannelsStats(IEnumerable<Channel> channels)
     {
         var embedBuilder = CreateBaseEmbedBuilder("Status de todos os canais");
@@ -54,7 +23,6 @@ public class EmbedResponseFactory
             compressedByteSize += channel.CompressedByteSize;
         }
 
-        // To add the totals here in a Embed field before the other fields are added
         var stringBuilder = new StringBuilder();
         stringBuilder.AppendLine($"### Total do servidor em Backup");
         stringBuilder.AppendLine($"Mensagens totais: {totalMessageCount}");
@@ -104,9 +72,6 @@ public class EmbedResponseFactory
         return embedBuilder.Build();
     }
 
-    // Dictionary<ulong, int> NumberOfMentions,
-    // Dictionary<string, int> MostCommonWords,
-    // FileTypeStats fileTypeStats
     public Embed CreateDetailedUserStats(User user, UserStats userStats)
     {
         var embedBuilder = CreateBaseEmbedBuilder("titulo");
@@ -197,17 +162,15 @@ public class EmbedResponseFactory
 
     string FitText(string text, int width)
     {
-        // If the text fits within the width, pad it on the right.
         if (text.Length <= width)
         {
             return text.PadRight(width);
         }
         else
         {
-            // If the width is too small to even display ellipsis, just take a substring.
             if (width <= 3)
                 return text.Substring(0, width);
-            // Otherwise, reserve space for "..." at the end.
+
             return text.Substring(0, width - 3) + "...";
         }
     }
@@ -217,7 +180,6 @@ public class EmbedResponseFactory
     {
         var embedBuilder = new EmbedBuilder();
 
-        // Base stuff for the embed here
         embedBuilder.WithTitle(title);
         embedBuilder.WithColor(Color.Blue);
 
