@@ -84,10 +84,9 @@ public class EmbedResponseFactory
 
         embedBuilder.WithDescription(stringBuilder.ToString());
 
-
         var userTable = BuildUserTableString(channelStats.users);
 
-        embedBuilder.AddField("Lista de canais:",
+        embedBuilder.AddField("Usuários presentes:",
             $"```\n{userTable}\n```");
 
         return embedBuilder.Build();
@@ -95,31 +94,69 @@ public class EmbedResponseFactory
 
     public Embed CreateUsersStats(IEnumerable<User> users)
     {
-        var embedBuilder = CreateBaseEmbedBuilder();
-        var userRows = new List<EmbedFieldBuilder>();
+        var embedBuilder = CreateBaseEmbedBuilder("Todos os usuários");
 
-        foreach (var user in users)
-        {
-            userRows.Add(AddUserStatField(embedBuilder, user));
-        }
+        var userTable = BuildUserTableString(users);
 
-        foreach (var row in userRows)
-            embedBuilder.AddField(row);
+        embedBuilder.AddField("Usuários:",
+            $"```\n{userTable}\n```");
 
         return embedBuilder.Build();
     }
 
-    public Embed CreateDetailedUserStats(UserStats userStats)
+    // Dictionary<ulong, int> NumberOfMentions,
+    // Dictionary<string, int> MostCommonWords,
+    // FileTypeStats fileTypeStats
+    public Embed CreateDetailedUserStats(User user, UserStats userStats)
     {
+        var embedBuilder = CreateBaseEmbedBuilder("titulo");
 
+        var stringBuilder = new StringBuilder();
+        stringBuilder.AppendLine($"### user-name");
+        stringBuilder.AppendLine($"Mensagens totais: {user.MessageCount}");
+        stringBuilder.AppendLine($"Arquivos totais: {user.FileCount}");
+        stringBuilder.AppendLine($"Tamanho total: {user.ByteSize}");
 
+        embedBuilder.WithDescription(stringBuilder.ToString());
 
-        throw new NotImplementedException();
+        embedBuilder.AddField("Top Palavras",
+            GetTopWords(userStats.MostCommonWords));
+
+        var mentionTable = BuildMentionTableString(userStats.NumberOfMentions);
+        embedBuilder.AddField("Top menções:",
+            $"```\n{mentionTable}\n```");
+
+        return embedBuilder.Build();
     }
 
-    private string GetChannelStatField(Channel channel)
+    private string GetTopWords(Dictionary<string, int> topWords)
     {
-        return "";
+        var builder = new StringBuilder();
+
+        foreach (var topWord in topWords)
+        {
+            builder.AppendLine($"* {topWord.Key}");
+        }
+
+        return builder.ToString();
+    }
+
+    private string BuildMentionTableString(Dictionary<ulong, int> mentions)
+    {
+        var builder = new StringBuilder();
+
+        builder.AppendLine("╔════════════════╦═════════╗");
+        builder.AppendLine("║ Usuário        ║ Menções ║");
+
+        foreach (var mention in mentions)
+        {
+            builder.AppendLine("╠════════════════╬═════════╣");
+            builder.AppendLine(
+                $"║ {FitText(mention.Key.ToString(), 14)} ║ {FitText(mention.Value.ToString(), 7)} ║");
+        }
+
+        builder.Append("╚════════════════╩═════════╝");
+        return builder.ToString();
     }
 
     private string BuildChannelTableString(IEnumerable<Channel> channels)
