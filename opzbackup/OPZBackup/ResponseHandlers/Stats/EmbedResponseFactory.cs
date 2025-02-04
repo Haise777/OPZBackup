@@ -27,7 +27,7 @@ public class EmbedResponseFactory
         stringBuilder.AppendLine($"### Total do servidor em Backup");
         stringBuilder.AppendLine($"Mensagens totais: {totalMessageCount}");
         stringBuilder.AppendLine($"Arquivos totais: {totalFileCount}");
-        stringBuilder.AppendLine($"Tamanho total: {compressedByteSize}");
+        stringBuilder.AppendLine($"Tamanho total: {compressedByteSize.ToFormattedString()}");
 
         embedBuilder.WithDescription(stringBuilder.ToString());
 
@@ -48,7 +48,7 @@ public class EmbedResponseFactory
         stringBuilder.AppendLine($"### channel-name");
         stringBuilder.AppendLine($"Mensagens totais: {channelStats.numberOfMessages}");
         stringBuilder.AppendLine($"Arquivos totais: {channelStats.numberOfFiles}");
-        stringBuilder.AppendLine($"Tamanho total: {channelStats.bytesize}");
+        stringBuilder.AppendLine($"Tamanho total: {channelStats.bytesize.ToFormattedString()}");
 
         embedBuilder.WithDescription(stringBuilder.ToString());
 
@@ -78,19 +78,19 @@ public class EmbedResponseFactory
         var user = userStats.user ?? throw new NullReferenceException();
 
         var stringBuilder = new StringBuilder();
-        stringBuilder.AppendLine($"### user-name");
+        stringBuilder.AppendLine($"## {userStats.user.Username}");
         stringBuilder.AppendLine($"Mensagens totais: {user.MessageCount}");
         stringBuilder.AppendLine($"Arquivos totais: {user.FileCount}");
         stringBuilder.AppendLine($"Tamanho total: {user.ByteSize.ToFormattedString()}");
 
         embedBuilder.WithDescription(stringBuilder.ToString());
 
-        embedBuilder.AddField("Top Palavras",
-            GetTopWords(userStats.MostCommonWords));
-
+        var topWords = BuildTopWordsTableString(userStats.MostCommonWords);
         var mentionTable = BuildMentionTableString(userStats.NumberOfMentions);
         var fileTypeTable = BuildFileTypeTableString(userStats.fileTypeStats);
         
+        embedBuilder.AddField("Top palavras:",
+            $"```\n{topWords}\n```");
         embedBuilder.AddField("Top menções:",
             $"```\n{mentionTable}\n```");
         embedBuilder.AddField("Anexos enviados:",
@@ -99,12 +99,30 @@ public class EmbedResponseFactory
         return embedBuilder.Build();
     }
 
+    private string BuildTopWordsTableString(Dictionary<string, int> mostCommonWords)
+    {
+        var builder = new StringBuilder();
+
+        builder.AppendLine("╔════════════════╦═════════╗");
+        builder.AppendLine("║ Palavra        ║ Quanti. ║");
+
+        foreach (var word in mostCommonWords)
+        {
+            builder.AppendLine("╠════════════════╬═════════╣");
+            builder.AppendLine(
+                $"║ {FitText(word.Key, 14)} ║ {FitText(word.Value.ToString(), 7)} ║");
+        }
+
+        builder.Append("╚════════════════╩═════════╝");
+        return builder.ToString();
+    }
+
     private string BuildFileTypeTableString(FileTypeStats fileTypeStats)
     {
         var builder = new StringBuilder();
 
-        builder.AppendLine("╔═════════════╦════════════╗");
-        builder.AppendLine("║ Tipo        ║ Quantidade ║");
+        builder.AppendLine("╔════════════════╦═════════╗");
+        builder.AppendLine("║ Tipo           ║ Quanti. ║");
 
         var dictionary = new Dictionary<string, int>()
         {
@@ -116,24 +134,12 @@ public class EmbedResponseFactory
 
         foreach (var fileType in dictionary)
         {
-            builder.AppendLine("╠═════════════╬════════════╣");
+            builder.AppendLine("╠════════════════╬═════════╣");
             builder.AppendLine(
-                $"║ {FitText(fileType.Key, 11)} ║ {FitText(fileType.Value.ToString(), 10)} ║");
+                $"║ {FitText(fileType.Key, 14)} ║ {FitText(fileType.Value.ToString(), 7)} ║");
         }
 
-        builder.Append("╚═════════════╩════════════╝");
-        return builder.ToString();
-    }
-
-    private string GetTopWords(Dictionary<string, int> topWords)
-    {
-        var builder = new StringBuilder();
-
-        foreach (var topWord in topWords)
-        {
-            builder.AppendLine($"* {topWord.Key}");
-        }
-
+        builder.Append("╚════════════════╩═════════╝");
         return builder.ToString();
     }
 
@@ -193,16 +199,17 @@ public class EmbedResponseFactory
 
     string FitText(string text, int width)
     {
-        if (text.Length <= width)
+        var filteredText = new string(text.Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c)).ToArray());
+        if (filteredText.Length <= width)
         {
-            return text.PadRight(width);
+            return filteredText.PadRight(width);
         }
         else
         {
             if (width <= 3)
-                return text.Substring(0, width);
+                return filteredText.Substring(0, width);
 
-            return text.Substring(0, width - 3) + "...";
+            return filteredText.Substring(0, width - 3) + "...";
         }
     }
 
