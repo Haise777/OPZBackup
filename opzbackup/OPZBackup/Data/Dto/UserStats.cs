@@ -9,6 +9,7 @@ namespace OPZBackup.Data.Dto;
     // active period
 
 public record UserStats(
+    User? user,
     Dictionary<ulong, int> NumberOfMentions,
     Dictionary<string, int> MostCommonWords,
     FileTypeStats fileTypeStats

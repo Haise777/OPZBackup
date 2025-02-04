@@ -11,17 +11,26 @@ namespace OPZBackup.Services.Backup;
 public class MessageProcessor
 {
     private readonly Mapper _mapper;
-    private readonly CacheManager _cacheManager;
 
-    public MessageProcessor(Mapper mapper, CacheManager cacheManager)
+    private readonly MyDbContext _dbContext;
+    // private readonly CacheManager _cacheManager;
+
+    public MessageProcessor(Mapper mapper, MyDbContext dbContext)
     {
         _mapper = mapper;
-        _cacheManager = cacheManager;
+        _dbContext = dbContext;
     }
 
     public async Task<ProcessedBatch> ProcessAsync(IEnumerable<IMessage> fetchedMessages, BackupContext context,
         CancellationToken cancellationToken)
     {
+        var existingMessageIds = await _dbContext.Messages
+            .Select(m => m.Id)
+            .ToListAsync(cancellationToken);
+        var existingUserIds = await _dbContext.Users
+            .Select(u => u.Id)
+            .ToListAsync(cancellationToken);
+        
         var users = new List<User>();
         var messages = new List<Message>();
         var toDownload = new List<Downloadable>();
@@ -33,7 +42,7 @@ public class MessageProcessor
                 continue;
 
             //Checks if the message already exists on the db
-            if (_cacheManager.IsMessageIdCached(message.Id))
+            if (existingMessageIds.Contains(message.Id))
             {
                 if (context.IsUntilLastBackup)
                 {
@@ -54,8 +63,9 @@ public class MessageProcessor
             }
 
             //If the author of this message needs to be saved
-            if (!_cacheManager.IsUserIdCached(message.Author.Id))
+            if (!existingUserIds.Contains(message.Author.Id))
             {
+                existingUserIds.Add(message.Author.Id);
                 var user = _mapper.Map(message.Author);
                 users.Add(user);
             }

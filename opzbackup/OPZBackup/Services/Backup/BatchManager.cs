@@ -80,7 +80,7 @@ public class BatchManager
     public async Task SaveBatchAsync(BackupBatch batch, CancellationToken cancelToken)
     {
         SaveTimer.StartTimer();
-        await SaveMessages(batch);
+        SaveMessages(batch);
 
         if (batch.Downloadables.Any())
             await DownloadMessageAttachments(batch.Downloadables, cancelToken);
@@ -150,7 +150,7 @@ public class BatchManager
         }
     }
 
-    private async Task SaveMessages(BackupBatch batch)
+    private void SaveMessages(BackupBatch batch)
     {
         SaveMessagesTimer.StartTimer();
 

@@ -72,9 +72,10 @@ public class EmbedResponseFactory
         return embedBuilder.Build();
     }
 
-    public Embed CreateDetailedUserStats(User user, UserStats userStats)
+    public Embed CreateDetailedUserStats(UserStats userStats)
     {
         var embedBuilder = CreateBaseEmbedBuilder("titulo");
+        var user = userStats.user ?? throw new NullReferenceException();
 
         var stringBuilder = new StringBuilder();
         stringBuilder.AppendLine($"### user-name");

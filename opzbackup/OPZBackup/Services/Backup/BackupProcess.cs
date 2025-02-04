@@ -12,7 +12,7 @@ using Timer = OPZBackup.Services.Utils.Timer;
 namespace OPZBackup.Services.Backup;
 //BUG: TimeZone is VERY incorrect on the processed messages
 
-public class BackupProcess : IAsyncDisposable
+public class BackupProcess : IAsyncDisposable, IDisposable
 {
     private readonly BackupCompressor _backupCompressor;
     private readonly BatchManagerFactory _batchManagerFactory;
@@ -51,12 +51,7 @@ public class BackupProcess : IAsyncDisposable
         _batchTimer = batchTimer;
     }
 
-    public async ValueTask DisposeAsync()
-    {
-        await _dbContext.DisposeAsync();
-        await _logger.DisposeAsync();
-        _cancelTokenSource.Dispose();
-    }
+
 
     #endregion
 
@@ -235,5 +230,29 @@ public class BackupProcess : IAsyncDisposable
         await _dbContext.SaveChangesAsync();
 
         return backupRegistry;
+    }
+
+    public void Dispose()
+    {
+        _cancelTokenSource.Dispose();
+        _dbContext.Dispose();
+
+        if (_logger != null)
+        {
+            if (_logger is IDisposable loggerDisposable)
+                loggerDisposable.Dispose();
+            else
+                _ = _logger.DisposeAsync().AsTask();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_cancelTokenSource is IAsyncDisposable cancelTokenSourceAsyncDisposable)
+            await cancelTokenSourceAsyncDisposable.DisposeAsync();
+        else
+            _cancelTokenSource.Dispose();
+        await _dbContext.DisposeAsync();
+        await _logger.DisposeAsync();
     }
 }

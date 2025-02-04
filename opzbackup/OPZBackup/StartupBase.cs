@@ -13,6 +13,7 @@ using OPZBackup.Modules;
 using OPZBackup.ResponseHandlers.Backup;
 using OPZBackup.Services;
 using OPZBackup.Services.Backup;
+using OPZBackup.Services.Stats;
 using OPZBackup.Services.Utils;
 using Serilog;
 using Serilog.Events;
@@ -132,6 +133,10 @@ public abstract class StartupBase
                 .AddScoped<BatchManagerFactory>()
                 .AddScoped<BackupCompressor>()
                 .AddScoped<CommandExecutionLogger>()
+                .AddScoped<StatsService>()
+                .AddScoped<MessageStatsProcessor>()
+                .AddScoped<ResponseHandlers.Stats.ResponseHandler>()
+                .AddScoped<ResponseHandlers.Stats.EmbedResponseFactory>()
                 .AddTransient<PerformanceProfiler>()
                 .AddTransient<Timer>()
                 .AddTransient<BackupContextFactory>()

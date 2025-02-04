@@ -46,6 +46,7 @@ public class MessageStatsProcessor
         }
 
         return new UserStats(
+            null,
             mentionCounts,
             wordCounts,
             new FileTypeStats(

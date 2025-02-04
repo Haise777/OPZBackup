@@ -8,36 +8,34 @@ namespace OPZBackup.ResponseHandlers.Stats;
 
 public class ResponseHandler
 {
-    private readonly SocketInteractionContext _interactionContext;
     private readonly EmbedResponseFactory _embedResponseFactory;
 
-    public ResponseHandler(SocketInteractionContext interactionContext, EmbedResponseFactory embedResponseFactory)
+    public ResponseHandler(EmbedResponseFactory embedResponseFactory)
     {
-        _interactionContext = interactionContext;
         _embedResponseFactory = embedResponseFactory;
     }
 
-    public async Task SendChannelsStatsAsync(IEnumerable<Channel> channels)
+    public async Task SendChannelsStatsAsync(IEnumerable<Channel> channels, SocketInteractionContext interactionContext)
     {
         var embed = _embedResponseFactory.CreateChannelsStats(channels);
-        await _interactionContext.Interaction.FollowupAsync(embed: embed);
+        await interactionContext.Interaction.FollowupAsync(embed: embed);
     }
 
-    public async Task SendDetailedChannelStatsAsync(ChannelStats channelStats)
+    public async Task SendDetailedChannelStatsAsync(ChannelStats channelStats, SocketInteractionContext interactionContext)
     {
         var embed = _embedResponseFactory.CreateDetailedChannelStats(channelStats);
-        await _interactionContext.Interaction.FollowupAsync(embed: embed);
+        await interactionContext.Interaction.FollowupAsync(embed: embed);
     }
 
-    public async Task SendUsersStatsAsync(IEnumerable<User> users)
+    public async Task SendUsersStatsAsync(IEnumerable<User> users, SocketInteractionContext interactionContext)
     {
         var embed = _embedResponseFactory.CreateUsersStats(users);
-        await _interactionContext.Interaction.FollowupAsync(embed: embed);
+        await interactionContext.Interaction.FollowupAsync(embed: embed);
     }
 
-    public async Task SendDetailedUserStatsAsync(UserStats userStats)
+    public async Task SendDetailedUserStatsAsync(UserStats userStats, SocketInteractionContext interactionContext)
     {
         var embed = _embedResponseFactory.CreateDetailedUserStats(userStats);
-        await _interactionContext.Interaction.FollowupAsync(embed: embed);
+        await interactionContext.Interaction.FollowupAsync(embed: embed);
     }
 }

@@ -5,7 +5,6 @@ using OPZBackup.Data.Models;
 
 namespace OPZBackup.Services.Stats;
 
-
 public class StatsService
 {
     private readonly MyDbContext _dbContext;
@@ -25,8 +24,8 @@ public class StatsService
     public async Task<ChannelStats> GetInDetailChannelStats(ulong channelId)
     {
         var allChannelMessages = await _dbContext.Messages
-        .Where(m => m.ChannelId == channelId)
-        .ToListAsync();
+            .Where(m => m.ChannelId == channelId)
+            .ToListAsync();
 
         var statisticData = new Dictionary<ulong, Metadata>();
 
@@ -41,8 +40,8 @@ public class StatsService
             if (message.HasFile)
             {
                 var attachments = await _dbContext.AttachmentFiles
-                .Where(a => a.MessageId == message.Id)
-                .ToListAsync();
+                    .Where(a => a.MessageId == message.Id)
+                    .ToListAsync();
 
                 statisticData[message.AuthorId].FileCount += attachments.Count;
                 statisticData[message.AuthorId].ByteSize += (ulong)attachments.Sum(a => (long)a.ByteSize);
@@ -50,9 +49,9 @@ public class StatsService
         }
 
         var userInChannel = await _dbContext.Users
-        .Where(u => statisticData.ContainsKey(u.Id))
-        .Select(u => new { u.Id, u.Username })
-        .ToListAsync();
+            .Where(u => statisticData.ContainsKey(u.Id))
+            .Select(u => new { u.Id, u.Username })
+            .ToListAsync();
 
         var populatedUsers = new List<User>();
 
@@ -87,10 +86,18 @@ public class StatsService
     public async Task<UserStats> GetInDetailUserStats(ulong userId)
     {
         var userMessages = await _dbContext.Messages
-        .Where(m => m.AuthorId == userId)
-        .Include(m => m.Attachments)
-        .ToListAsync();
+            .Where(m => m.AuthorId == userId)
+            .Include(m => m.Attachments)
+            .ToListAsync();
 
-        return await _messageStatsProcessor.AnalyzeMessageListAsync(userMessages);;
+        var user = await _dbContext.Users.FirstAsync(u => u.Id == userId);
+        var userStats = await _messageStatsProcessor.AnalyzeMessageListAsync(userMessages);
+
+        return new UserStats(
+            user,
+            userStats.NumberOfMentions,
+            userStats.MostCommonWords,
+            userStats.fileTypeStats
+            );
     }
 }
