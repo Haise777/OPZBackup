@@ -81,7 +81,7 @@ public class EmbedResponseFactory
         stringBuilder.AppendLine($"### user-name");
         stringBuilder.AppendLine($"Mensagens totais: {user.MessageCount}");
         stringBuilder.AppendLine($"Arquivos totais: {user.FileCount}");
-        stringBuilder.AppendLine($"Tamanho total: {user.ByteSize}");
+        stringBuilder.AppendLine($"Tamanho total: {user.ByteSize.ToFormattedString()}");
 
         embedBuilder.WithDescription(stringBuilder.ToString());
 
@@ -89,10 +89,40 @@ public class EmbedResponseFactory
             GetTopWords(userStats.MostCommonWords));
 
         var mentionTable = BuildMentionTableString(userStats.NumberOfMentions);
+        var fileTypeTable = BuildFileTypeTableString(userStats.fileTypeStats);
+        
         embedBuilder.AddField("Top menções:",
             $"```\n{mentionTable}\n```");
+        embedBuilder.AddField("Anexos enviados:",
+            $"```\n{fileTypeTable}\n```");
 
         return embedBuilder.Build();
+    }
+
+    private string BuildFileTypeTableString(FileTypeStats fileTypeStats)
+    {
+        var builder = new StringBuilder();
+
+        builder.AppendLine("╔═════════════╦════════════╗");
+        builder.AppendLine("║ Tipo        ║ Quantidade ║");
+
+        var dictionary = new Dictionary<string, int>()
+        {
+            { "Imagens", fileTypeStats.NOfSentImages },
+            { "Videos", fileTypeStats.NOfSentVideos },
+            { "Audios", fileTypeStats.NOfSentAudios },
+            { "Outros", fileTypeStats.NOfSentOthers },
+        };
+
+        foreach (var fileType in dictionary)
+        {
+            builder.AppendLine("╠═════════════╬════════════╣");
+            builder.AppendLine(
+                $"║ {FitText(fileType.Key, 11)} ║ {FitText(fileType.Value.ToString(), 10)} ║");
+        }
+
+        builder.Append("╚═════════════╩════════════╝");
+        return builder.ToString();
     }
 
     private string GetTopWords(Dictionary<string, int> topWords)

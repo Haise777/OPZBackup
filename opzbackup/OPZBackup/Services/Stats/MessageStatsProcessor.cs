@@ -37,12 +37,12 @@ public class MessageStatsProcessor
 
         foreach (var message in messageList)
         {
-            if (string.IsNullOrWhiteSpace(message.Content))
-                continue;
-
-            AnalyzeForMentions(message, mentionCounts);
-            AnalyzeForCommonWords(message, wordCounts);
-
+            if (!string.IsNullOrWhiteSpace(message.Content))
+            {
+                AnalyzeForMentions(message, mentionCounts);
+                AnalyzeForCommonWords(message, wordCounts);
+            }
+            
             if (message.HasFile)
                 AnalyzeForFileTypes(message, fileTypesCounts);
         }
@@ -51,7 +51,7 @@ public class MessageStatsProcessor
             null,
             mentionCounts,
             wordCounts.OrderByDescending(kv => kv.Value)
-                .Take(10).ToDictionary(),
+                .Take(5).ToDictionary(),
             new FileTypeStats(
                 fileTypesCounts["image"],
                 fileTypesCounts["video"],
@@ -59,10 +59,6 @@ public class MessageStatsProcessor
                 fileTypesCounts["other"]
             )
         );
-        // return wordCounts
-        //     .OrderByDescending(kvp => kvp.Value)
-        //     .Take(10)
-        //     .ToList();
     }
 
     private void AnalyzeForMentions(Message message, Dictionary<ulong, int> mentionCounts)
