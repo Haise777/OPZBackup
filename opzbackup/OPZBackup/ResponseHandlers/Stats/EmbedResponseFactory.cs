@@ -129,17 +129,17 @@ public class EmbedResponseFactory
     {
         var builder = new StringBuilder();
 
-        builder.AppendLine("╔════════════════╦═══════════╦══════════╦═════════╗");
-        builder.AppendLine("║ Canal          ║ Mensagens ║ Arquivos ║ Tamanho ║");
+        builder.AppendLine("╔════════════════╦═══════════╦══════════╦════════════╗");
+        builder.AppendLine("║ Canal          ║ Mensagens ║ Arquivos ║ Tamanho    ║");
 
         foreach (var channel in channels)
         {
-            builder.AppendLine("╠════════════════╬═══════════╬══════════╬═════════╣");
+            builder.AppendLine("╠════════════════╬═══════════╬══════════╬════════════╣");
             builder.AppendLine(
-                $"║ {FitText(channel.Name, 14)} ║ {FitText(channel.MessageCount.ToString(), 9)} ║ {FitText(channel.FileCount.ToString(), 8)} ║ {FitText(channel.CompressedByteSize.ToFormattedString(), 8)} ║");
+                $"║ {FitText(channel.Name, 14)} ║ {FitText(channel.MessageCount.ToString(), 9)} ║ {FitText(channel.FileCount.ToString(), 8)} ║ {FitText(channel.CompressedByteSize.ToFormattedString(), 10)} ║");
         }
 
-        builder.Append("╚════════════════╩═══════════╩══════════╩═════════╝");
+        builder.Append("╚════════════════╩═══════════╩══════════╩════════════╝");
         return builder.ToString();
     }
 
@@ -147,17 +147,17 @@ public class EmbedResponseFactory
     {
         var builder = new StringBuilder();
 
-        builder.AppendLine("╔════════════════╦═══════════╦══════════╦═════════╗");
-        builder.AppendLine("║ Usuário        ║ Mensagens ║ Arquivos ║ Tamanho ║");
+        builder.AppendLine("╔════════════════╦═══════════╦══════════╦════════════╗");
+        builder.AppendLine("║ Usuário        ║ Mensagens ║ Arquivos ║ Tamanho    ║");
 
         foreach (var user in users)
         {
-            builder.AppendLine("╠════════════════╬═══════════╬══════════╬═════════╣");
+            builder.AppendLine("╠════════════════╬═══════════╬══════════╬════════════╣");
             builder.AppendLine(
-                $"║ {FitText(user.Username, 14)} ║ {FitText(user.MessageCount.ToString(), 9)} ║ {FitText(user.FileCount.ToString(), 8)} ║ {FitText(user.ByteSize.ToFormattedString(), 8)} ║");
+                $"║ {FitText(user.Username, 14)} ║ {FitText(user.MessageCount.ToString(), 9)} ║ {FitText(user.FileCount.ToString(), 8)} ║ {FitText(user.ByteSize.ToFormattedString(), 10)} ║");
         }
 
-        builder.Append("╚════════════════╩═══════════╩══════════╩═════════╝");
+        builder.Append("╚════════════════╩═══════════╩══════════╩════════════╝");
         return builder.ToString();
     }
 

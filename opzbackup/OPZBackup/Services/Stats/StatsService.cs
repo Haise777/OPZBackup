@@ -21,6 +21,8 @@ public class StatsService
         return await _dbContext.Channels.ToListAsync();
     }
 
+    private record UserData(ulong Id, string Username);
+
     public async Task<ChannelStats> GetInDetailChannelStats(ulong channelId)
     {
         var allChannelMessages = await _dbContext.Messages
@@ -31,7 +33,7 @@ public class StatsService
 
         foreach (var message in allChannelMessages)
         {
-            if (statisticData.ContainsKey(message.AuthorId))
+            if (!statisticData.ContainsKey(message.AuthorId))
                 statisticData.Add(message.AuthorId, new Metadata());
 
 
@@ -47,10 +49,12 @@ public class StatsService
                 statisticData[message.AuthorId].ByteSize += (ulong)attachments.Sum(a => (long)a.ByteSize);
             }
         }
+        
+        var allUserIds = statisticData.Keys.ToList();
 
         var userInChannel = await _dbContext.Users
-            .Where(u => statisticData.ContainsKey(u.Id))
-            .Select(u => new { u.Id, u.Username })
+            .Where(u => allUserIds.Contains(u.Id))
+            .Select(u => new UserData(u.Id, u.Username))
             .ToListAsync();
 
         var populatedUsers = new List<User>();

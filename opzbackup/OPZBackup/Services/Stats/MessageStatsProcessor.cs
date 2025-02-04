@@ -6,7 +6,6 @@ namespace OPZBackup.Services.Stats;
 
 public class MessageStatsProcessor
 {
-
     private readonly Regex _wordRegex = new(@"[\w']+");
     private readonly Regex _mentionRegex = new(@"<@!?(\d+)>"); //TODO: to match only mention parts inside the string
     private readonly char[] _punctuationChars;
@@ -31,6 +30,10 @@ public class MessageStatsProcessor
         var wordCounts = new Dictionary<string, int>();
         var mentionCounts = new Dictionary<ulong, int>();
         var fileTypesCounts = new Dictionary<string, int>();
+        fileTypesCounts["image"] = 0;
+        fileTypesCounts["video"] = 0;
+        fileTypesCounts["audio"] = 0;
+        fileTypesCounts["other"] = 0;
 
         foreach (var message in messageList)
         {
@@ -42,13 +45,13 @@ public class MessageStatsProcessor
 
             if (message.HasFile)
                 AnalyzeForFileTypes(message, fileTypesCounts);
-
         }
 
         return new UserStats(
             null,
             mentionCounts,
-            wordCounts,
+            wordCounts.OrderByDescending(kv => kv.Value)
+                .Take(10).ToDictionary(),
             new FileTypeStats(
                 fileTypesCounts["image"],
                 fileTypesCounts["video"],
@@ -105,7 +108,6 @@ public class MessageStatsProcessor
 
     private void AnalyzeForFileTypes(Message message, Dictionary<string, int> fileTypesCounts)
     {
-
         foreach (var attachment in message.Attachments)
         {
             var fileType = GetFileType(attachment.Extension);
