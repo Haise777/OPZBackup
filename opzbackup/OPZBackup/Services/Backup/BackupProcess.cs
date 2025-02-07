@@ -10,7 +10,6 @@ using OPZBackup.Services.Utils;
 using Timer = OPZBackup.Services.Utils.Timer;
 
 namespace OPZBackup.Services.Backup;
-//BUG: TimeZone is VERY incorrect on the processed messages
 
 public class BackupProcess : IAsyncDisposable, IDisposable
 {
