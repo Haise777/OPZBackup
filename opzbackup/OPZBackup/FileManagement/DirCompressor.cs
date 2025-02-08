@@ -4,7 +4,6 @@ namespace OPZBackup.FileManagement;
 
 public class DirCompressor
 {
-    //BUG: Fixed-Needs testing: Its skipping over the folder files when compressing
     public virtual async Task<long> CompressAsync(string channelDirPath, string targetDirPath,
         CancellationToken cancellationToken)
     {

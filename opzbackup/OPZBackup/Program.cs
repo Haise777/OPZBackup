@@ -24,7 +24,7 @@ public class Program : StartupBase
         {
             Log.Information($"OPZBot - v{App.Version} \n" + "Starting host");
 
-            var culture = new CultureInfo("en-US"); //TODO: Move this to the App class and config file
+            var culture = new CultureInfo("pt-BR"); //TODO: Move this to the App class and config file
             CultureInfo.DefaultThreadCurrentCulture = culture;
 
             var hostBuilder = Host.CreateDefaultBuilder(args)

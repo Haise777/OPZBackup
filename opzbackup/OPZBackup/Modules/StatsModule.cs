@@ -9,7 +9,6 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly StatsService _statsService;
     private readonly ResponseHandler _responseHandler;
-
     public StatsModule(StatsService statsService, ResponseHandler responseHandler)
     {
         _statsService = statsService;
@@ -22,6 +21,7 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
         await Context.Interaction.DeferAsync();
 
         var channels = await _statsService.ListAllChannelStats();
+        throw new NotImplementedException("Cabum");
         await _responseHandler.SendChannelsStatsAsync(channels, Context);
     }
     

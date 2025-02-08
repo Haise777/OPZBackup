@@ -73,10 +73,10 @@ public abstract class StartupBase
         var logger = services.Logger.ForContext("System", LoggerUtils.ColorText("DiscordNet", 12));
 
         services.SocketClient.Log += msg =>
-            Task.Run(() => logger.Write(LoggerUtils.ParseLogLevel(msg.Severity), msg.Exception, msg.Message));
+            Task.Run(() => logger.Write(LoggerUtils.ParseLogLevel(msg.Severity), msg.Exception, msg.Message ?? ""));
 
         services.Commands.Log += msg =>
-            Task.Run(() => logger.Write(LoggerUtils.ParseLogLevel(msg.Severity), msg.Exception, msg.Message));
+            Task.Run(() => logger.Write(LoggerUtils.ParseLogLevel(msg.Severity), msg.Exception, msg.Message ?? ""));
 
         services.SocketClient.Ready += async () =>
         {

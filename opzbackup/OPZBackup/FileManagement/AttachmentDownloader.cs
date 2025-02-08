@@ -9,7 +9,7 @@ namespace OPZBackup.FileManagement;
 public class AttachmentDownloader
 {
     private static readonly SemaphoreSlim
-        _downloadLimiter = new(50, 50); //TODO: Make the value be configurable in the appsettings
+        _downloadLimiter = new(75, 75); //TODO: Make the value be configurable in the appsettings
 
     private readonly HttpClient _client;
 

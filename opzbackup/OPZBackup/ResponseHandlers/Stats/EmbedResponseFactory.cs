@@ -165,17 +165,17 @@ public class EmbedResponseFactory
     {
         var builder = new StringBuilder();
 
-        builder.AppendLine("╔════════════════╦═══════════╦══════════╦════════════╗");
-        builder.AppendLine("║ Canal          ║ Mensagens ║ Arquivos ║ Tamanho    ║");
+        builder.AppendLine("╔═════════════════╦═══════════╦══════════╦════════════╗");
+        builder.AppendLine("║ Canal           ║ Mensagens ║ Arquivos ║ Tamanho    ║");
 
         foreach (var channel in channels)
         {
-            builder.AppendLine("╠════════════════╬═══════════╬══════════╬════════════╣");
+            builder.AppendLine("╠═════════════════╬═══════════╬══════════╬════════════╣");
             builder.AppendLine(
-                $"║ {FitText(channel.Name, 14)} ║ {FitText(channel.MessageCount.ToString(), 9)} ║ {FitText(channel.FileCount.ToString(), 8)} ║ {FitText(channel.CompressedByteSize.ToFormattedString(), 10)} ║");
+                $"║ {FitText(channel.Name, 15)} ║ {FitText(channel.MessageCount.ToString(), 9)} ║ {FitText(channel.FileCount.ToString(), 8)} ║ {FitText(channel.CompressedByteSize.ToFormattedString(), 10)} ║");
         }
 
-        builder.Append("╚════════════════╩═══════════╩══════════╩════════════╝");
+        builder.Append("╚═════════════════╩═══════════╩══════════╩════════════╝");
         return builder.ToString();
     }
 
@@ -199,7 +199,7 @@ public class EmbedResponseFactory
 
     string FitText(string text, int width)
     {
-        var filteredText = new string(text.Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c)).ToArray());
+        var filteredText = new string(text.Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c) || char.IsPunctuation(c)).ToArray());
         if (filteredText.Length <= width)
         {
             return filteredText.PadRight(width);
