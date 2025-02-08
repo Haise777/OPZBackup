@@ -68,6 +68,17 @@ public class ServiceResponseHandler
             m.Embed = null;
         });
     }
+    
+    public async Task SendEmptyBackupAttemptAsync()
+    {
+        if (_interaction == null) throw new InvalidOperationException("The interaction has not been created yet.");
+
+        await _interaction.ModifyAsync(m =>
+        {
+            m.Content = "*Backup estava vazio, o processo foi cancelado.*";
+            m.Embed = null;
+        });
+    }
 
     private async Task GhostPing()
     {

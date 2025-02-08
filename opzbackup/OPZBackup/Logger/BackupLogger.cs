@@ -119,6 +119,11 @@ public class BackupLogger : IAsyncDisposable
 
         LogStatisticalPerformance(batchTimer, compressTimer, performanceTimers);
     }
+    
+    public void EmptyBackup()
+    {
+        Log.Information("Empty Backup attempt, backup was cancelled'");
+    }
 
     private void LogStatisticalPerformance(TimeValue batchTimer, TimeValue compressTimer,
         ImmutableDictionary<string, TimeValue> performanceTimers)

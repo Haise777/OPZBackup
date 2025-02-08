@@ -67,6 +67,17 @@ public class BackupProcess : IAsyncDisposable, IDisposable
             await _responseHandler.SendStartNotificationAsync(_context);
 
             await BackupMessages();
+
+            if (_context.MessageCount == 0)
+            {
+                _logger.EmptyBackup();
+                var sendCancelled = _responseHandler.SendEmptyBackupAttemptAsync();
+                var rollBack = _context.RollbackAsync();
+                await rollBack;
+                await sendCancelled;
+                return;
+            }
+            
             await CompressFiles();
             await UpdateFullStatisticData();
         }
