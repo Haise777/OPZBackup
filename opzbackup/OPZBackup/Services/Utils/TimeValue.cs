@@ -13,7 +13,8 @@ public class TimeValue
     // }
     
     protected int TotalFrames;
-    public TimeSpan Mean => Total / TotalFrames;
+    // public TimeSpan Mean => Total / TotalFrames;
+    public TimeSpan Mean => TotalFrames == 0 ? TimeSpan.Zero : Total / TotalFrames;
     public TimeSpan Total { get; protected set; } = TimeSpan.Zero;
     
 }

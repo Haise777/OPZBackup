@@ -7,7 +7,7 @@ namespace OPZBackup.Services.Stats;
 public class MessageStatsProcessor
 {
     private readonly Regex _wordRegex = new(@"[\w']+");
-    private readonly Regex _mentionRegex = new(@"<@!?(\d+)>"); //TODO: to match only mention parts inside the string
+    private readonly Regex _mentionRegex = new(@"<@!?(\d+)>");
     private readonly char[] _punctuationChars;
 
     public MessageStatsProcessor()
