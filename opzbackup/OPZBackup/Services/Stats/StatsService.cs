@@ -89,6 +89,10 @@ public class StatsService
 
     public async Task<UserStatsWithUsernames> GetInDetailUserStats(ulong userId)
     {
+        //TODO: Do something about a user not existing
+        if (!await _dbContext.Users.AnyAsync(u => u.Id == userId))
+            return null;
+        
         var userMessages = await _dbContext.Messages
             .Where(m => m.AuthorId == userId)
             .Include(m => m.Attachments)
@@ -111,6 +115,7 @@ public class StatsService
             .Select(u => new { u.Username, u.Id })
             .ToListAsync();
 
+        //TODO: Temporary solution
         var usernameWithMentionsNumber = new Dictionary<string, int>();
 
         foreach (var userIdChunk in userStats.NumberOfMentions)

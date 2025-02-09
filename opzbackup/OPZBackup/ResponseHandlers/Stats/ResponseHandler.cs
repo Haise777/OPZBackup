@@ -195,7 +195,7 @@ public class ResponseHandler
         else if (userInteractionState.selectBoxOption == "table2")
             tableLenght = userInteractionState.userStats.NumberOfMentions.Length;
 
-        var noAdvance = userInteractionState.currentTablePage[userInteractionState.selectBoxOption] + 1 >= tableLenght;
+        var noAdvance = userInteractionState.currentTablePage[userInteractionState.selectBoxOption] >= tableLenght - 1;
         var noBack = userInteractionState.currentTablePage[userInteractionState.selectBoxOption] == 0;
         
         var menuBuilder = new SelectMenuBuilder()
@@ -250,7 +250,7 @@ public class ResponseHandler
         else if (detailedUserInteractionState.selectBoxOption == "table2")
             tableLenght = detailedUserInteractionState.userStats.NumberOfMentions.Length;
 
-        var noAdvance = detailedUserInteractionState.currentTablePage[detailedUserInteractionState.selectBoxOption] + 1 >= tableLenght - 1;
+        var noAdvance = detailedUserInteractionState.currentTablePage[detailedUserInteractionState.selectBoxOption] >= tableLenght - 1;
         var noBack = detailedUserInteractionState.currentTablePage[detailedUserInteractionState.selectBoxOption] == 0;
         
         var buttonBuilder = new ButtonBuilder()

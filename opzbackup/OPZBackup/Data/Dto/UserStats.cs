@@ -15,6 +15,7 @@ public record UserStats(
     FileTypeStats fileTypeStats
 );
 
+//TODO: Temporary solution
 public record UserStatsWithUsernames(
     User? user,
     KeyValuePair<string, int>[][] NumberOfMentions,

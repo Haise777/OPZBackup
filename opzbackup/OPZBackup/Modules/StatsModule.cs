@@ -1,5 +1,7 @@
+using Discord;
 using Discord.Commands;
 using Discord.Interactions;
+using Discord.WebSocket;
 using OPZBackup.Data.Dto;
 using OPZBackup.ResponseHandlers.Stats;
 using OPZBackup.Services.Stats;
@@ -55,11 +57,11 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
     }
 
     [SlashCommand("usuario-detalhado", "efetuar backup deste canal")]
-    public async Task GetInDetailUserStats()
+    public async Task GetInDetailUserStats(IUser user)
     {
         await Context.Interaction.DeferAsync();
-
-        var userStats = await _statsService.GetInDetailUserStats(Context.User.Id);
+        
+        var userStats = await _statsService.GetInDetailUserStats(user.Id);
         var interaction = _statInteractionCache.AddInteraction(Context, userStats, _responseHandler);
         
         await _responseHandler.SendDetailedUserStatsAsync(interaction, Context);
