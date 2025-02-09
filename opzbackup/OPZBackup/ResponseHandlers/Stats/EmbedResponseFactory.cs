@@ -72,7 +72,7 @@ public class EmbedResponseFactory
         return embedBuilder.Build();
     }
 
-    public Embed CreateDetailedUserStats(UserStats userStats)
+    public Embed CreateDetailedUserStats(UserStats userStats, int table1Page = 0, int table2Page = 0)
     {
         var embedBuilder = CreateBaseEmbedBuilder("titulo");
         var user = userStats.user ?? throw new NullReferenceException();
@@ -85,14 +85,16 @@ public class EmbedResponseFactory
 
         embedBuilder.WithDescription(stringBuilder.ToString());
 
-        var topWords = BuildTopWordsTableString(userStats.MostCommonWords);
-        var mentionTable = BuildMentionTableString(userStats.NumberOfMentions);
+        var topWords = BuildTopWordsTableString(userStats.MostCommonWords[table1Page].ToDictionary());
+        var mentionTable = BuildMentionTableString(userStats.NumberOfMentions[table2Page].ToDictionary());
         var fileTypeTable = BuildFileTypeTableString(userStats.fileTypeStats);
         
         embedBuilder.AddField("Top palavras:",
-            $"```\n{topWords}\n```");
+            $"```\n{topWords}\n" +
+            $"<{table1Page+1}/{userStats.MostCommonWords.Length}>```");
         embedBuilder.AddField("Top menções:",
-            $"```\n{mentionTable}\n```");
+            $"```\n{mentionTable}\n" +
+            $"<{table2Page+1}/{userStats.NumberOfMentions.Length}>```");
         embedBuilder.AddField("Anexos enviados:",
             $"```\n{fileTypeTable}\n```");
 

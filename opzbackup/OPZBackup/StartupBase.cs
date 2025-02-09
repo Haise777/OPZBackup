@@ -117,6 +117,7 @@ public abstract class StartupBase
                 )
                 .AddSingleton<CacheManager>()
                 .AddSingleton<Mapper>()
+                .AddSingleton<StatInteractionCache>()
                 .AddScoped<InteractionHandler>()
                 .AddScoped<BackupLoggerFactory>()
                 .AddScoped<BackupProcess>()

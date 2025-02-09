@@ -38,7 +38,7 @@ public class InteractionHandler
         {
             var ctx = new SocketInteractionContext(_client, arg);
 
-            _logger.LogExecution(arg, ctx.User);
+            // _logger.LogExecution(arg, ctx.User);
             await _commands.ExecuteCommandAsync(ctx, _services);
         }
         catch (Exception ex)

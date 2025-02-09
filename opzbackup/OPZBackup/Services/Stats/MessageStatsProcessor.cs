@@ -42,16 +42,15 @@ public class MessageStatsProcessor
                 AnalyzeForMentions(message, mentionCounts);
                 AnalyzeForCommonWords(message, wordCounts);
             }
-            
+
             if (message.HasFile)
                 AnalyzeForFileTypes(message, fileTypesCounts);
         }
 
         return new UserStats(
             null,
-            mentionCounts,
-            wordCounts.OrderByDescending(kv => kv.Value)
-                .Take(5).ToDictionary(),
+            mentionCounts.Chunk(10).ToArray(),
+            wordCounts.OrderByDescending(kv => kv.Value).Chunk(10).ToArray(),
             new FileTypeStats(
                 fileTypesCounts["image"],
                 fileTypesCounts["video"],
