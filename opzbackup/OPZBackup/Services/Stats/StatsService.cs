@@ -49,7 +49,7 @@ public class StatsService
                 statisticData[message.AuthorId].ByteSize += (ulong)attachments.Sum(a => (long)a.ByteSize);
             }
         }
-        
+
         var allUserIds = statisticData.Keys.ToList();
 
         var userInChannel = await _dbContext.Users
@@ -87,7 +87,7 @@ public class StatsService
         return await _dbContext.Users.ToListAsync();
     }
 
-    public async Task<UserStats> GetInDetailUserStats(ulong userId)
+    public async Task<UserStatsWithUsernames> GetInDetailUserStats(ulong userId)
     {
         var userMessages = await _dbContext.Messages
             .Where(m => m.AuthorId == userId)
@@ -97,11 +97,39 @@ public class StatsService
         var user = await _dbContext.Users.FirstAsync(u => u.Id == userId);
         var userStats = await _messageStatsProcessor.AnalyzeMessageListAsync(userMessages);
 
-        return new UserStats(
+        var userMentionsIds = new List<ulong>();
+        foreach (var userIdChunk in userStats.NumberOfMentions)
+        {
+            foreach (var userMentionId in userIdChunk)
+            {
+                userMentionsIds.Add(userMentionId.Key);
+            }
+        }
+
+        var usernames = await _dbContext.Users
+            .Where(u => userMentionsIds.Contains(u.Id))
+            .Select(u => new { u.Username, u.Id })
+            .ToListAsync();
+
+        var usernameWithMentionsNumber = new Dictionary<string, int>();
+
+        foreach (var userIdChunk in userStats.NumberOfMentions)
+        {
+            foreach (var userMentionId in userIdChunk)
+            {
+                if (!usernames.Select(u => u.Id).Contains(userMentionId.Key))
+                    continue;
+                
+                usernameWithMentionsNumber
+                    .Add(usernames.First(u => u.Id == userMentionId.Key).Username, userMentionId.Value);
+            }
+        }
+        
+        return new UserStatsWithUsernames(
             user,
-            userStats.NumberOfMentions,
+            usernameWithMentionsNumber.Chunk(10).ToArray(),
             userStats.MostCommonWords,
             userStats.fileTypeStats
-            );
+        );
     }
 }

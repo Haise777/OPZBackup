@@ -78,7 +78,7 @@ public class EmbedResponseFactory
         return embedBuilder.Build();
     }
 
-    public Embed CreateDetailedUserStats(UserStats userStats, string selectedTable, int currentPage = 0)
+    public Embed CreateDetailedUserStats(UserStatsWithUsernames userStats, string selectedTable, int currentPage = 0)
     {
         var embedBuilder = CreateBaseEmbedBuilder("titulo");
         var user = userStats.user ?? throw new NullReferenceException();
@@ -159,7 +159,7 @@ public class EmbedResponseFactory
         return builder.ToString();
     }
 
-    private string BuildMentionTableString(Dictionary<ulong, int> mentions)
+    private string BuildMentionTableString(Dictionary<string, int> mentions)
     {
         var builder = new StringBuilder();
 
@@ -170,7 +170,7 @@ public class EmbedResponseFactory
         {
             builder.AppendLine("╠════════════════╬═════════╣");
             builder.AppendLine(
-                $"║ {FitText(mention.Key.ToString(), 14)} ║ {FitText(mention.Value.ToString(), 7)} ║");
+                $"║ {FitText(mention.Key, 14)} ║ {FitText(mention.Value.ToString(), 7)} ║");
         }
 
         builder.Append("╚════════════════╩═════════╝");

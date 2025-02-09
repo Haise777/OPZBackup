@@ -14,7 +14,7 @@ public class StatInteractionCache
     
 
 
-    public DetailedUserInteractionState AddInteraction(SocketInteractionContext interaction, UserStats userStats, ResponseHandler responseHandler)
+    public DetailedUserInteractionState AddInteraction(SocketInteractionContext interaction, UserStatsWithUsernames userStats, ResponseHandler responseHandler)
     {
         var interactionState = new DetailedUserInteractionState(interaction, userStats, responseHandler);
 
@@ -185,7 +185,7 @@ public class ChannelsInteractionState
 public class DetailedUserInteractionState
 {
     public string selectBoxOption = "table1";
-    public readonly UserStats userStats;
+    public readonly UserStatsWithUsernames userStats;
     public SocketInteractionContext Interaction { get; private set; }
     public readonly ResponseHandler responseHandler;
 
@@ -196,7 +196,7 @@ public class DetailedUserInteractionState
         ["table3"] = 0
     };
 
-    public DetailedUserInteractionState(SocketInteractionContext interaction, UserStats userStats, ResponseHandler responseHandler)
+    public DetailedUserInteractionState(SocketInteractionContext interaction, UserStatsWithUsernames userStats, ResponseHandler responseHandler)
     {
         this.userStats = userStats;
         this.responseHandler = responseHandler;

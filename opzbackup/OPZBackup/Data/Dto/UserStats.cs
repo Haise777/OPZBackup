@@ -14,3 +14,10 @@ public record UserStats(
     KeyValuePair<string, int>[][] MostCommonWords,
     FileTypeStats fileTypeStats
 );
+
+public record UserStatsWithUsernames(
+    User? user,
+    KeyValuePair<string, int>[][] NumberOfMentions,
+    KeyValuePair<string, int>[][] MostCommonWords,
+    FileTypeStats fileTypeStats
+);
