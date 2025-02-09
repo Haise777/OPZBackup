@@ -77,8 +77,8 @@ public class StatsService
         return new ChannelStats(
             channel.MessageCount,
             channel.FileCount,
-            channel.ByteSize,
-            populatedUsers
+            channel.CompressedByteSize,
+            populatedUsers.Chunk(5).ToArray()
         );
     }
 

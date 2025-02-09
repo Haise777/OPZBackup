@@ -8,7 +8,7 @@ namespace OPZBackup.ResponseHandlers.Stats;
 
 public class EmbedResponseFactory
 {
-    public Embed CreateChannelsStats(IEnumerable<Channel> channels)
+    public Embed CreateChannelsStats(Channel[][] channels, int currentPage = 0)
     {
         var embedBuilder = CreateBaseEmbedBuilder("Status de todos os canais");
 
@@ -16,11 +16,14 @@ public class EmbedResponseFactory
         int totalFileCount = 0;
         ulong compressedByteSize = 0;
 
-        foreach (var channel in channels)
+        foreach (var channelChunk in channels)
         {
-            totalMessageCount += channel.MessageCount;
-            totalFileCount += channel.FileCount;
-            compressedByteSize += channel.CompressedByteSize;
+            foreach (var channel in channelChunk)
+            {
+                totalMessageCount += channel.MessageCount;
+                totalFileCount += channel.FileCount;
+                compressedByteSize += channel.CompressedByteSize;
+            }
         }
 
         var stringBuilder = new StringBuilder();
@@ -31,15 +34,16 @@ public class EmbedResponseFactory
 
         embedBuilder.WithDescription(stringBuilder.ToString());
 
-        var channelTable = BuildChannelTableString(channels);
+        var channelTable = BuildChannelTableString(channels[currentPage]);
 
         embedBuilder.AddField("Lista de canais:",
-            $"```\n{channelTable}\n```");
+            $"```\n{channelTable}\n" +
+            $"<{currentPage+1}/{channels.Length}>```");
 
         return embedBuilder.Build();
     }
 
-    public Embed CreateDetailedChannelStats(ChannelStats channelStats)
+    public Embed CreateDetailedChannelStats(ChannelStats channelStats, int currentPage = 0)
     {
         var embedBuilder = CreateBaseEmbedBuilder("Title");
 
@@ -52,22 +56,24 @@ public class EmbedResponseFactory
 
         embedBuilder.WithDescription(stringBuilder.ToString());
 
-        var userTable = BuildUserTableString(channelStats.users);
+        var userTable = BuildUserTableString(channelStats.users[currentPage]);
 
         embedBuilder.AddField("Usuários presentes:",
-            $"```\n{userTable}\n```");
+            $"```\n{userTable}\n" +
+            $"<{currentPage+1}/{channelStats.users.Length}>```");
 
         return embedBuilder.Build();
     }
 
-    public Embed CreateUsersStats(IEnumerable<User> users)
+    public Embed CreateUsersStats(User[][] users, int currentPage = 0)
     {
         var embedBuilder = CreateBaseEmbedBuilder("Todos os usuários");
 
-        var userTable = BuildUserTableString(users);
+        var userTable = BuildUserTableString(users[currentPage]);
 
         embedBuilder.AddField("Usuários:",
-            $"```\n{userTable}\n```");
+            $"```\n{userTable}\n" +
+            $"<{currentPage + 1}/{users.Length}>```");
 
         return embedBuilder.Build();
     }
@@ -88,13 +94,13 @@ public class EmbedResponseFactory
         var topWords = BuildTopWordsTableString(userStats.MostCommonWords[table1Page].ToDictionary());
         var mentionTable = BuildMentionTableString(userStats.NumberOfMentions[table2Page].ToDictionary());
         var fileTypeTable = BuildFileTypeTableString(userStats.fileTypeStats);
-        
+
         embedBuilder.AddField("Top palavras:",
             $"```\n{topWords}\n" +
-            $"<{table1Page+1}/{userStats.MostCommonWords.Length}>```");
+            $"<{table1Page + 1}/{userStats.MostCommonWords.Length}>```");
         embedBuilder.AddField("Top menções:",
             $"```\n{mentionTable}\n" +
-            $"<{table2Page+1}/{userStats.NumberOfMentions.Length}>```");
+            $"<{table2Page + 1}/{userStats.NumberOfMentions.Length}>```");
         embedBuilder.AddField("Anexos enviados:",
             $"```\n{fileTypeTable}\n```");
 
@@ -181,7 +187,7 @@ public class EmbedResponseFactory
         return builder.ToString();
     }
 
-        private string BuildUserTableString(IEnumerable<User> users)
+    private string BuildUserTableString(IEnumerable<User> users)
     {
         var builder = new StringBuilder();
 
@@ -201,7 +207,8 @@ public class EmbedResponseFactory
 
     string FitText(string text, int width)
     {
-        var filteredText = new string(text.Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c) || char.IsPunctuation(c)).ToArray());
+        var filteredText = new string(text
+            .Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c) || char.IsPunctuation(c)).ToArray());
         if (filteredText.Length <= width)
         {
             return filteredText.PadRight(width);

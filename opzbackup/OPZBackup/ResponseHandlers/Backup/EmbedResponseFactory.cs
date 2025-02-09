@@ -123,12 +123,16 @@ public class EmbedResponseFactory
 
         if (currentMessage != null)
         {
+            var content = currentMessage.Content;
+            if (currentMessage.Content.Length >= 900)
+                content = currentMessage.Content.Substring(0, 900);
+            
             current +=
                 $"\n```\n" +
                 $"{currentMessage.Author.Username} {currentMessage.TimestampWithFixedTimezone().ToShortDateString()} {currentMessage.Timestamp.DateTime.ToShortTimeString()}" +
-                $"\n{currentMessage.Content}```";
+                $"\n{content}```";
         }
-        else
+        else //BUG: Why exceptions thrown here doesnt get returned back to the client
         {
             current += "...";
         }

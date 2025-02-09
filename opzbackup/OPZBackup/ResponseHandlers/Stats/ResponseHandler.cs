@@ -16,38 +16,187 @@ public class ResponseHandler
         _embedResponseFactory = embedResponseFactory;
     }
 
-    public async Task SendChannelsStatsAsync(IEnumerable<Channel> channels, SocketInteractionContext interactionContext)
+    public async Task SendChannelsStatsAsync(ChannelsInteractionState channelsInteractionState, SocketInteractionContext interactionContext)
     {
-        var embed = _embedResponseFactory.CreateChannelsStats(channels);
-        await interactionContext.Interaction.FollowupAsync(embed: embed);
+        var embed = _embedResponseFactory.CreateChannelsStats(channelsInteractionState.channels);
+        
+        var noAdvance = channelsInteractionState.currentPage + 1 >= channelsInteractionState.channels.Length;
+        var noBack = channelsInteractionState.currentPage == 0;
+        
+        var buttonBuilder = new ButtonBuilder()
+            .WithCustomId("advance-page2")
+            .WithStyle(ButtonStyle.Secondary)
+            .WithLabel("Avançar")
+            .WithDisabled(noAdvance);
+
+        var buttonBuilder1 = new ButtonBuilder()
+            .WithCustomId("return-page2")
+            .WithStyle(ButtonStyle.Secondary)
+            .WithLabel("Voltar")
+            .WithDisabled(noBack);
+
+        var builder = new ComponentBuilder()
+            .WithButton(buttonBuilder1)
+            .WithButton(buttonBuilder);
+
+        await interactionContext.Interaction.FollowupAsync(embed: embed, components: builder.Build());
+    }
+    
+    public async Task SendUpdateChannelsStatsAsync(ChannelsInteractionState channelsInteractionState, SocketInteractionContext interactionContext)
+    {
+        var embed = _embedResponseFactory.CreateChannelsStats(channelsInteractionState.channels, channelsInteractionState.currentPage);
+        
+        var noAdvance = channelsInteractionState.currentPage + 1 >= channelsInteractionState.channels.Length;
+        var noBack = channelsInteractionState.currentPage == 0;
+        
+        var buttonBuilder = new ButtonBuilder()
+            .WithCustomId("advance-page2")
+            .WithStyle(ButtonStyle.Secondary)
+            .WithLabel("Avançar")
+            .WithDisabled(noAdvance);
+
+        var buttonBuilder1 = new ButtonBuilder()
+            .WithCustomId("return-page2")
+            .WithStyle(ButtonStyle.Secondary)
+            .WithLabel("Voltar")
+            .WithDisabled(noBack);
+
+        var builder = new ComponentBuilder()
+            .WithButton(buttonBuilder1)
+            .WithButton(buttonBuilder);
+
+        await channelsInteractionState.interactionContext.Interaction.ModifyOriginalResponseAsync(r =>
+        {
+            r.Embed = embed;
+            r.Components = builder.Build();
+        });
     }
 
-    public async Task SendDetailedChannelStatsAsync(ChannelStats channelStats,
-        SocketInteractionContext interactionContext)
+    public async Task SendDetailedChannelStatsAsync(DetailedChannelInteractionState detailedChannelInteraction, SocketInteractionContext interactionContext)
     {
-        var embed = _embedResponseFactory.CreateDetailedChannelStats(channelStats);
-        await interactionContext.Interaction.FollowupAsync(embed: embed);
+        var embed = _embedResponseFactory.CreateDetailedChannelStats(detailedChannelInteraction.channelStats);
+        
+        var noAdvance = detailedChannelInteraction.currentPage + 1 >= detailedChannelInteraction.channelStats.users.Length;
+        var noBack = detailedChannelInteraction.currentPage == 0;
+        
+        var buttonBuilder = new ButtonBuilder()
+            .WithCustomId("advance-page3")
+            .WithStyle(ButtonStyle.Secondary)
+            .WithLabel("Avançar")
+            .WithDisabled(noAdvance);
+
+        var buttonBuilder1 = new ButtonBuilder()
+            .WithCustomId("return-page3")
+            .WithStyle(ButtonStyle.Secondary)
+            .WithLabel("Voltar")
+            .WithDisabled(noBack);
+
+        var builder = new ComponentBuilder()
+            .WithButton(buttonBuilder1)
+            .WithButton(buttonBuilder);
+
+        await interactionContext.Interaction.FollowupAsync(embed: embed, components: builder.Build());
+    }
+    
+    public async Task SendUpdatedDetailedChannelStatsAsync(DetailedChannelInteractionState detailedChannelInteraction, SocketInteractionContext interactionContext)
+    {
+        var embed = _embedResponseFactory.CreateDetailedChannelStats(detailedChannelInteraction.channelStats, detailedChannelInteraction.currentPage);
+        
+        var noAdvance = detailedChannelInteraction.currentPage + 1 >= detailedChannelInteraction.channelStats.users.Length;
+        var noBack = detailedChannelInteraction.currentPage == 0;
+        
+        var buttonBuilder = new ButtonBuilder()
+            .WithCustomId("advance-page3")
+            .WithStyle(ButtonStyle.Secondary)
+            .WithLabel("Avançar")
+            .WithDisabled(noAdvance);
+
+        var buttonBuilder1 = new ButtonBuilder()
+            .WithCustomId("return-page3")
+            .WithStyle(ButtonStyle.Secondary)
+            .WithLabel("Voltar")
+            .WithDisabled(noBack);
+
+        var builder = new ComponentBuilder()
+            .WithButton(buttonBuilder1)
+            .WithButton(buttonBuilder);
+
+        await detailedChannelInteraction.interactionContext.Interaction.ModifyOriginalResponseAsync(r =>
+        {
+            r.Embed = embed;
+            r.Components = builder.Build();
+        });
     }
 
-    public async Task SendUsersStatsAsync(IEnumerable<User> users, SocketInteractionContext interactionContext)
+    public async Task SendUsersStatsAsync(UsersInteractionState usersInteractionState, SocketInteractionContext interactionContext)
     {
-        var embed = _embedResponseFactory.CreateUsersStats(users);
-        await interactionContext.Interaction.FollowupAsync(embed: embed);
+        var embed = _embedResponseFactory.CreateUsersStats(usersInteractionState.users);
+        
+        var noAdvance = usersInteractionState.currentPage + 1 >= usersInteractionState.users.Length;
+        var noBack = usersInteractionState.currentPage == 0;
+        
+        var buttonBuilder = new ButtonBuilder()
+            .WithCustomId("advance-page1")
+            .WithStyle(ButtonStyle.Secondary)
+            .WithLabel("Avançar")
+            .WithDisabled(noAdvance);
+
+        var buttonBuilder1 = new ButtonBuilder()
+            .WithCustomId("return-page1")
+            .WithStyle(ButtonStyle.Secondary)
+            .WithLabel("Voltar")
+            .WithDisabled(noBack);
+
+        var builder = new ComponentBuilder()
+            .WithButton(buttonBuilder1)
+            .WithButton(buttonBuilder);
+
+        await interactionContext.Interaction.FollowupAsync(embed: embed, components: builder.Build());
+    }
+    
+    public async Task SendUpdateUsersStatsAsync(UsersInteractionState usersInteractionState, SocketInteractionContext interactionContext)
+    {
+        var embed = _embedResponseFactory.CreateUsersStats(usersInteractionState.users, usersInteractionState.currentPage);
+        
+        var noAdvance = usersInteractionState.currentPage + 1 >= usersInteractionState.users.Length;
+        var noBack = usersInteractionState.currentPage == 0;
+        
+        var buttonBuilder = new ButtonBuilder()
+            .WithCustomId("advance-page1")
+            .WithStyle(ButtonStyle.Secondary)
+            .WithLabel("Avançar")
+            .WithDisabled(noAdvance);
+
+        var buttonBuilder1 = new ButtonBuilder()
+            .WithCustomId("return-page1")
+            .WithStyle(ButtonStyle.Secondary)
+            .WithLabel("Voltar")
+            .WithDisabled(noBack);
+
+        var builder = new ComponentBuilder()
+            .WithButton(buttonBuilder1)
+            .WithButton(buttonBuilder);
+
+        await usersInteractionState.interactionContext.Interaction.ModifyOriginalResponseAsync(r =>
+        {
+            r.Embed = embed;
+            r.Components = builder.Build();
+        });
     }
 
-    public async Task SendDetailedUserStatsAsync(StatInteractionState statInteractionState, SocketInteractionContext interactionContext)
+    public async Task SendDetailedUserStatsAsync(DetailedUserInteractionState userInteractionState, SocketInteractionContext interactionContext)
     {
-        var embed = _embedResponseFactory.CreateDetailedUserStats(statInteractionState.userStats);
+        var embed = _embedResponseFactory.CreateDetailedUserStats(userInteractionState.userStats);
 
         var tableLenght = 0;
 
-        if (statInteractionState.selectBoxOption == "table1")
-            tableLenght = statInteractionState.userStats.MostCommonWords.Length;
-        else if (statInteractionState.selectBoxOption == "table2")
-            tableLenght = statInteractionState.userStats.NumberOfMentions.Length;
+        if (userInteractionState.selectBoxOption == "table1")
+            tableLenght = userInteractionState.userStats.MostCommonWords.Length;
+        else if (userInteractionState.selectBoxOption == "table2")
+            tableLenght = userInteractionState.userStats.NumberOfMentions.Length;
 
-        var noAdvance = statInteractionState.currentTablePage[statInteractionState.selectBoxOption] >= tableLenght;
-        var noBack = statInteractionState.currentTablePage[statInteractionState.selectBoxOption] == 0;
+        var noAdvance = userInteractionState.currentTablePage[userInteractionState.selectBoxOption] + 1 >= tableLenght;
+        var noBack = userInteractionState.currentTablePage[userInteractionState.selectBoxOption] == 0;
         
         var menuBuilder = new SelectMenuBuilder()
             .WithPlaceholder("Select an option")
@@ -77,11 +226,11 @@ public class ResponseHandler
         await interactionContext.Interaction.FollowupAsync(embed: embed, components: builder.Build());
     }
 
-    public async Task SendUpdatedUserStatsAsync(StatInteractionState statInteractionState,
+    public async Task SendUpdatedUserStatsAsync(DetailedUserInteractionState detailedUserInteractionState,
         SocketInteractionContext context)
     {
-        var embed = _embedResponseFactory.CreateDetailedUserStats(statInteractionState.userStats,
-            statInteractionState.currentTablePage["table1"], statInteractionState.currentTablePage["table2"]);
+        var embed = _embedResponseFactory.CreateDetailedUserStats(detailedUserInteractionState.userStats,
+            detailedUserInteractionState.currentTablePage["table1"], detailedUserInteractionState.currentTablePage["table2"]);
 
         var menuBuilder = new SelectMenuBuilder()
             .WithPlaceholder("Select an option")
@@ -93,13 +242,13 @@ public class ResponseHandler
 
         var tableLenght = 0;
 
-        if (statInteractionState.selectBoxOption == "table1")
-            tableLenght = statInteractionState.userStats.MostCommonWords.Length;
-        else if (statInteractionState.selectBoxOption == "table2")
-            tableLenght = statInteractionState.userStats.NumberOfMentions.Length;
+        if (detailedUserInteractionState.selectBoxOption == "table1")
+            tableLenght = detailedUserInteractionState.userStats.MostCommonWords.Length;
+        else if (detailedUserInteractionState.selectBoxOption == "table2")
+            tableLenght = detailedUserInteractionState.userStats.NumberOfMentions.Length;
 
-        var noAdvance = statInteractionState.currentTablePage[statInteractionState.selectBoxOption] >= tableLenght - 1;
-        var noBack = statInteractionState.currentTablePage[statInteractionState.selectBoxOption] == 0;
+        var noAdvance = detailedUserInteractionState.currentTablePage[detailedUserInteractionState.selectBoxOption] + 1 >= tableLenght - 1;
+        var noBack = detailedUserInteractionState.currentTablePage[detailedUserInteractionState.selectBoxOption] == 0;
         
         var buttonBuilder = new ButtonBuilder()
             .WithCustomId("advance-page")

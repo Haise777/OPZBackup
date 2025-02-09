@@ -6,5 +6,5 @@ public record ChannelStats(
     int numberOfMessages,
     int numberOfFiles,
     ulong bytesize,
-    IEnumerable<User> users
+    User[][] users
 );

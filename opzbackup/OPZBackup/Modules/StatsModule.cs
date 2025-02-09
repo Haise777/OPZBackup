@@ -27,9 +27,35 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
         await Context.Interaction.DeferAsync();
 
         var channels = await _statsService.ListAllChannelStats();
-        // _statInteractionCache.AddInteraction(Context);
+        var interaction = _statInteractionCache.AddInteraction(Context, channels);
 
-        await _responseHandler.SendChannelsStatsAsync(channels, Context);
+        await _responseHandler.SendChannelsStatsAsync(interaction, Context);
+    }
+    
+    [ComponentInteraction("advance-page2", true)]
+    public async Task AdvancePage2()
+    {
+        await Context.Interaction.DeferAsync();
+        var interactionState = _statInteractionCache.GetChannelsInteraction(Context.Channel.Id);
+        if (interactionState is null)
+            return;
+
+        interactionState.currentPage++;
+        
+        await _responseHandler.SendUpdateChannelsStatsAsync(interactionState, interactionState.interactionContext);
+    }
+
+    [ComponentInteraction("return-page2", true)]
+    public async Task ReturnPage2()
+    {
+        await Context.Interaction.DeferAsync();
+        var interactionState = _statInteractionCache.GetChannelsInteraction(Context.Channel.Id);
+        if (interactionState is null)
+            return;
+
+        interactionState.currentPage--;
+        
+        await _responseHandler.SendUpdateChannelsStatsAsync(interactionState, interactionState.interactionContext);
     }
 
     [SlashCommand("canal-detalhado", "efetuar backup deste canal")]
@@ -38,9 +64,35 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
         await Context.Interaction.DeferAsync();
 
         var channelStats = await _statsService.GetInDetailChannelStats(Context.Channel.Id);
-        // _statInteractionCache.AddInteraction(Context);
+        var interaction = _statInteractionCache.AddInteraction(Context, channelStats);
 
-        await _responseHandler.SendDetailedChannelStatsAsync(channelStats, Context);
+        await _responseHandler.SendDetailedChannelStatsAsync(interaction, Context);
+    }
+    
+    [ComponentInteraction("advance-page3", true)]
+    public async Task AdvancePage3()
+    {
+        await Context.Interaction.DeferAsync();
+        var interactionState = _statInteractionCache.GetDetailedChannelInteraction(Context.Channel.Id);
+        if (interactionState is null)
+            return;
+
+        interactionState.currentPage++;
+        
+        await _responseHandler.SendUpdatedDetailedChannelStatsAsync(interactionState, interactionState.interactionContext);
+    }
+
+    [ComponentInteraction("return-page3", true)]
+    public async Task ReturnPage3()
+    {
+        await Context.Interaction.DeferAsync();
+        var interactionState = _statInteractionCache.GetDetailedChannelInteraction(Context.Channel.Id);
+        if (interactionState is null)
+            return;
+
+        interactionState.currentPage--;
+        
+        await _responseHandler.SendUpdatedDetailedChannelStatsAsync(interactionState, interactionState.interactionContext);
     }
 
     [SlashCommand("usuario-listar", "efetuar backup deste canal")]
@@ -49,9 +101,9 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
         await Context.Interaction.DeferAsync();
 
         var users = await _statsService.ListAllUsersStats();
-        // _statInteractionCache.AddInteraction(Context);
+        var interaction = _statInteractionCache.AddInteraction(Context, users);
 
-        await _responseHandler.SendUsersStatsAsync(users, Context);
+        await _responseHandler.SendUsersStatsAsync(interaction, Context);
     }
 
     [SlashCommand("usuario-detalhado", "efetuar backup deste canal")]
@@ -69,7 +121,7 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
     public async Task ListAllMenus(string choice)
     {
         await Context.Interaction.DeferAsync();
-        var interactionState = _statInteractionCache.GetInteraction(Context.Channel.Id);
+        var interactionState = _statInteractionCache.GetDetailedUserInteraction(Context.Channel.Id);
         if (interactionState is null)
             return;
 
@@ -81,12 +133,11 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
     public async Task AdvancePage()
     {
         await Context.Interaction.DeferAsync();
-        var interactionState = _statInteractionCache.GetInteraction(Context.Channel.Id);
+        var interactionState = _statInteractionCache.GetDetailedUserInteraction(Context.Channel.Id);
         if (interactionState is null)
             return;
 
         interactionState.currentTablePage[interactionState.selectBoxOption]++;
-        // await Context.Interaction.RespondAsync(interactionState.currentPage.ToString());
         
         await _responseHandler.SendUpdatedUserStatsAsync(interactionState, interactionState.Interaction);
     }
@@ -95,12 +146,38 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
     public async Task ReturnPage()
     {
         await Context.Interaction.DeferAsync();
-        var interactionState = _statInteractionCache.GetInteraction(Context.Channel.Id);
+        var interactionState = _statInteractionCache.GetDetailedUserInteraction(Context.Channel.Id);
         if (interactionState is null)
             return;
 
         interactionState.currentTablePage[interactionState.selectBoxOption]--;
         
         await _responseHandler.SendUpdatedUserStatsAsync(interactionState, interactionState.Interaction);
+    }
+    
+    [ComponentInteraction("advance-page1", true)]
+    public async Task AdvancePage1()
+    {
+        await Context.Interaction.DeferAsync();
+        var interactionState = _statInteractionCache.GetUsersInteraction(Context.Channel.Id);
+        if (interactionState is null)
+            return;
+
+        interactionState.currentPage++;
+        
+        await _responseHandler.SendUpdateUsersStatsAsync(interactionState, interactionState.interactionContext);
+    }
+
+    [ComponentInteraction("return-page1", true)]
+    public async Task ReturnPage1()
+    {
+        await Context.Interaction.DeferAsync();
+        var interactionState = _statInteractionCache.GetUsersInteraction(Context.Channel.Id);
+        if (interactionState is null)
+            return;
+
+        interactionState.currentPage--;
+        
+        await _responseHandler.SendUpdateUsersStatsAsync(interactionState, interactionState.interactionContext);
     }
 }
