@@ -62,6 +62,7 @@ public abstract class StartupBase
     {
         return new StartupServices(
             services.GetRequiredService<InteractionHandler>(),
+            services.GetRequiredService<StatsInteractionHandler>(),
             services.GetRequiredService<DiscordSocketClient>(),
             services.GetRequiredService<InteractionService>(),
             services.GetRequiredService<ILogger>()
@@ -78,6 +79,10 @@ public abstract class StartupBase
         services.Commands.Log += msg =>
             Task.Run(() => logger.Write(LoggerUtils.ParseLogLevel(msg.Severity), msg.Exception, msg.Message ?? ""));
 
+        // Aq
+        services.SocketClient.ButtonExecuted += services.StatsInteractionHandler.HandleInteraction;
+        services.SocketClient.SelectMenuExecuted += services.StatsInteractionHandler.HandleInteraction;
+        
         services.SocketClient.Ready += async () =>
         {
             if (Dev.IsDebug)
@@ -116,6 +121,7 @@ public abstract class StartupBase
                     )
                 )
                 .AddSingleton<CacheManager>()
+                .AddSingleton<StatsInteractionHandler>()
                 .AddSingleton<Mapper>()
                 .AddSingleton<StatInteractionCache>()
                 .AddScoped<InteractionHandler>()
@@ -148,6 +154,7 @@ public abstract class StartupBase
 
     protected record StartupServices(
         InteractionHandler interactionHandler,
+        StatsInteractionHandler StatsInteractionHandler,
         DiscordSocketClient SocketClient,
         InteractionService Commands,
         ILogger Logger

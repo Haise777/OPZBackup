@@ -38,7 +38,7 @@ public class EmbedResponseFactory
 
         embedBuilder.AddField("Lista de canais:",
             $"```\n{channelTable}\n" +
-            $"<{currentPage+1}/{channels.Length}>```");
+            $"<{currentPage + 1}/{channels.Length}>```");
 
         return embedBuilder.Build();
     }
@@ -60,7 +60,7 @@ public class EmbedResponseFactory
 
         embedBuilder.AddField("Usuários presentes:",
             $"```\n{userTable}\n" +
-            $"<{currentPage+1}/{channelStats.users.Length}>```");
+            $"<{currentPage + 1}/{channelStats.users.Length}>```");
 
         return embedBuilder.Build();
     }
@@ -78,7 +78,7 @@ public class EmbedResponseFactory
         return embedBuilder.Build();
     }
 
-    public Embed CreateDetailedUserStats(UserStats userStats, int table1Page = 0, int table2Page = 0)
+    public Embed CreateDetailedUserStats(UserStats userStats, string selectedTable, int currentPage = 0)
     {
         var embedBuilder = CreateBaseEmbedBuilder("titulo");
         var user = userStats.user ?? throw new NullReferenceException();
@@ -91,18 +91,26 @@ public class EmbedResponseFactory
 
         embedBuilder.WithDescription(stringBuilder.ToString());
 
-        var topWords = BuildTopWordsTableString(userStats.MostCommonWords[table1Page].ToDictionary());
-        var mentionTable = BuildMentionTableString(userStats.NumberOfMentions[table2Page].ToDictionary());
-        var fileTypeTable = BuildFileTypeTableString(userStats.fileTypeStats);
-
-        embedBuilder.AddField("Top palavras:",
-            $"```\n{topWords}\n" +
-            $"<{table1Page + 1}/{userStats.MostCommonWords.Length}>```");
-        embedBuilder.AddField("Top menções:",
-            $"```\n{mentionTable}\n" +
-            $"<{table2Page + 1}/{userStats.NumberOfMentions.Length}>```");
-        embedBuilder.AddField("Anexos enviados:",
-            $"```\n{fileTypeTable}\n```");
+        if (selectedTable == "table1")
+        {
+            var topWords = BuildTopWordsTableString(userStats.MostCommonWords[currentPage].ToDictionary());
+            embedBuilder.AddField("Top palavras:",
+                $"```\n{topWords}\n" +
+                $"<{currentPage + 1}/{userStats.MostCommonWords.Length}>```");
+        }
+        else if (selectedTable == "table2")
+        {
+            var mentionTable = BuildMentionTableString(userStats.NumberOfMentions[currentPage].ToDictionary());
+            embedBuilder.AddField("Top menções:",
+                $"```\n{mentionTable}\n" +
+                $"<{currentPage + 1}/{userStats.NumberOfMentions.Length}>```");
+        }
+        else if (selectedTable == "table3")
+        {
+            var fileTypeTable = BuildFileTypeTableString(userStats.fileTypeStats);
+            embedBuilder.AddField("Anexos enviados:",
+                $"```\n{fileTypeTable}\n```");
+        }
 
         return embedBuilder.Build();
     }

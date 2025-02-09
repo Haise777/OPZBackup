@@ -50,13 +50,13 @@ public class ResponseHandler
         var noBack = channelsInteractionState.currentPage == 0;
         
         var buttonBuilder = new ButtonBuilder()
-            .WithCustomId("advance-page2")
+            .WithCustomId($"channels-advancepage-{channelsInteractionState.interactionContext.Interaction.Id}")
             .WithStyle(ButtonStyle.Secondary)
             .WithLabel("Avançar")
             .WithDisabled(noAdvance);
 
         var buttonBuilder1 = new ButtonBuilder()
-            .WithCustomId("return-page2")
+            .WithCustomId($"channels-returnpage-{channelsInteractionState.interactionContext.Interaction.Id}")
             .WithStyle(ButtonStyle.Secondary)
             .WithLabel("Voltar")
             .WithDisabled(noBack);
@@ -80,13 +80,13 @@ public class ResponseHandler
         var noBack = detailedChannelInteraction.currentPage == 0;
         
         var buttonBuilder = new ButtonBuilder()
-            .WithCustomId("advance-page3")
+            .WithCustomId($"detailedchannel-advancepage-{interactionContext.Interaction.Id}")
             .WithStyle(ButtonStyle.Secondary)
             .WithLabel("Avançar")
             .WithDisabled(noAdvance);
 
         var buttonBuilder1 = new ButtonBuilder()
-            .WithCustomId("return-page3")
+            .WithCustomId($"detailedchannel-returnpage-{interactionContext.Interaction.Id}")
             .WithStyle(ButtonStyle.Secondary)
             .WithLabel("Voltar")
             .WithDisabled(noBack);
@@ -106,13 +106,13 @@ public class ResponseHandler
         var noBack = detailedChannelInteraction.currentPage == 0;
         
         var buttonBuilder = new ButtonBuilder()
-            .WithCustomId("advance-page3")
+            .WithCustomId($"detailedchannel-advancepage-{detailedChannelInteraction.interactionContext.Interaction.Id}")
             .WithStyle(ButtonStyle.Secondary)
             .WithLabel("Avançar")
             .WithDisabled(noAdvance);
 
         var buttonBuilder1 = new ButtonBuilder()
-            .WithCustomId("return-page3")
+            .WithCustomId($"detailedchannel-returnpage-{detailedChannelInteraction.interactionContext.Interaction.Id}")
             .WithStyle(ButtonStyle.Secondary)
             .WithLabel("Voltar")
             .WithDisabled(noBack);
@@ -136,13 +136,13 @@ public class ResponseHandler
         var noBack = usersInteractionState.currentPage == 0;
         
         var buttonBuilder = new ButtonBuilder()
-            .WithCustomId("advance-page1")
+            .WithCustomId($"users-advancepage-{usersInteractionState.interactionContext.Interaction.Id}")
             .WithStyle(ButtonStyle.Secondary)
             .WithLabel("Avançar")
             .WithDisabled(noAdvance);
 
         var buttonBuilder1 = new ButtonBuilder()
-            .WithCustomId("return-page1")
+            .WithCustomId($"users-returnpage-{usersInteractionState.interactionContext.Interaction.Id}")
             .WithStyle(ButtonStyle.Secondary)
             .WithLabel("Voltar")
             .WithDisabled(noBack);
@@ -162,13 +162,13 @@ public class ResponseHandler
         var noBack = usersInteractionState.currentPage == 0;
         
         var buttonBuilder = new ButtonBuilder()
-            .WithCustomId("advance-page1")
+            .WithCustomId($"users-advancepage-{usersInteractionState.interactionContext.Interaction.Id}")
             .WithStyle(ButtonStyle.Secondary)
             .WithLabel("Avançar")
             .WithDisabled(noAdvance);
 
         var buttonBuilder1 = new ButtonBuilder()
-            .WithCustomId("return-page1")
+            .WithCustomId($"users-returnpage-{usersInteractionState.interactionContext.Interaction.Id}")
             .WithStyle(ButtonStyle.Secondary)
             .WithLabel("Voltar")
             .WithDisabled(noBack);
@@ -186,7 +186,7 @@ public class ResponseHandler
 
     public async Task SendDetailedUserStatsAsync(DetailedUserInteractionState userInteractionState, SocketInteractionContext interactionContext)
     {
-        var embed = _embedResponseFactory.CreateDetailedUserStats(userInteractionState.userStats);
+        var embed = _embedResponseFactory.CreateDetailedUserStats(userInteractionState.userStats, userInteractionState.selectBoxOption);
 
         var tableLenght = 0;
 
@@ -200,20 +200,21 @@ public class ResponseHandler
         
         var menuBuilder = new SelectMenuBuilder()
             .WithPlaceholder("Select an option")
-            .WithCustomId("menu-1")
+            .WithCustomId($"detaileduser-tableswitch-{userInteractionState.Interaction.Interaction.Id}")
             .WithMinValues(1)
             .WithMaxValues(1)
             .AddOption("Option A", "table1", "Option A is lying!")
-            .AddOption("Option B", "table2", "Option B is telling the truth!");
+            .AddOption("Option B", "table2", "Option B is telling the truth!")
+            .AddOption("Option C", "table3", "Option C is telling the truth!");
 
         var buttonBuilder = new ButtonBuilder()
-            .WithCustomId("advance-page")
+            .WithCustomId($"detaileduser-advancepage-{userInteractionState.Interaction.Interaction.Id}")
             .WithStyle(ButtonStyle.Secondary)
             .WithLabel("Avançar")
             .WithDisabled(noAdvance);
 
         var buttonBuilder1 = new ButtonBuilder()
-            .WithCustomId("return-page")
+            .WithCustomId($"detaileduser-returnpage-{userInteractionState.Interaction.Interaction.Id}")
             .WithStyle(ButtonStyle.Secondary)
             .WithLabel("Voltar")
             .WithDisabled(noBack);
@@ -230,15 +231,17 @@ public class ResponseHandler
         SocketInteractionContext context)
     {
         var embed = _embedResponseFactory.CreateDetailedUserStats(detailedUserInteractionState.userStats,
-            detailedUserInteractionState.currentTablePage["table1"], detailedUserInteractionState.currentTablePage["table2"]);
+            detailedUserInteractionState.selectBoxOption,
+            detailedUserInteractionState.currentTablePage[detailedUserInteractionState.selectBoxOption]);
 
         var menuBuilder = new SelectMenuBuilder()
             .WithPlaceholder("Select an option")
-            .WithCustomId("menu-1")
+            .WithCustomId($"detaileduser-tableswitch-{detailedUserInteractionState.Interaction.Interaction.Id}")
             .WithMinValues(1)
             .WithMaxValues(1)
             .AddOption("Option A", "table1", "Option A is lying!")
-            .AddOption("Option B", "table2", "Option B is telling the truth!");
+            .AddOption("Option B", "table2", "Option B is telling the truth!")
+            .AddOption("Option C", "table3", "Option C is telling the truth!");
 
         var tableLenght = 0;
 
@@ -251,13 +254,13 @@ public class ResponseHandler
         var noBack = detailedUserInteractionState.currentTablePage[detailedUserInteractionState.selectBoxOption] == 0;
         
         var buttonBuilder = new ButtonBuilder()
-            .WithCustomId("advance-page")
+            .WithCustomId($"detaileduser-advancepage-{detailedUserInteractionState.Interaction.Interaction.Id}")
             .WithStyle(ButtonStyle.Secondary)
             .WithLabel("Avançar")
             .WithDisabled(noAdvance);
 
         var buttonBuilder1 = new ButtonBuilder()
-            .WithCustomId("return-page")
+            .WithCustomId($"detaileduser-returnpage-{detailedUserInteractionState.Interaction.Interaction.Id}")
             .WithStyle(ButtonStyle.Secondary)
             .WithLabel("Voltar")
             .WithDisabled(noBack);
