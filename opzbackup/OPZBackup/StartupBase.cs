@@ -11,12 +11,14 @@ using OPZBackup.FileManagement;
 using OPZBackup.Logger;
 using OPZBackup.Modules;
 using OPZBackup.ResponseHandlers.Backup;
+using OPZBackup.ResponseHandlers.Stats;
 using OPZBackup.Services;
 using OPZBackup.Services.Backup;
 using OPZBackup.Services.Stats;
 using OPZBackup.Services.Utils;
 using Serilog;
 using Serilog.Events;
+using EmbedResponseFactory = OPZBackup.ResponseHandlers.Backup.EmbedResponseFactory;
 using ILogger = Serilog.ILogger;
 using Timer = OPZBackup.Services.Utils.Timer;
 
@@ -123,7 +125,7 @@ public abstract class StartupBase
                 .AddSingleton<CacheManager>()
                 .AddSingleton<StatsInteractionHandler>()
                 .AddSingleton<Mapper>()
-                .AddSingleton<StatInteractionCache>()
+                .AddSingleton<StatInteractionStateManager>()
                 .AddScoped<InteractionHandler>()
                 .AddScoped<BackupLoggerFactory>()
                 .AddScoped<BackupProcess>()

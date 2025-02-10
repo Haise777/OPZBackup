@@ -1,11 +1,12 @@
 ﻿using Discord.Interactions;
 using OPZBackup.Data.Dto;
 using OPZBackup.Data.Models;
+using OPZBackup.ResponseHandlers;
 using OPZBackup.ResponseHandlers.Stats;
 
-namespace OPZBackup.Modules;
+namespace OPZBackup.Services.Stats;
 
-public class StatInteractionCache
+public class StatInteractionStateManager
 {
     private Dictionary<ulong, MultiTableInteractionState<UserStatsWithUsernames>> _detailedUserInteractionStates = new();
     private Dictionary<ulong, InteractionState<User[][]>> _usersInteractionStates = new();

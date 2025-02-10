@@ -1,6 +1,6 @@
 ﻿using Discord.Interactions;
 
-namespace OPZBackup.Modules;
+namespace OPZBackup.ResponseHandlers;
 
 public class InteractionState<T>
 {

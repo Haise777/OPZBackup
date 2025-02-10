@@ -1,21 +1,18 @@
 ﻿using Discord.Interactions;
 using Discord.WebSocket;
-using OPZBackup.Data.Dto;
-using OPZBackup.Data.Models;
-using OPZBackup.Modules;
-using OPZBackup.ResponseHandlers.Stats;
+using OPZBackup.Services.Stats;
 
-namespace OPZBackup;
+namespace OPZBackup.ResponseHandlers.Stats;
 
 public class StatsInteractionHandler
 {
-    private readonly StatInteractionCache _interactionCache;
+    private readonly StatInteractionStateManager _interactionStateManager;
     private readonly ResponseHandler _responseHandler;
     private readonly DiscordSocketClient _client;
 
-    public StatsInteractionHandler(StatInteractionCache interactionCache, DiscordSocketClient client, ResponseHandler responseHandler)
+    public StatsInteractionHandler(StatInteractionStateManager interactionStateManager, DiscordSocketClient client, ResponseHandler responseHandler)
     {
-        _interactionCache = interactionCache;
+        _interactionStateManager = interactionStateManager;
         _client = client;
         _responseHandler = responseHandler;
     }
@@ -36,7 +33,7 @@ public class StatsInteractionHandler
 
     private async Task detailedUserExecuted(SocketMessageComponent component, SocketInteractionContext ctx, string[] componentIdElements)
     {
-        var interactionState = _interactionCache.GetDetailedUserInteraction(ulong.Parse(componentIdElements[2]));
+        var interactionState = _interactionStateManager.GetDetailedUserInteraction(ulong.Parse(componentIdElements[2]));
         if (interactionState == null)
             return;
         
@@ -58,7 +55,7 @@ public class StatsInteractionHandler
     
     private async Task channelsExecuted(SocketInteractionContext ctx, string[] componentIdElements)
     {
-        var interactionState = _interactionCache.GetChannelsInteraction(ulong.Parse(componentIdElements[2]));
+        var interactionState = _interactionStateManager.GetChannelsInteraction(ulong.Parse(componentIdElements[2]));
         if (interactionState == null)
             return;
         
@@ -69,7 +66,7 @@ public class StatsInteractionHandler
     
     private async Task usersExecuted(SocketInteractionContext ctx, string[] componentIdElements)
     {
-        var interactionState = _interactionCache.GetUsersInteraction(ulong.Parse(componentIdElements[2]));
+        var interactionState = _interactionStateManager.GetUsersInteraction(ulong.Parse(componentIdElements[2]));
         if (interactionState == null)
             return;
         
@@ -79,7 +76,7 @@ public class StatsInteractionHandler
 
     private async Task detailedChannelExecuted(SocketInteractionContext ctx, string[] componentIdElements)
     {
-        var interactionState = _interactionCache.GetDetailedChannelInteraction(ulong.Parse(componentIdElements[2]));
+        var interactionState = _interactionStateManager.GetDetailedChannelInteraction(ulong.Parse(componentIdElements[2]));
         if (interactionState == null)
             return;
         
