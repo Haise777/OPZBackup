@@ -89,9 +89,7 @@ public class StatsService
 
     public async Task<UserStatsWithUsernames> GetInDetailUserStats(ulong userId)
     {
-        //TODO: Do something about a user not existing
-        if (!await _dbContext.Users.AnyAsync(u => u.Id == userId))
-            return null;
+        //TODO: Do something about the possibility that the userId param doesn't have a user in the Database
         
         var userMessages = await _dbContext.Messages
             .Where(m => m.AuthorId == userId)
@@ -101,40 +99,36 @@ public class StatsService
         var user = await _dbContext.Users.FirstAsync(u => u.Id == userId);
         var userStats = await _messageStatsProcessor.AnalyzeMessageListAsync(userMessages);
 
-        var userMentionsIds = new List<ulong>();
-        foreach (var userIdChunk in userStats.NumberOfMentions)
-        {
-            foreach (var userMentionId in userIdChunk)
-            {
-                userMentionsIds.Add(userMentionId.Key);
-            }
-        }
+        var usernameWithMentionsNumber = await TranslateUserIdsToUsername(userStats);
 
-        var usernames = await _dbContext.Users
-            .Where(u => userMentionsIds.Contains(u.Id))
-            .Select(u => new { u.Username, u.Id })
-            .ToListAsync();
-
-        //TODO: Temporary solution
-        var usernameWithMentionsNumber = new Dictionary<string, int>();
-
-        foreach (var userIdChunk in userStats.NumberOfMentions)
-        {
-            foreach (var userMentionId in userIdChunk)
-            {
-                if (!usernames.Select(u => u.Id).Contains(userMentionId.Key))
-                    continue;
-                
-                usernameWithMentionsNumber
-                    .Add(usernames.First(u => u.Id == userMentionId.Key).Username, userMentionId.Value);
-            }
-        }
-        
         return new UserStatsWithUsernames(
             user,
-            usernameWithMentionsNumber.Chunk(10).ToArray(),
+            usernameWithMentionsNumber.OrderByDescending(kvp => kvp.Value).Chunk(10).ToArray(),
             userStats.MostCommonWords,
             userStats.fileTypeStats
         );
+    }
+
+    private async Task<Dictionary<string, int>> TranslateUserIdsToUsername(UserStats userStats)
+    {
+        var mentionedUserIds = userStats.NumberOfMentions
+            .SelectMany(chunk => chunk)
+            .Select(kvp => kvp.Key)
+            .Distinct()
+            .ToList();
+
+        var validUsers = await _dbContext.Users
+            .Where(u => mentionedUserIds.Contains(u.Id))
+            .Select(u => new { u.Id, u.Username })
+            .ToListAsync();
+
+        var userIdToUsername = validUsers.ToDictionary(u => u.Id, u => u.Username);
+
+        var usernameWithMentionsNumber = userStats.NumberOfMentions
+            .SelectMany(chunk => chunk)
+            .Where(kvp => userIdToUsername.ContainsKey(kvp.Key))
+            .ToDictionary(kvp => userIdToUsername[kvp.Key], kvp => kvp.Value);
+        
+        return usernameWithMentionsNumber;
     }
 }

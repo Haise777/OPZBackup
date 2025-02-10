@@ -81,6 +81,7 @@ public class MessageStatsProcessor
 
     private void AnalyzeForCommonWords(Message message, Dictionary<string, int> wordCounts)
     {
+        //TODO: Add a way for it to pick from a localFile which words should be skipped and not counted
         var wordMatches = _wordRegex.Matches(message.Content!);
         foreach (Match match in wordMatches)
         {
