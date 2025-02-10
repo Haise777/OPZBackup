@@ -14,6 +14,8 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
     private readonly StatsService _statsService;
     private readonly ResponseHandler _responseHandler;
     private readonly StatInteractionStateManager _statInteractionStateManager;
+    
+    //TODO: Add a better error handling across all depths beyond this layer
 
     public StatsModule(StatsService statsService, ResponseHandler responseHandler,
         StatInteractionStateManager statInteractionStateManager)

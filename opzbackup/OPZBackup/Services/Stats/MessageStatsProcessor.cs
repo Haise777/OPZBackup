@@ -29,6 +29,7 @@ public class MessageStatsProcessor
     {
         var wordCounts = new Dictionary<string, int>();
         var mentionCounts = new Dictionary<ulong, int>();
+        //TODO: Do something about this
         var fileTypesCounts = new Dictionary<string, int>();
         fileTypesCounts["image"] = 0;
         fileTypesCounts["video"] = 0;
@@ -51,6 +52,7 @@ public class MessageStatsProcessor
             null,
             mentionCounts.Chunk(10).ToArray(),
             wordCounts.OrderByDescending(kv => kv.Value).Chunk(10).ToArray(),
+            //TODO: Do something about this
             new FileTypeStats(
                 fileTypesCounts["image"],
                 fileTypesCounts["video"],
@@ -121,6 +123,7 @@ public class MessageStatsProcessor
 
     private static string GetFileType(string extension)
     {
+        //TODO: Add a way to pick from a localFile which fileExtensions are What
         return extension switch
         {
             "jpg" or "jpeg" or "png" or "gif" => "image",

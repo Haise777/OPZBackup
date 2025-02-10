@@ -8,6 +8,8 @@ namespace OPZBackup.Services.Stats;
 
 public class StatInteractionStateManager
 {
+    //TODO: Add a nicer and more centralized way to track how much States are still active and what to do about them
+    // And also 15 minutes decay for them, since the SocketInteractionContext only lives up to 15 minutes.
     private Dictionary<ulong, MultiTableInteractionState<UserStatsWithUsernames>> _detailedUserInteractionStates = new();
     private Dictionary<ulong, InteractionState<User[][]>> _usersInteractionStates = new();
     private Dictionary<ulong, InteractionState<Channel[][]>> _channelsInteractionStates = new();

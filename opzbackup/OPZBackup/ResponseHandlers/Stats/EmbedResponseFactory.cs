@@ -8,6 +8,7 @@ namespace OPZBackup.ResponseHandlers.Stats;
 
 public class EmbedResponseFactory
 {
+    //TODO: Heavily refactor this to reduce code duplication across all methods
     public Embed CreateChannelsStats(Channel[][] channels, int currentPage = 0)
     {
         var embedBuilder = CreateBaseEmbedBuilder("Status de todos os canais");

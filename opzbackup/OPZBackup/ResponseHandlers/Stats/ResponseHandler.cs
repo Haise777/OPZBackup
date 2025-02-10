@@ -15,6 +15,7 @@ public class ResponseHandler
     {
         _embedResponseFactory = embedResponseFactory;
     }
+    //TODO: Heavily refactor this to reduce code duplication across all methods
 
     public async Task SendChannelsStatsAsync(InteractionState<Channel[][]> channelsInteractionState, SocketInteractionContext interactionContext)
     {
