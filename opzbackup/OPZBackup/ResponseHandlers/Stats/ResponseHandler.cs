@@ -16,12 +16,12 @@ public class ResponseHandler
         _embedResponseFactory = embedResponseFactory;
     }
 
-    public async Task SendChannelsStatsAsync(ChannelsInteractionState channelsInteractionState, SocketInteractionContext interactionContext)
+    public async Task SendChannelsStatsAsync(InteractionState<Channel[][]> channelsInteractionState, SocketInteractionContext interactionContext)
     {
-        var embed = _embedResponseFactory.CreateChannelsStats(channelsInteractionState.channels);
+        var embed = _embedResponseFactory.CreateChannelsStats(channelsInteractionState.data);
         
-        var noAdvance = channelsInteractionState.currentPage + 1 >= channelsInteractionState.channels.Length;
-        var noBack = channelsInteractionState.currentPage == 0;
+        var noAdvance = channelsInteractionState.CurrentPage + 1 >= channelsInteractionState.data.Length;
+        var noBack = channelsInteractionState.CurrentPage == 0;
         
         var buttonBuilder = new ButtonBuilder()
             .WithCustomId("advance-page2")
@@ -42,12 +42,12 @@ public class ResponseHandler
         await interactionContext.Interaction.FollowupAsync(embed: embed, components: builder.Build());
     }
     
-    public async Task SendUpdateChannelsStatsAsync(ChannelsInteractionState channelsInteractionState, SocketInteractionContext interactionContext)
+    public async Task SendUpdateChannelsStatsAsync(InteractionState<Channel[][]> channelsInteractionState, SocketInteractionContext interactionContext)
     {
-        var embed = _embedResponseFactory.CreateChannelsStats(channelsInteractionState.channels, channelsInteractionState.currentPage);
+        var embed = _embedResponseFactory.CreateChannelsStats(channelsInteractionState.data, channelsInteractionState.CurrentPage);
         
-        var noAdvance = channelsInteractionState.currentPage + 1 >= channelsInteractionState.channels.Length;
-        var noBack = channelsInteractionState.currentPage == 0;
+        var noAdvance = channelsInteractionState.CurrentPage + 1 >= channelsInteractionState.data.Length;
+        var noBack = channelsInteractionState.CurrentPage == 0;
         
         var buttonBuilder = new ButtonBuilder()
             .WithCustomId($"channels-advancepage-{channelsInteractionState.interactionContext.Interaction.Id}")
@@ -72,12 +72,12 @@ public class ResponseHandler
         });
     }
 
-    public async Task SendDetailedChannelStatsAsync(DetailedChannelInteractionState detailedChannelInteraction, SocketInteractionContext interactionContext)
+    public async Task SendDetailedChannelStatsAsync(InteractionState<ChannelStats> detailedChannelInteraction, SocketInteractionContext interactionContext)
     {
-        var embed = _embedResponseFactory.CreateDetailedChannelStats(detailedChannelInteraction.channelStats);
+        var embed = _embedResponseFactory.CreateDetailedChannelStats(detailedChannelInteraction.data);
         
-        var noAdvance = detailedChannelInteraction.currentPage + 1 >= detailedChannelInteraction.channelStats.users.Length;
-        var noBack = detailedChannelInteraction.currentPage == 0;
+        var noAdvance = detailedChannelInteraction.CurrentPage + 1 >= detailedChannelInteraction.data.users.Length;
+        var noBack = detailedChannelInteraction.CurrentPage == 0;
         
         var buttonBuilder = new ButtonBuilder()
             .WithCustomId($"detailedchannel-advancepage-{interactionContext.Interaction.Id}")
@@ -98,12 +98,12 @@ public class ResponseHandler
         await interactionContext.Interaction.FollowupAsync(embed: embed, components: builder.Build());
     }
     
-    public async Task SendUpdatedDetailedChannelStatsAsync(DetailedChannelInteractionState detailedChannelInteraction, SocketInteractionContext interactionContext)
+    public async Task SendUpdatedDetailedChannelStatsAsync(InteractionState<ChannelStats> detailedChannelInteraction, SocketInteractionContext interactionContext)
     {
-        var embed = _embedResponseFactory.CreateDetailedChannelStats(detailedChannelInteraction.channelStats, detailedChannelInteraction.currentPage);
+        var embed = _embedResponseFactory.CreateDetailedChannelStats(detailedChannelInteraction.data, detailedChannelInteraction.CurrentPage);
         
-        var noAdvance = detailedChannelInteraction.currentPage + 1 >= detailedChannelInteraction.channelStats.users.Length;
-        var noBack = detailedChannelInteraction.currentPage == 0;
+        var noAdvance = detailedChannelInteraction.CurrentPage + 1 >= detailedChannelInteraction.data.users.Length;
+        var noBack = detailedChannelInteraction.CurrentPage == 0;
         
         var buttonBuilder = new ButtonBuilder()
             .WithCustomId($"detailedchannel-advancepage-{detailedChannelInteraction.interactionContext.Interaction.Id}")
@@ -128,12 +128,12 @@ public class ResponseHandler
         });
     }
 
-    public async Task SendUsersStatsAsync(UsersInteractionState usersInteractionState, SocketInteractionContext interactionContext)
+    public async Task SendUsersStatsAsync(InteractionState<User[][]> usersInteractionState, SocketInteractionContext interactionContext)
     {
-        var embed = _embedResponseFactory.CreateUsersStats(usersInteractionState.users);
+        var embed = _embedResponseFactory.CreateUsersStats(usersInteractionState.data);
         
-        var noAdvance = usersInteractionState.currentPage + 1 >= usersInteractionState.users.Length;
-        var noBack = usersInteractionState.currentPage == 0;
+        var noAdvance = usersInteractionState.CurrentPage + 1 >= usersInteractionState.data.Length;
+        var noBack = usersInteractionState.CurrentPage == 0;
         
         var buttonBuilder = new ButtonBuilder()
             .WithCustomId($"users-advancepage-{usersInteractionState.interactionContext.Interaction.Id}")
@@ -154,12 +154,12 @@ public class ResponseHandler
         await interactionContext.Interaction.FollowupAsync(embed: embed, components: builder.Build());
     }
     
-    public async Task SendUpdateUsersStatsAsync(UsersInteractionState usersInteractionState, SocketInteractionContext interactionContext)
+    public async Task SendUpdateUsersStatsAsync(InteractionState<User[][]> usersInteractionState, SocketInteractionContext interactionContext)
     {
-        var embed = _embedResponseFactory.CreateUsersStats(usersInteractionState.users, usersInteractionState.currentPage);
+        var embed = _embedResponseFactory.CreateUsersStats(usersInteractionState.data, usersInteractionState.CurrentPage);
         
-        var noAdvance = usersInteractionState.currentPage + 1 >= usersInteractionState.users.Length;
-        var noBack = usersInteractionState.currentPage == 0;
+        var noAdvance = usersInteractionState.CurrentPage + 1 >= usersInteractionState.data.Length;
+        var noBack = usersInteractionState.CurrentPage == 0;
         
         var buttonBuilder = new ButtonBuilder()
             .WithCustomId($"users-advancepage-{usersInteractionState.interactionContext.Interaction.Id}")
@@ -184,16 +184,16 @@ public class ResponseHandler
         });
     }
 
-    public async Task SendDetailedUserStatsAsync(DetailedUserInteractionState userInteractionState, SocketInteractionContext interactionContext)
+    public async Task SendDetailedUserStatsAsync(MultiTableInteractionState<UserStatsWithUsernames> userInteractionState, SocketInteractionContext interactionContext)
     {
-        var embed = _embedResponseFactory.CreateDetailedUserStats(userInteractionState.userStats, userInteractionState.selectBoxOption);
+        var embed = _embedResponseFactory.CreateDetailedUserStats(userInteractionState.data, userInteractionState.selectBoxOption);
 
         var tableLenght = 0;
 
         if (userInteractionState.selectBoxOption == "table1")
-            tableLenght = userInteractionState.userStats.MostCommonWords.Length;
+            tableLenght = userInteractionState.data.MostCommonWords.Length;
         else if (userInteractionState.selectBoxOption == "table2")
-            tableLenght = userInteractionState.userStats.NumberOfMentions.Length;
+            tableLenght = userInteractionState.data.NumberOfMentions.Length;
 
         var noAdvance = userInteractionState.currentTablePage[userInteractionState.selectBoxOption] >= tableLenght - 1;
         var noBack = userInteractionState.currentTablePage[userInteractionState.selectBoxOption] == 0;
@@ -227,10 +227,10 @@ public class ResponseHandler
         await interactionContext.Interaction.FollowupAsync(embed: embed, components: builder.Build());
     }
 
-    public async Task SendUpdatedUserStatsAsync(DetailedUserInteractionState detailedUserInteractionState,
+    public async Task SendUpdatedUserStatsAsync(MultiTableInteractionState<UserStatsWithUsernames> detailedUserInteractionState,
         SocketInteractionContext context)
     {
-        var embed = _embedResponseFactory.CreateDetailedUserStats(detailedUserInteractionState.userStats,
+        var embed = _embedResponseFactory.CreateDetailedUserStats(detailedUserInteractionState.data,
             detailedUserInteractionState.selectBoxOption,
             detailedUserInteractionState.currentTablePage[detailedUserInteractionState.selectBoxOption]);
 
@@ -246,9 +246,9 @@ public class ResponseHandler
         var tableLenght = 0;
 
         if (detailedUserInteractionState.selectBoxOption == "table1")
-            tableLenght = detailedUserInteractionState.userStats.MostCommonWords.Length;
+            tableLenght = detailedUserInteractionState.data.MostCommonWords.Length;
         else if (detailedUserInteractionState.selectBoxOption == "table2")
-            tableLenght = detailedUserInteractionState.userStats.NumberOfMentions.Length;
+            tableLenght = detailedUserInteractionState.data.NumberOfMentions.Length;
 
         var noAdvance = detailedUserInteractionState.currentTablePage[detailedUserInteractionState.selectBoxOption] >= tableLenght - 1;
         var noBack = detailedUserInteractionState.currentTablePage[detailedUserInteractionState.selectBoxOption] == 0;

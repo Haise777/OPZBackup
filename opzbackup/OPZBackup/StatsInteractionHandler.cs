@@ -1,18 +1,23 @@
 ﻿using Discord.Interactions;
 using Discord.WebSocket;
+using OPZBackup.Data.Dto;
+using OPZBackup.Data.Models;
 using OPZBackup.Modules;
+using OPZBackup.ResponseHandlers.Stats;
 
 namespace OPZBackup;
 
 public class StatsInteractionHandler
 {
     private readonly StatInteractionCache _interactionCache;
+    private readonly ResponseHandler _responseHandler;
     private readonly DiscordSocketClient _client;
 
-    public StatsInteractionHandler(StatInteractionCache interactionCache, DiscordSocketClient client)
+    public StatsInteractionHandler(StatInteractionCache interactionCache, DiscordSocketClient client, ResponseHandler responseHandler)
     {
         _interactionCache = interactionCache;
         _client = client;
+        _responseHandler = responseHandler;
     }
 
     public async Task HandleInteraction(SocketMessageComponent component)
@@ -38,65 +43,89 @@ public class StatsInteractionHandler
         switch (componentIdElements[1])
         {
             case "advancepage":
-                await interactionState.AdvancePage(ctx);
+                await AdvancePage(interactionState, ctx);
                 break;
             case "returnpage":
-                await interactionState.ReturnPage(ctx);
+                await ReturnPage(interactionState, ctx);
                 break;
             case "tableswitch":
-                await interactionState.SwitchTable(ctx, component.Data.Values.First());
+                await SwitchTable(interactionState,component.Data.Values.First() ,ctx);
                 break;
         }
-    }
 
+        await _responseHandler.SendUpdatedUserStatsAsync(interactionState, interactionState.Interaction);
+    }
+    
     private async Task channelsExecuted(SocketInteractionContext ctx, string[] componentIdElements)
     {
         var interactionState = _interactionCache.GetChannelsInteraction(ulong.Parse(componentIdElements[2]));
         if (interactionState == null)
             return;
         
-        switch (componentIdElements[1])
-        {
-            case "advancepage":
-                await interactionState.AdvancePage(ctx);
-                break;
-            case "returnpage":
-                await interactionState.ReturnPage(ctx);
-                break;
-        }
+        await ExecuteComponentAction(ctx, componentIdElements, interactionState);
+        
+        await _responseHandler.SendUpdateChannelsStatsAsync(interactionState, interactionState.interactionContext);
     }
-
+    
     private async Task usersExecuted(SocketInteractionContext ctx, string[] componentIdElements)
     {
         var interactionState = _interactionCache.GetUsersInteraction(ulong.Parse(componentIdElements[2]));
         if (interactionState == null)
             return;
         
-        switch (componentIdElements[1])
-        {
-            case "advancepage":
-                await interactionState.AdvancePage(ctx);
-                break;
-            case "returnpage":
-                await interactionState.ReturnPage(ctx);
-                break;
-        }
+        await ExecuteComponentAction(ctx, componentIdElements, interactionState);
+        await _responseHandler.SendUpdateUsersStatsAsync(interactionState, interactionState.interactionContext);
     }
 
-    private async Task detailedChannelExecuted(SocketInteractionContext interactionContext, string[] componentIdElements)
+    private async Task detailedChannelExecuted(SocketInteractionContext ctx, string[] componentIdElements)
     {
         var interactionState = _interactionCache.GetDetailedChannelInteraction(ulong.Parse(componentIdElements[2]));
         if (interactionState == null)
             return;
         
+        await ExecuteComponentAction(ctx, componentIdElements, interactionState);
+        await _responseHandler.SendUpdatedDetailedChannelStatsAsync(interactionState, interactionState.interactionContext);
+    }
+    
+    private async Task ExecuteComponentAction<T>(SocketInteractionContext ctx, string[] componentIdElements,
+        InteractionState<T> interactionState)
+    {
         switch (componentIdElements[1])
         {
             case "advancepage":
-                await interactionState.AdvancePage(interactionContext);
+                await AdvancePage(interactionState, ctx);
                 break;
             case "returnpage":
-                await interactionState.ReturnPage(interactionContext);
+                await ReturnPage(interactionState, ctx);
                 break;
+            default:
+                throw new InvalidOperationException("Invalid action on ComponentID");
         }
+    }
+
+    private async Task AdvancePage<T>(InteractionState<T> state, SocketInteractionContext ctx)
+    {
+        await ctx.Interaction.DeferAsync();
+        state.CurrentPage++;
+    }
+    private async Task ReturnPage<T>(InteractionState<T> state, SocketInteractionContext ctx)
+    {
+        await ctx.Interaction.DeferAsync();
+        state.CurrentPage--;
+    }
+    private async Task AdvancePage<T>(MultiTableInteractionState<T> state, SocketInteractionContext ctx)
+    {
+        await ctx.Interaction.DeferAsync();
+        state.currentTablePage[state.selectBoxOption]++;
+    }
+    private async Task ReturnPage<T>(MultiTableInteractionState<T> state, SocketInteractionContext ctx)
+    {
+        await ctx.Interaction.DeferAsync();
+        state.currentTablePage[state.selectBoxOption]--;
+    }
+    private async Task SwitchTable<T>(MultiTableInteractionState<T> interactionState, string value, SocketInteractionContext ctx)
+    {
+        await ctx.Interaction.DeferAsync();
+        interactionState.selectBoxOption = value;
     }
 }

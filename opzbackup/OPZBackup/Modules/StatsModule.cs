@@ -29,7 +29,8 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
         await Context.Interaction.DeferAsync();
 
         var channels = await _statsService.ListAllChannelStats();
-        var interaction = _statInteractionCache.AddInteraction(Context, channels, _responseHandler);
+        var chunkedChannels = channels.Chunk(10).ToArray();
+        var interaction = _statInteractionCache.AddInteraction(Context, chunkedChannels);
 
         await _responseHandler.SendChannelsStatsAsync(interaction, Context);
     }
@@ -40,7 +41,7 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
         await Context.Interaction.DeferAsync();
 
         var channelStats = await _statsService.GetInDetailChannelStats(Context.Channel.Id);
-        var interaction = _statInteractionCache.AddInteraction(Context, channelStats, _responseHandler);
+        var interaction = _statInteractionCache.AddInteraction(Context, channelStats);
 
         await _responseHandler.SendDetailedChannelStatsAsync(interaction, Context);
     }
@@ -51,7 +52,8 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
         await Context.Interaction.DeferAsync();
 
         var users = await _statsService.ListAllUsersStats();
-        var interaction = _statInteractionCache.AddInteraction(Context, users, _responseHandler);
+        var chunkedUsers = users.Chunk(5).ToArray();
+        var interaction = _statInteractionCache.AddInteraction(Context, chunkedUsers);
 
         await _responseHandler.SendUsersStatsAsync(interaction, Context);
     }

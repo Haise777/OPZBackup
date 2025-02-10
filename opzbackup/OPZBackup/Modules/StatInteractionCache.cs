@@ -7,226 +7,87 @@ namespace OPZBackup.Modules;
 
 public class StatInteractionCache
 {
-    private Dictionary<ulong, DetailedUserInteractionState> _detailedUserInteractionStates = new();
-    private Dictionary<ulong, UsersInteractionState> _usersInteractionStates = new();
-    private Dictionary<ulong, ChannelsInteractionState> _channelsInteractionStates = new();
-    private Dictionary<ulong, DetailedChannelInteractionState> _detailedChannelInteractionStates = new();
-    
+    private Dictionary<ulong, MultiTableInteractionState<UserStatsWithUsernames>> _detailedUserInteractionStates = new();
+    private Dictionary<ulong, InteractionState<User[][]>> _usersInteractionStates = new();
+    private Dictionary<ulong, InteractionState<Channel[][]>> _channelsInteractionStates = new();
+    private Dictionary<ulong, InteractionState<ChannelStats>> _detailedChannelInteractionStates = new();
 
-
-    public DetailedUserInteractionState AddInteraction(SocketInteractionContext interaction, UserStatsWithUsernames userStats, ResponseHandler responseHandler)
+    public MultiTableInteractionState<UserStatsWithUsernames> AddInteraction(SocketInteractionContext interaction,
+        UserStatsWithUsernames userStats, ResponseHandler responseHandler)
     {
-        var interactionState = new DetailedUserInteractionState(interaction, userStats, responseHandler);
+        var tablePageDictionary = new Dictionary<string, int>()
+        {
+            ["table1"] = 0,
+            ["table2"] = 0,
+            ["table3"] = 0,
+        };
+        
+        var interactionState = new MultiTableInteractionState<UserStatsWithUsernames>(interaction, userStats, tablePageDictionary);
 
         if (_detailedUserInteractionStates.Count > 10)
             _detailedUserInteractionStates.Remove(_detailedUserInteractionStates.Keys.Last());
 
         _detailedUserInteractionStates[interaction.Interaction.Id] = interactionState;
-        
+
         return interactionState;
     }
-    
-    public UsersInteractionState AddInteraction(SocketInteractionContext interaction, IEnumerable<User> users, ResponseHandler responseHandler)
+
+    public InteractionState<User[][]> AddInteraction(SocketInteractionContext interaction,
+        User[][] users)
     {
-        var interactionState = new UsersInteractionState(interaction, users, responseHandler);
+        var interactionState = new InteractionState<User[][]>(interaction, users);
 
         if (_usersInteractionStates.Count > 10)
             _usersInteractionStates.Remove(_usersInteractionStates.Keys.Last());
-        
+
         _usersInteractionStates[interaction.Interaction.Id] = interactionState;
-        
+
         return interactionState;
     }
-    
-    public ChannelsInteractionState AddInteraction(SocketInteractionContext interaction, IEnumerable<Channel> channels, ResponseHandler responseHandler)
+
+    public InteractionState<Channel[][]> AddInteraction(SocketInteractionContext interaction,
+        Channel[][] channels)
     {
-        var interactionState = new ChannelsInteractionState(interaction, channels, responseHandler);
+        var interactionState = new InteractionState<Channel[][]>(interaction, channels);
 
         if (_channelsInteractionStates.Count > 10)
             _channelsInteractionStates.Remove(_channelsInteractionStates.Keys.Last());
-        
+
         _channelsInteractionStates[interaction.Interaction.Id] = interactionState;
-        
+
         return interactionState;
     }
-    
-    public DetailedChannelInteractionState AddInteraction(SocketInteractionContext interaction, ChannelStats channelStats, ResponseHandler responseHandler)
+
+    public InteractionState<ChannelStats> AddInteraction(SocketInteractionContext interaction,
+        ChannelStats channelStats)
     {
-        var interactionState = new DetailedChannelInteractionState(interaction, channelStats, responseHandler);
+        var interactionState = new InteractionState<ChannelStats>(interaction, channelStats);
 
         if (_detailedChannelInteractionStates.Count > 10)
             _detailedChannelInteractionStates.Remove(_detailedChannelInteractionStates.Keys.Last());
 
         _detailedChannelInteractionStates[interaction.Interaction.Id] = interactionState;
-        
+
         return interactionState;
     }
 
-    public DetailedUserInteractionState? GetDetailedUserInteraction(ulong channelId)
+    public MultiTableInteractionState<UserStatsWithUsernames>? GetDetailedUserInteraction(ulong channelId)
     {
         return _detailedUserInteractionStates.TryGetValue(channelId, out var interaction) ? interaction : null;
     }
-    
-    public UsersInteractionState? GetUsersInteraction(ulong channelId)
+
+    public InteractionState<User[][]>? GetUsersInteraction(ulong channelId)
     {
         return _usersInteractionStates.TryGetValue(channelId, out var interaction) ? interaction : null;
     }
-    
-    public ChannelsInteractionState? GetChannelsInteraction(ulong channelId)
+
+    public InteractionState<Channel[][]>? GetChannelsInteraction(ulong channelId)
     {
         return _channelsInteractionStates.TryGetValue(channelId, out var interaction) ? interaction : null;
     }
-    
-    public DetailedChannelInteractionState? GetDetailedChannelInteraction(ulong channelId)
+
+    public InteractionState<ChannelStats>? GetDetailedChannelInteraction(ulong channelId)
     {
         return _detailedChannelInteractionStates.TryGetValue(channelId, out var interaction) ? interaction : null;
-    }
-}
-
-public class DetailedChannelInteractionState
-{
-    public readonly SocketInteractionContext interactionContext;
-    public readonly ChannelStats channelStats;
-    public readonly ResponseHandler responseHandler;
-    public int currentPage;
-    
-    public DetailedChannelInteractionState(SocketInteractionContext interactionContext, ChannelStats channelStats, ResponseHandler responseHandler)
-    {
-        this.channelStats = channelStats;
-        this.responseHandler = responseHandler;
-        this.interactionContext = interactionContext;
-    }
-    
-    public async Task AdvancePage(SocketInteractionContext currentContext)
-    {
-        await currentContext.Interaction.DeferAsync();
-        
-        currentPage++;
-        
-        await responseHandler.SendUpdatedDetailedChannelStatsAsync(this, interactionContext);
-    }
-    
-    public async Task ReturnPage(SocketInteractionContext currentContext)
-    {
-        await currentContext.Interaction.DeferAsync();
-
-        currentPage--;
-        
-        await responseHandler.SendUpdatedDetailedChannelStatsAsync(this, interactionContext);
-    }
-}
-
-public class UsersInteractionState
-{
-    public readonly SocketInteractionContext interactionContext;
-    public readonly ResponseHandler responseHandler;
-    public readonly User[][] users;
-    public int currentPage;
-    
-    public UsersInteractionState(SocketInteractionContext interactionContext, IEnumerable<User> users, ResponseHandler responseHandler)
-    {
-        this.users = users.Chunk(5).ToArray();
-        this.interactionContext = interactionContext;
-        this.responseHandler = responseHandler;
-    }
-    
-    public async Task AdvancePage(SocketInteractionContext currentContext)
-    {
-        await currentContext.Interaction.DeferAsync();
-        
-        currentPage++;
-        
-        await responseHandler.SendUpdateUsersStatsAsync(this, interactionContext);
-    }
-    
-    public async Task ReturnPage(SocketInteractionContext currentContext)
-    {
-        await currentContext.Interaction.DeferAsync();
-
-        currentPage--;
-        
-        await responseHandler.SendUpdateUsersStatsAsync(this, interactionContext);
-    }
-}
-
-public class ChannelsInteractionState
-{
-    public readonly SocketInteractionContext interactionContext;
-    public readonly ResponseHandler responseHandler;
-    public readonly Channel[][] channels;
-    public int currentPage;
-    
-    public ChannelsInteractionState(SocketInteractionContext interactionContext, IEnumerable<Channel> channels, ResponseHandler responseHandler)
-    {
-        this.channels = channels.Chunk(10).ToArray();
-        this.interactionContext = interactionContext;
-        this.responseHandler = responseHandler;
-    }
-    
-    public async Task AdvancePage(SocketInteractionContext currentContext)
-    {
-        await currentContext.Interaction.DeferAsync();
-        
-        currentPage++;
-        
-        await responseHandler.SendUpdateChannelsStatsAsync(this, interactionContext);
-    }
-    
-    public async Task ReturnPage(SocketInteractionContext currentContext)
-    {
-        await currentContext.Interaction.DeferAsync();
-
-        currentPage--;
-        
-        await responseHandler.SendUpdateChannelsStatsAsync(this, interactionContext);
-    }
-}
-
-public class DetailedUserInteractionState
-{
-    public string selectBoxOption = "table1";
-    public readonly UserStatsWithUsernames userStats;
-    public SocketInteractionContext Interaction { get; private set; }
-    public readonly ResponseHandler responseHandler;
-
-    public Dictionary<string, int> currentTablePage = new()
-    {
-        ["table1"] = 0,
-        ["table2"] = 0,
-        ["table3"] = 0
-    };
-
-    public DetailedUserInteractionState(SocketInteractionContext interaction, UserStatsWithUsernames userStats, ResponseHandler responseHandler)
-    {
-        this.userStats = userStats;
-        this.responseHandler = responseHandler;
-        Interaction = interaction;
-    }
-    
-    public async Task SwitchTable(SocketInteractionContext context, string choice)
-    {
-        await context.Interaction.DeferAsync();
-
-        selectBoxOption = choice;
-        
-        await responseHandler.SendUpdatedUserStatsAsync(this, Interaction);
-    }
-    
-    public async Task AdvancePage(SocketInteractionContext context)
-    {
-        await context.Interaction.DeferAsync();
-
-        currentTablePage[selectBoxOption]++;
-        
-        await responseHandler.SendUpdatedUserStatsAsync(this, Interaction);
-    }
-    
-    public async Task ReturnPage(SocketInteractionContext context)
-    {
-        await context.Interaction.DeferAsync();
-
-        currentTablePage[selectBoxOption]--;
-        
-        await responseHandler.SendUpdatedUserStatsAsync(this, Interaction);
     }
 }
