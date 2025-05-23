@@ -28,7 +28,7 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("canal-listar", "efetuar backup deste canal")]
     public async Task ListAllChannelStats()
     {
-        await Context.Interaction.DeferAsync();
+//        await Context.Interaction.DeferAsync();
 
         var channels = await _statsService.ListAllChannelStats();
         var chunkedChannels = channels.Chunk(10).ToArray();
@@ -40,7 +40,7 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("canal-detalhado", "efetuar backup deste canal")]
     public async Task GetInDetailChannelStats()
     {
-        await Context.Interaction.DeferAsync();
+//        await Context.Interaction.DeferAsync();
 
         var channelStats = await _statsService.GetInDetailChannelStats(Context.Channel.Id);
         var interaction = _statInteractionStateManager.AddInteraction(Context, channelStats);
@@ -51,7 +51,7 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("usuario-listar", "efetuar backup deste canal")]
     public async Task ListAllUsersStats()
     {
-        await Context.Interaction.DeferAsync();
+//        await Context.Interaction.DeferAsync();
 
         var users = await _statsService.ListAllUsersStats();
         var chunkedUsers = users.Chunk(5).ToArray();
@@ -63,7 +63,7 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("usuario-detalhado", "efetuar backup deste canal")]
     public async Task GetInDetailUserStats(IUser user)
     {
-        await Context.Interaction.DeferAsync();
+//        await Context.Interaction.DeferAsync();
         
         var userStats = await _statsService.GetInDetailUserStats(user.Id);
         var interaction = _statInteractionStateManager.AddInteraction(Context, userStats, _responseHandler);

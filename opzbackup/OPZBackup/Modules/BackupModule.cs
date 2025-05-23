@@ -32,7 +32,7 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("fazer", "efetuar backup deste canal")]
     public async Task MakeBackup([Choice("ate-ultimo", 0)] [Choice("ate-inicio", 1)] int choice)
     {
-        await Context.Interaction.DeferAsync();
+        // await Context.Interaction.DeferAsync();
 
         if (!IsInAdminRole())
         {
@@ -46,7 +46,7 @@ public class BackupModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("cancelar", "Cancela o processo de backup atual")]
     public async Task CancelBackupProcess()
     {
-        await Context.Interaction.DeferAsync();
+        // await Context.Interaction.DeferAsync();
 
         if (!IsInAdminRole())
         {

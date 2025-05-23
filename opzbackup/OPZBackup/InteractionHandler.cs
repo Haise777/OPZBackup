@@ -12,16 +12,20 @@ public class InteractionHandler
     private readonly InteractionService _commands;
     private readonly IServiceProvider _services;
     private readonly CommandExecutionLogger _logger;
+    private readonly RateLimiter _rateLimiter;
 
     public InteractionHandler(DiscordSocketClient client,
         InteractionService commands,
         IServiceProvider services,
-        CommandExecutionLogger logger)
+        CommandExecutionLogger logger,
+        RateLimiter rateLimiter
+    )
     {
         _client = client;
         _commands = commands;
         _services = services;
         _logger = logger;
+        _rateLimiter = rateLimiter;
     }
 
     public async Task InitializeAsync()
@@ -36,6 +40,19 @@ public class InteractionHandler
         //TODO: Implement a command cooldown for the same user
         try
         {
+            var user = arg.User;
+            
+            try
+            {
+                await arg.DeferAsync();
+            }
+            catch (TimeoutException ex)
+            {
+                return;
+            }
+
+            await _rateLimiter.RateLimitAsync(user.Id);
+
             var ctx = new SocketInteractionContext(_client, arg);
 
             // _logger.LogExecution(arg, ctx.User);

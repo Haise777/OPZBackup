@@ -127,6 +127,7 @@ public abstract class StartupBase
                 .AddSingleton<Mapper>()
                 .AddSingleton<StatInteractionStateManager>()
                 .AddScoped<InteractionHandler>()
+                .AddScoped<RateLimiter>()
                 .AddScoped<BackupLoggerFactory>()
                 .AddScoped<BackupProcess>()
                 .AddScoped<MessageProcessor>()

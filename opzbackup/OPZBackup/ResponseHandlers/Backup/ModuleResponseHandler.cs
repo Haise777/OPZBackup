@@ -41,14 +41,14 @@ public class ModuleResponseHandler
     {
         if (wasDeleted)
         {
-            await context.Interaction.DeferAsync();
+            // await context.Interaction.DeferAsync();
             await context.Interaction.DeleteOriginalResponseAsync();
             await context.Interaction.FollowupAsync(
                 $"***{context.User.Username}** foi deletado dos registros de backup*");
             return;
         }
 
-        await context.Interaction.DeferAsync();
+        // await context.Interaction.DeferAsync();
         await context.Interaction.DeleteOriginalResponseAsync();
     }
 

@@ -102,27 +102,27 @@ public class StatsInteractionHandler
 
     private async Task AdvancePage<T>(InteractionState<T> state, SocketInteractionContext ctx)
     {
-        await ctx.Interaction.DeferAsync();
+        // await ctx.Interaction.DeferAsync();
         state.CurrentPage++;
     }
     private async Task ReturnPage<T>(InteractionState<T> state, SocketInteractionContext ctx)
     {
-        await ctx.Interaction.DeferAsync();
+        // await ctx.Interaction.DeferAsync();
         state.CurrentPage--;
     }
     private async Task AdvancePage<T>(MultiTableInteractionState<T> state, SocketInteractionContext ctx)
     {
-        await ctx.Interaction.DeferAsync();
+        // await ctx.Interaction.DeferAsync();
         state.currentTablePage[state.selectBoxOption]++;
     }
     private async Task ReturnPage<T>(MultiTableInteractionState<T> state, SocketInteractionContext ctx)
     {
-        await ctx.Interaction.DeferAsync();
+        // await ctx.Interaction.DeferAsync();
         state.currentTablePage[state.selectBoxOption]--;
     }
     private async Task SwitchTable<T>(MultiTableInteractionState<T> interactionState, string value, SocketInteractionContext ctx)
     {
-        await ctx.Interaction.DeferAsync();
+        // await ctx.Interaction.DeferAsync();
         interactionState.selectBoxOption = value;
     }
 }
