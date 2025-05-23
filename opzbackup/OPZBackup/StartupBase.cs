@@ -147,6 +147,7 @@ public abstract class StartupBase
                 .AddScoped<MessageStatsProcessor>()
                 .AddScoped<ResponseHandlers.Stats.ResponseHandler>()
                 .AddScoped<ResponseHandlers.Stats.EmbedResponseFactory>()
+                .AddTransient<FileTypeStats>()
                 .AddTransient<PerformanceProfiler>()
                 .AddTransient<Timer>()
                 .AddTransient<BackupContextFactory>()

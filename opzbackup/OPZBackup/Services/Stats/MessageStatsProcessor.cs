@@ -9,9 +9,12 @@ public class MessageStatsProcessor
     private readonly Regex _wordRegex = new(@"[\w']+");
     private readonly Regex _mentionRegex = new(@"<@!?(\d+)>");
     private readonly char[] _punctuationChars;
+    public readonly FileTypeStats _fileTypeStats;
 
-    public MessageStatsProcessor()
+    public MessageStatsProcessor(FileTypeStats fileTypeStats)
     {
+        _fileTypeStats = fileTypeStats;
+
         _punctuationChars = Enumerable.Range(0, char.MaxValue + 1)
             .Select(c => (char)c)
             .Where(c => char.IsPunctuation(c))
@@ -30,11 +33,6 @@ public class MessageStatsProcessor
         var wordCounts = new Dictionary<string, int>();
         var mentionCounts = new Dictionary<ulong, int>();
         //TODO: Do something about this
-        var fileTypesCounts = new Dictionary<string, int>();
-        fileTypesCounts["image"] = 0;
-        fileTypesCounts["video"] = 0;
-        fileTypesCounts["audio"] = 0;
-        fileTypesCounts["other"] = 0;
 
         foreach (var message in messageList)
         {
@@ -45,20 +43,14 @@ public class MessageStatsProcessor
             }
 
             if (message.HasFile)
-                AnalyzeForFileTypes(message, fileTypesCounts);
+                AnalyzeForFileTypes(message);
         }
 
         return new UserStats(
             null,
             mentionCounts.Chunk(10).ToArray(),
             wordCounts.OrderByDescending(kv => kv.Value).Chunk(10).ToArray(),
-            //TODO: Do something about this
-            new FileTypeStats(
-                fileTypesCounts["image"],
-                fileTypesCounts["video"],
-                fileTypesCounts["audio"],
-                fileTypesCounts["other"]
-            )
+            _fileTypeStats
         );
     }
 
@@ -104,32 +96,39 @@ public class MessageStatsProcessor
         }
     }
 
-    private void AnalyzeForFileTypes(Message message, Dictionary<string, int> fileTypesCounts)
+    private void AnalyzeForFileTypes(Message message)
     {
-        foreach (var attachment in message.Attachments)
-        {
-            var fileType = GetFileType(attachment.Extension);
+        foreach (var attach in message.Attachments)
+            _fileTypeStats.Increment(attach.Extension);
+    }
+}
 
-            if (fileTypesCounts.TryGetValue(fileType, out int count))
-            {
-                fileTypesCounts[fileType] = count + 1;
-            }
-            else
-            {
-                fileTypesCounts[fileType] = 1;
-            }
+public class FileTypeStats
+{
+    public int ImageCount { get; private set; }
+    public int VideoCount { get; private set; }
+    public int AudioCount { get; private set; }
+    public int OtherCount { get; private set; }
+
+    public void Increment(string ext)
+    {
+        switch (GetFileType(ext))
+        {
+            case FileType.Image: ImageCount++; break;
+            case FileType.Video: VideoCount++; break;
+            case FileType.Audio: AudioCount++; break;
+            default: OtherCount++; break;
         }
     }
 
-    private static string GetFileType(string extension)
-    {
-        //TODO: Add a way to pick from a localFile which fileExtensions are What
-        return extension switch
+    private static FileType GetFileType(string extension)
+        => extension.ToLowerInvariant() switch
         {
-            "jpg" or "jpeg" or "png" or "gif" => "image",
-            "mp4" or "mov" or "avi" => "video",
-            "mp3" or "wav" => "audio",
-            _ => "other"
+            "jpg" or "jpeg" or "png" or "gif" => FileType.Image,
+            "mp4" or "mov" or "avi" => FileType.Video,
+            "mp3" or "wav" => FileType.Audio,
+            _ => FileType.Other,
         };
-    }
 }
+
+public enum FileType { Image, Video, Audio, Other }

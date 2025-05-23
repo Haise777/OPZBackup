@@ -143,10 +143,10 @@ public class EmbedResponseFactory
 
         var dictionary = new Dictionary<string, int>()
         {
-            { "Imagens", fileTypeStats.NOfSentImages },
-            { "Videos", fileTypeStats.NOfSentVideos },
-            { "Audios", fileTypeStats.NOfSentAudios },
-            { "Outros", fileTypeStats.NOfSentOthers },
+            { "Imagens", fileTypeStats.ImageCount },
+            { "Videos", fileTypeStats.VideoCount },
+            { "Audios", fileTypeStats.AudioCount },
+            { "Outros", fileTypeStats.OtherCount },
         };
 
         foreach (var fileType in dictionary)
