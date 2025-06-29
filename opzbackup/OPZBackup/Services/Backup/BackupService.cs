@@ -39,12 +39,17 @@ public class BackupService
             return;
         }
 
-        // if (await CheckIfInCooldown(context.Channel))
-        // {
-        //     _logger.Information("Backup in this channel is on cooldown.");
-        //     await _responseHandler.SendInvalidAttemptAsync(context, TimeSpan.Zero); //TODO
-        //     return;
-        // }
+        //TODO: change this cooldown tracking
+        if (App.RunWithCooldowns)
+        {
+            var isInCooldown = await CheckIfInCooldown(context.Channel);
+            if (isInCooldown.isInCooldown)
+            {
+                _logger.Information("Backup in this channel is on cooldown.");
+                await _responseHandler.SendInvalidAttemptAsync(context, isInCooldown.timeDifference);
+                return;
+            }
+        }
 
         await AttemptBackup(context, choice);
     }
@@ -61,19 +66,23 @@ public class BackupService
         await _currentBackup.CancelAsync();
     }
 
-    // private async Task<bool> CheckIfInCooldown(ISocketMessageChannel channel)
-    // {
-    //     var channelId = channel.Id;
-    //     var lastBackupInThisChannel = await _dbContext.BackupRegistries //TODO: Make a better query for this
-    //         .FirstOrDefaultAsync(x => x.ChannelId == channelId);
-    //
-    //     if (lastBackupInThisChannel == null)
-    //         return false;
-    //     else if (lastBackupInThisChannel.Date > DateTime.Now - TimeSpan.FromDays(1))
-    //         return true;
-    //
-    //     return false;
-    // }
+    private record CoolddownCheckResult(bool isInCooldown, TimeSpan timeDifference);
+
+    private async Task<CoolddownCheckResult> CheckIfInCooldown(ISocketMessageChannel channel)
+    {
+        var channelId = channel.Id;
+        var lastBackupInThisChannel = await _dbContext.BackupRegistries //TODO: Make a better query for this
+            .OrderByDescending(x => x.Date)
+            .FirstOrDefaultAsync(x => x.ChannelId == channelId);
+
+        if (lastBackupInThisChannel == null)
+            return new CoolddownCheckResult(false, TimeSpan.Zero);
+
+        var timeDifference = DateTime.Now.Subtract(lastBackupInThisChannel.Date);
+        var isLongerThanADay = timeDifference.Duration() > TimeSpan.FromDays(1);
+
+        return new CoolddownCheckResult(!isLongerThanADay, timeDifference);
+    }
 
     private async Task AttemptBackup(SocketInteractionContext context, int choice)
     {

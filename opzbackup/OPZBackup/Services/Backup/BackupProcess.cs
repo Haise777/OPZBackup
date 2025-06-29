@@ -50,8 +50,6 @@ public class BackupProcess : IAsyncDisposable, IDisposable
         _batchTimer = batchTimer;
     }
 
-
-
     #endregion
 
     public async Task CancelAsync() =>
@@ -70,14 +68,10 @@ public class BackupProcess : IAsyncDisposable, IDisposable
 
             if (_context.MessageCount == 0)
             {
-                _logger.EmptyBackup();
-                var sendCancelled = _responseHandler.SendEmptyBackupAttemptAsync();
-                var rollBack = _context.RollbackAsync();
-                await rollBack;
-                await sendCancelled;
+                await CleanupAfterEmptyAttempt();
                 return;
             }
-            
+
             await CompressFiles();
             await UpdateFullStatisticData();
         }
@@ -100,9 +94,20 @@ public class BackupProcess : IAsyncDisposable, IDisposable
 
             throw;
         }
-        
+
         _logger.BackupFinished(_batchTimer, _backupCompressor.PerformanceTimer, _batchManager.GetTimers);
-        await _responseHandler.SendCompletedAsync(_context, _context.BackupRegistry.Channel, _startMessage!, _lastMessage!);
+        await _responseHandler.SendCompletedAsync(_context, _context.BackupRegistry.Channel, _startMessage!,
+            _lastMessage!);
+    }
+
+    private async Task CleanupAfterEmptyAttempt()
+    {
+        _logger.EmptyBackup();
+        await _responseHandler.SendEmptyBackupAttemptAsync();
+        await _context.RollbackAsync();
+
+        _dbContext.BackupRegistries.Remove(_context.BackupRegistry);
+        await _dbContext.SaveChangesAsync();
     }
 
     private async Task InitialSetup(SocketInteractionContext interactionContext,
@@ -148,7 +153,7 @@ public class BackupProcess : IAsyncDisposable, IDisposable
                 _logger.Log.Information("No messages in current batch, skipping...");
                 continue;
             }
-            
+
             await _batchManager.SaveBatchAsync(batch, _cancelToken);
             _batchTimer.Stop();
 

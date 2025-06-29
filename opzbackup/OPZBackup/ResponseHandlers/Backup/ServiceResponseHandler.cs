@@ -3,6 +3,7 @@ using Discord.Interactions;
 using Discord.Rest;
 using OPZBackup.Data.Models;
 using OPZBackup.Services.Backup;
+using Serilog;
 
 namespace OPZBackup.ResponseHandlers.Backup;
 
@@ -78,6 +79,8 @@ public class ServiceResponseHandler
             m.Content = "*Backup estava vazio, o processo foi cancelado.*";
             m.Embed = null;
         });
+        
+        DelayedDeleteInteraction(_interactionContext);
     }
 
     private async Task GhostPing()
@@ -85,5 +88,21 @@ public class ServiceResponseHandler
         var ping = await _interactionContext.Channel.SendMessageAsync($"<@{_interactionContext.User.Id}>");
         await Task.Delay(2000);
         await ping.DeleteAsync();
+    }
+    
+    private void DelayedDeleteInteraction(SocketInteractionContext context) //TODO: Centralize this somewhere to be reusable
+    {
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(7000);
+                await context.Interaction.DeleteOriginalResponseAsync();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error while attempting a delayed interaction delete");
+            }
+        });
     }
 }

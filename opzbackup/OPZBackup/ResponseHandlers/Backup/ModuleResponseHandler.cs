@@ -5,8 +5,10 @@ namespace OPZBackup.ResponseHandlers.Backup;
 
 public class ModuleResponseHandler
 {
-    public async Task SendInvalidAttemptAsync(SocketInteractionContext context, TimeSpan cooldownTime)
+    public async Task SendInvalidAttemptAsync(SocketInteractionContext context, TimeSpan timeDifference)
     {
+        var cooldownTime = TimeSpan.FromDays(1).Subtract(timeDifference);
+        
         var formattedTime = cooldownTime > TimeSpan.FromHours(0.99)
             ? $"{cooldownTime.Hours} horas e {cooldownTime.Minutes} minutos"
             : $"{cooldownTime.Minutes} minutos e {cooldownTime.Seconds} segundos";
