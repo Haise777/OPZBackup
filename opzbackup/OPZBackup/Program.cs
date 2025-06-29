@@ -23,9 +23,7 @@ public class Program : StartupBase
         try
         {
             Log.Information($"OPZBot - v{App.Version} \n" + "Starting host");
-
-            var culture = new CultureInfo("pt-BR"); //TODO: Move this to the App class and config file
-            CultureInfo.DefaultThreadCurrentCulture = culture;
+            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(App.CultureString);
 
             var hostBuilder = Host.CreateDefaultBuilder(args)
                 .UseSerilog((_, _, cfg) => LoggerConfig.GetMainConfiguration(cfg)

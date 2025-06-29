@@ -34,6 +34,9 @@ public static class App
 
     public static string Token { get; private set; } =
         Configuration.GetValue<string>($"{_configPrefix}:{nameof(Token)}");
+    
+    public static string CultureString { get; private set; } =
+        Configuration.GetValue<string>($"{_configPrefix}:{nameof(CultureString)}");
 
     public static int MaxMessagesPerBatch { get; private set; } =
         Configuration.GetValue<int>($"{_configPrefix}:{nameof(MaxMessagesPerBatch)}");
