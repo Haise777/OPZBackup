@@ -14,7 +14,7 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
     private readonly StatsService _statsService;
     private readonly ResponseHandler _responseHandler;
     private readonly StatInteractionStateManager _statInteractionStateManager;
-    
+
     //TODO: Add a better error handling across all depths beyond this layer
 
     public StatsModule(StatsService statsService, ResponseHandler responseHandler,
@@ -31,18 +31,30 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
 //        await Context.Interaction.DeferAsync();
 
         var channels = await _statsService.ListAllChannelStats();
+        if (!channels.Any())
+        {
+            await _responseHandler.SendNoDataAvailableAsync(Context);
+            return;
+        }
+        
         var chunkedChannels = channels.Chunk(10).ToArray();
         var interaction = _statInteractionStateManager.AddInteraction(Context, chunkedChannels);
 
         await _responseHandler.SendChannelsStatsAsync(interaction, Context);
     }
-    
+
     [SlashCommand("canal-detalhado", "efetuar backup deste canal")]
     public async Task GetInDetailChannelStats()
     {
 //        await Context.Interaction.DeferAsync();
 
         var channelStats = await _statsService.GetInDetailChannelStats(Context.Channel.Id);
+        if (channelStats == null)
+        {
+            await _responseHandler.SendNoDataAvailableAsync(Context);
+            return;
+        }
+        
         var interaction = _statInteractionStateManager.AddInteraction(Context, channelStats);
 
         await _responseHandler.SendDetailedChannelStatsAsync(interaction, Context);
@@ -54,6 +66,12 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
 //        await Context.Interaction.DeferAsync();
 
         var users = await _statsService.ListAllUsersStats();
+        if (!users.Any())
+        {
+            await _responseHandler.SendNoDataAvailableAsync(Context);
+            return;
+        }
+        
         var chunkedUsers = users.Chunk(5).ToArray();
         var interaction = _statInteractionStateManager.AddInteraction(Context, chunkedUsers);
 
@@ -64,10 +82,15 @@ public class StatsModule : InteractionModuleBase<SocketInteractionContext>
     public async Task GetInDetailUserStats(IUser user)
     {
 //        await Context.Interaction.DeferAsync();
-        
+
         var userStats = await _statsService.GetInDetailUserStats(user.Id);
+        if (userStats == null)
+        {
+            await _responseHandler.SendNoDataAvailableAsync(Context);
+            return;
+        }
+
         var interaction = _statInteractionStateManager.AddInteraction(Context, userStats, _responseHandler);
-        
         await _responseHandler.SendDetailedUserStatsAsync(interaction, Context);
     }
 }

@@ -10,6 +10,8 @@ public class StatsService
     private readonly MyDbContext _dbContext;
     private readonly MessageStatsProcessor _messageStatsProcessor;
 
+    private record UserData(ulong Id, string Username);
+
     public StatsService(MyDbContext dbContext, MessageStatsProcessor messageStatsProcessor)
     {
         _dbContext = dbContext;
@@ -21,10 +23,11 @@ public class StatsService
         return await _dbContext.Channels.ToListAsync();
     }
 
-    private record UserData(ulong Id, string Username);
-
-    public async Task<ChannelStats> GetInDetailChannelStats(ulong channelId)
+    public async Task<ChannelStats?> GetInDetailChannelStats(ulong channelId)
     {
+        if (!await _dbContext.Channels.AnyAsync(c => c.Id == channelId))
+            return null;
+
         var allChannelMessages = await _dbContext.Messages
             .Where(m => m.ChannelId == channelId)
             .ToListAsync();
@@ -87,18 +90,19 @@ public class StatsService
         return await _dbContext.Users.ToListAsync();
     }
 
-    public async Task<UserStatsWithUsernames> GetInDetailUserStats(ulong userId)
+    public async Task<UserStatsWithUsernames?> GetInDetailUserStats(ulong userId)
     {
-        //TODO: Do something about the possibility that the userId param doesn't have a user in the Database
-        
+        //TODO: TEST Do something about the possibility that the userId param doesn't have a user in the Database
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null)
+            return null;
+
         var userMessages = await _dbContext.Messages
             .Where(m => m.AuthorId == userId)
             .Include(m => m.Attachments)
             .ToListAsync();
 
-        var user = await _dbContext.Users.FirstAsync(u => u.Id == userId);
         var userStats = await _messageStatsProcessor.AnalyzeMessageListAsync(userMessages);
-
         var usernameWithMentionsNumber = await TranslateUserIdsToUsername(userStats);
 
         return new UserStatsWithUsernames(
@@ -128,7 +132,7 @@ public class StatsService
             .SelectMany(chunk => chunk)
             .Where(kvp => userIdToUsername.ContainsKey(kvp.Key))
             .ToDictionary(kvp => userIdToUsername[kvp.Key], kvp => kvp.Value);
-        
+
         return usernameWithMentionsNumber;
     }
 }

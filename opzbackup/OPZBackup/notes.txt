@@ -1,18 +1,4 @@
 ﻿[x/5] = Criticality scale of a issue
 
-[3/5] 'stats usuario-detalhado' throws a error if called from a fresh clean start {
-
-[20:31:04 ERR DiscordNet] 
-Discord.Interactions.InteractionException: Error occurred executing stats usuario-detalhado.
- ---> System.InvalidOperationException: Sequence contains no elements.
-   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
-   at OPZBackup.Services.Stats.StatsService.GetInDetailUserStats(UInt64 userId) in C:\Users\gashi\source\cs\OPZBackup\opzbackup\OPZBackup\Services\Stats\StatsService.cs:line 99
-   at OPZBackup.Modules.StatsModule.GetInDetailUserStats(IUser user) in C:\Users\gashi\source\cs\OPZBackup\opzbackup\OPZBackup\Modules\StatsModule.cs:line 68
-   at Discord.Interactions.Builders.ModuleClassBuilder.<>c__DisplayClass11_0.<<CreateCallback>g__ExecuteCallback|1>d.MoveNext()
-   --- End of inner exception stack trace ---
-
-}
-
 
 [2/5]Issues with the RateLimiter blocking the InteractionHandler's gateway tasks when bombarded with requests

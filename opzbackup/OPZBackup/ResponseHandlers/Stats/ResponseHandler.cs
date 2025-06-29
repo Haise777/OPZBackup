@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using OPZBackup.Data.Dto;
 using OPZBackup.Data.Models;
 using OPZBackup.Modules;
+using Serilog;
 
 namespace OPZBackup.ResponseHandlers.Stats;
 
@@ -275,6 +276,28 @@ public class ResponseHandler
         {
             r.Embed = embed;
             r.Components = builder.Build();
+        });
+    }
+
+    public async Task SendNoDataAvailableAsync(SocketInteractionContext context)
+    {
+        await context.Interaction.FollowupAsync("Não há dados disponiveis para este usuário...");
+        DelayedDeleteInteraction(context);
+    }
+    
+    private void DelayedDeleteInteraction(SocketInteractionContext context)
+    {
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(7000);
+                await context.Interaction.DeleteOriginalResponseAsync();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error while attempting a delayed interaction delete");
+            }
         });
     }
 }
