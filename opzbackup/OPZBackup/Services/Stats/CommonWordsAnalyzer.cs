@@ -10,20 +10,21 @@ public class CommonWordsAnalyzer : ICommonWordsAnalyzer
     
     private readonly char[] _punctuationChars;
     private List<string> _wordsToIgnore;
+    private Dictionary<string, int> _wordCounter = new();
+    public Dictionary<string, int> WordCounter => _wordCounter;
 
     public CommonWordsAnalyzer()
     {
         _punctuationChars = Enumerable.Range(0, char.MaxValue + 1)
             .Select(c => (char)c)
-            .Where(c => char.IsPunctuation(c))
+            .Where(char.IsPunctuation)
             .ToArray();
 
         ReadAndParseWordList(); //TODO mudar dps
     }
     
-    public Dictionary<string, int> AnalyzeForCommonWords(Message message)
+    public void AnalyzeForCommonWords(Message message)
     {
-        var wordCounts = new Dictionary<string, int>();
         var wordMatches = _wordRegex.Matches(message.Content!);
         foreach (Match match in wordMatches)
         {
@@ -32,13 +33,11 @@ public class CommonWordsAnalyzer : ICommonWordsAnalyzer
             if (string.IsNullOrEmpty(processedWord) || ShouldWordBeIgnored(processedWord))
                 continue;
 
-            IncrementOrAddWord(processedWord, wordCounts);
+            IncrementOrAddWord(processedWord);
         }
-        
-        return wordCounts;
     }
 
-    public string ProcessWord(string word)
+    private string ProcessWord(string word)
     {
         var trimmed = word.Trim(_punctuationChars);
         var lowerWord = trimmed.ToLowerInvariant();
@@ -46,7 +45,7 @@ public class CommonWordsAnalyzer : ICommonWordsAnalyzer
         return lowerWord;
     }
 
-    public bool ShouldWordBeIgnored(string word)
+    private bool ShouldWordBeIgnored(string word)
     {
         if (!_wordsToIgnore.Any())
             return false;
@@ -54,15 +53,15 @@ public class CommonWordsAnalyzer : ICommonWordsAnalyzer
         return _wordsToIgnore.Contains(word);
     }
 
-    public void IncrementOrAddWord(string word, Dictionary<string, int> wordCounts)
+    private void IncrementOrAddWord(string word)
     {
-        if (wordCounts.TryGetValue(word, out int count))
+        if (_wordCounter.TryGetValue(word, out int count))
         {
-            wordCounts[word] = count + 1;
+            _wordCounter[word] = count + 1;
         }
         else
         {
-            wordCounts[word] = 1;
+            _wordCounter[word] = 1;
         }
     }
 

@@ -6,14 +6,11 @@ namespace OPZBackup.Services.Stats;
 
 public class MessageStatsProcessor
 {
-    private readonly Regex _wordRegex = new(@"[\w']+");
     private readonly Regex _mentionRegex = new(@"<@!?(\d+)>");
     private readonly ICommonWordsAnalyzer _commonWordsAnalyzer;
-    private readonly FileTypeStats _fileTypeStats;
 
-    public MessageStatsProcessor(FileTypeStats fileTypeStats, ICommonWordsAnalyzer commonWordsAnalyzer)
+    public MessageStatsProcessor(ICommonWordsAnalyzer commonWordsAnalyzer)
     {
-        _fileTypeStats = fileTypeStats;
         _commonWordsAnalyzer = commonWordsAnalyzer;
     }
 
@@ -26,7 +23,7 @@ public class MessageStatsProcessor
     // total files with each file type count should all be done in the same loop
     public async Task<UserStats> AnalyzeMessageListAsync(IEnumerable<Message> messageList)
     {
-        Dictionary<string, int>? wordCounts = null;
+        var fileTypeStats = new FileTypeStats();
         var mentionCounts = new Dictionary<ulong, int>();
 
         foreach (var message in messageList)
@@ -34,22 +31,23 @@ public class MessageStatsProcessor
             if (!string.IsNullOrWhiteSpace(message.Content))
             {
                 AnalyzeForMentions(message, mentionCounts);
-                wordCounts = _commonWordsAnalyzer.AnalyzeForCommonWords(message);
+                _commonWordsAnalyzer.AnalyzeForCommonWords(message);
             }
 
             if (message.HasFile)
-                AnalyzeForFileTypes(message);
+                AnalyzeForFileTypes(message, fileTypeStats);
         }
 
-        var wordCountArray = wordCounts is not null
-            ? wordCounts.OrderByDescending(kv => kv.Value).Chunk(10).ToArray()
-            : [];
-
+        var wordCountArray = _commonWordsAnalyzer.WordCounter
+            .OrderByDescending(kv => kv.Value)
+            .Chunk(10)
+            .ToArray();
+        
         return new UserStats(
             null,
             mentionCounts.Chunk(10).ToArray(),
             wordCountArray,
-            _fileTypeStats
+            fileTypeStats
         );
     }
 
@@ -72,9 +70,9 @@ public class MessageStatsProcessor
         }
     }
 
-    private void AnalyzeForFileTypes(Message message)
+    private void AnalyzeForFileTypes(Message message, FileTypeStats fileTypeStats)
     {
         foreach (var attach in message.Attachments)
-            _fileTypeStats.Increment(attach.Extension);
+            fileTypeStats.Increment(attach.Extension);
     }
 }
