@@ -8,17 +8,13 @@ public class MessageStatsProcessor
 {
     private readonly Regex _wordRegex = new(@"[\w']+");
     private readonly Regex _mentionRegex = new(@"<@!?(\d+)>");
-    private readonly char[] _punctuationChars;
-    public readonly FileTypeStats _fileTypeStats;
+    private readonly ICommonWordsAnalyzer _commonWordsAnalyzer;
+    private readonly FileTypeStats _fileTypeStats;
 
-    public MessageStatsProcessor(FileTypeStats fileTypeStats)
+    public MessageStatsProcessor(FileTypeStats fileTypeStats, ICommonWordsAnalyzer commonWordsAnalyzer)
     {
         _fileTypeStats = fileTypeStats;
-
-        _punctuationChars = Enumerable.Range(0, char.MaxValue + 1)
-            .Select(c => (char)c)
-            .Where(c => char.IsPunctuation(c))
-            .ToArray();
+        _commonWordsAnalyzer = commonWordsAnalyzer;
     }
 
     // Show a embed with all of the above, plus
@@ -30,7 +26,7 @@ public class MessageStatsProcessor
     // total files with each file type count should all be done in the same loop
     public async Task<UserStats> AnalyzeMessageListAsync(IEnumerable<Message> messageList)
     {
-        var wordCounts = new Dictionary<string, int>();
+        Dictionary<string, int>? wordCounts = null;
         var mentionCounts = new Dictionary<ulong, int>();
 
         foreach (var message in messageList)
@@ -38,17 +34,21 @@ public class MessageStatsProcessor
             if (!string.IsNullOrWhiteSpace(message.Content))
             {
                 AnalyzeForMentions(message, mentionCounts);
-                AnalyzeForCommonWords(message, wordCounts);
+                wordCounts = _commonWordsAnalyzer.AnalyzeForCommonWords(message);
             }
 
             if (message.HasFile)
                 AnalyzeForFileTypes(message);
         }
 
+        var wordCountArray = wordCounts is not null
+            ? wordCounts.OrderByDescending(kv => kv.Value).Chunk(10).ToArray()
+            : [];
+
         return new UserStats(
             null,
             mentionCounts.Chunk(10).ToArray(),
-            wordCounts.OrderByDescending(kv => kv.Value).Chunk(10).ToArray(),
+            wordCountArray,
             _fileTypeStats
         );
     }
@@ -68,29 +68,6 @@ public class MessageStatsProcessor
             else
             {
                 mentionCounts[userId] = 1;
-            }
-        }
-    }
-
-    private void AnalyzeForCommonWords(Message message, Dictionary<string, int> wordCounts)
-    {
-        //TODO: Add a way for it to pick from a localFile which words should be skipped and not counted
-        var wordMatches = _wordRegex.Matches(message.Content!);
-        foreach (Match match in wordMatches)
-        {
-            var word = match.Value;
-            var trimmed = word.Trim(_punctuationChars);
-            if (string.IsNullOrEmpty(trimmed))
-                continue;
-
-            var lowerWord = trimmed.ToLowerInvariant();
-            if (wordCounts.TryGetValue(lowerWord, out int count))
-            {
-                wordCounts[lowerWord] = count + 1;
-            }
-            else
-            {
-                wordCounts[lowerWord] = 1;
             }
         }
     }

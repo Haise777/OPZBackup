@@ -92,7 +92,6 @@ public class StatsService
 
     public async Task<UserStatsWithUsernames?> GetInDetailUserStats(ulong userId)
     {
-        //TODO: TEST Do something about the possibility that the userId param doesn't have a user in the Database
         var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
         if (user == null)
             return null;

@@ -126,6 +126,8 @@ public abstract class StartupBase
                 .AddSingleton<StatsInteractionHandler>()
                 .AddSingleton<Mapper>()
                 .AddSingleton<StatInteractionStateManager>()
+                .AddSingleton<ICommonWordsAnalyzer, CommonWordsAnalyzer>()
+                .AddScoped<InteractionHandler>()
                 .AddScoped<InteractionHandler>()
                 .AddScoped<RateLimiter>()
                 .AddScoped<BackupLoggerFactory>()
