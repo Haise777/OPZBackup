@@ -37,7 +37,6 @@ public class InteractionHandler
     //Redirect the client's 'interaction' to its appropriate handler
     private async Task HandleInteraction(SocketInteraction arg)
     {
-        //TODO: Implement a command cooldown for the same user
         try
         {
             var user = arg.User;
