@@ -201,13 +201,13 @@ public class ResponseHandler
         var noBack = userInteractionState.currentTablePage[userInteractionState.selectBoxOption] == 0;
         
         var menuBuilder = new SelectMenuBuilder()
-            .WithPlaceholder("Select an option")
+            .WithPlaceholder("Selecione uma tabela")
             .WithCustomId($"detaileduser-tableswitch-{userInteractionState.Interaction.Interaction.Id}")
             .WithMinValues(1)
             .WithMaxValues(1)
-            .AddOption("Option A", "table1", "Option A is lying!")
-            .AddOption("Option B", "table2", "Option B is telling the truth!")
-            .AddOption("Option C", "table3", "Option C is telling the truth!");
+            .AddOption("Top Palavras", "table1", "Top mais palavras faladas")
+            .AddOption("Top Menções", "table2", "Top mais usuários mencionados")
+            .AddOption("N de Arquivos", "table3", "Número de arquivos enviados");
 
         var buttonBuilder = new ButtonBuilder()
             .WithCustomId($"detaileduser-advancepage-{userInteractionState.Interaction.Interaction.Id}")
@@ -237,13 +237,13 @@ public class ResponseHandler
             detailedUserInteractionState.currentTablePage[detailedUserInteractionState.selectBoxOption]);
 
         var menuBuilder = new SelectMenuBuilder()
-            .WithPlaceholder("Select an option")
+            .WithPlaceholder("Selecione uma tabela")
             .WithCustomId($"detaileduser-tableswitch-{detailedUserInteractionState.Interaction.Interaction.Id}")
             .WithMinValues(1)
             .WithMaxValues(1)
-            .AddOption("Option A", "table1", "Option A is lying!")
-            .AddOption("Option B", "table2", "Option B is telling the truth!")
-            .AddOption("Option C", "table3", "Option C is telling the truth!");
+            .AddOption("Top Palavras", "table1", "Top mais palavras faladas")
+            .AddOption("Top Menções", "table2", "Top mais usuários mencionados")
+            .AddOption("N de Arquivos", "table3", "Número de arquivos enviados");
 
         var tableLenght = 0;
 
