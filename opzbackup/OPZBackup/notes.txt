@@ -2,3 +2,25 @@
 
 
 [2/5]Issues with the RateLimiter blocking the InteractionHandler's gateway tasks when bombarded with requests
+
+[2/5]A interaction can expire after a certain amount of time, Maybe it would be best if it handled to the client gracefully instead of not responding at all{
+
+[21:32:34 WRN DiscordNet] A ButtonExecuted handler has thrown an unhandled exception.
+Discord.Net.HttpException: The server responded with error 50027: Invalid Webhook Token
+   at Discord.Net.Queue.RequestBucket.SendAsync(RestRequest request)
+   at Discord.Net.Queue.RequestQueue.SendAsync(RestRequest request)
+   at Discord.API.DiscordRestApiClient.SendInternalAsync(String method, String endpoint, RestRequest request)
+   at Discord.API.DiscordRestApiClient.SendJsonAsync[TResponse](String method, String endpoint, Object payload, BucketId bucketId, ClientBucketType clientBucket, RequestOptions options)
+   at Discord.WebSocket.SocketInteraction.ModifyOriginalResponseAsync(Action`1 func, RequestOptions options)
+   at OPZBackup.ResponseHandlers.Stats.ResponseHandler.SendUpdatedUserStatsAsync(MultiTableInteractionState`1 detailedUserInteractionState, SocketInteractionContext context) in C:\Users\gashi\source\cs\OPZBackup\opzbackup\OPZBackup\ResponseHandlers\Stats\ResponseHandler.cs:line 275
+   at OPZBackup.ResponseHandlers.Stats.StatsInteractionHandler.detailedUserExecuted(SocketMessageComponent component, SocketInteractionContext ctx, String[] componentIdElements) in C:\Users\gashi\source\cs\OPZBackup\opzbackup\OPZBackup\ResponseHandlers\Stats\StatsInteractionHandler.cs:line 53
+   at OPZBackup.ResponseHandlers.Stats.StatsInteractionHandler.HandleInteraction(SocketMessageComponent component) in C:\Users\gashi\source\cs\OPZBackup\opzbackup\OPZBackup\ResponseHandlers\Stats\StatsInteractionHandler.cs:line 30
+   at Discord.EventExtensions.InvokeAsync[T](AsyncEvent`1 eventHandler, T arg)
+   at Discord.WebSocket.DiscordSocketClient.TimeoutWrap(String name, Func`1 action)
+}
+
+[4/5] There seems to be a issue with the 'Compression Phase' taking too much RAM when trying to compress a very big channel, might be best if it is made to work slowly instead of whatever it is doing
+It increasingly starts taking more and more RAM as the compression phase progresses, MAYBE it could be low disk space issues
+Also, it is incredibly inefficient at managing space since it involves copying every downloaded file within the ./backup/temp dir
+then duplicating it on the compressed file, only then deleting the original files once the compression phase ends.
+Maybe it would be best if it deletes each file that it already compressed from the temp folder.
