@@ -1,11 +1,30 @@
-﻿using System.IO.Compression;
+using System.IO.Compression;
+using OPZBackup.Extensions;
+using OPZBackup.FileManagement;
+using OPZBackup.Logger;
+using Timer = OPZBackup.Services.Utils.Timer;
 
-namespace OPZBackup.FileManagement;
+namespace OPZBackup.FileManagement.FileCompressor;
 
-public class DirCompressor
+public class BackupCompressor : IBackupCompressor
 {
-    public virtual async Task<long> CompressAsync(string channelDirPath, string targetDirPath,
-        CancellationToken cancellationToken)
+    private readonly FileCleaner _fileCleaner;
+
+    public BackupCompressor(FileCleaner fileCleaner)
+    {
+        _fileCleaner = fileCleaner;
+    }
+
+    public async Task<CompressionResult> CompressAsync(string dirPath, string outputPath)
+    {
+        var compressedSize = await CompressFilesFromDir(dirPath,outputPath);
+
+        return new CompressionResult(
+                    (ulong)compressedSize
+        );
+    }
+
+    private async Task<long> CompressFilesFromDir(string channelDirPath, string targetDirPath)
     {
         var fileName = Path.GetFileName(channelDirPath.TrimEnd(Path.DirectorySeparatorChar));
         var zipPath = Path.Combine(targetDirPath, $"{fileName}.zip");
@@ -23,7 +42,7 @@ public class DirCompressor
 
             foreach (var filePath in filePaths)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                // cancellationToken.ThrowIfCancellationRequested();
 
                 var relativePath = filePath.Substring(basePathLength);
 

@@ -11,8 +11,9 @@ public class BackupContext
 
     public BackupContext(bool isUntilLastBackup,
         FileCleaner fileCleaner, StatisticTracker statisticTracker,
-        BackupRegistry backupRegistry)
+        BackupRegistry backupRegistry, BackupPerformanceProfiler backupProfiler)
     {
+        PerformanceProfiler = backupProfiler;
         IsUntilLastBackup = isUntilLastBackup;
         _fileCleaner = fileCleaner;
         StatisticTracker = statisticTracker;
@@ -21,6 +22,7 @@ public class BackupContext
 
     public BackupRegistry BackupRegistry { get; private set; }
     public StatisticTracker StatisticTracker { get; private set; }
+    public BackupPerformanceProfiler PerformanceProfiler { get; private set; }
     public bool IsStopped { get; private set; }
     public int MessageCount => StatisticTracker.GetTotalStatistics().MessageCount;
     public int FileCount => StatisticTracker.GetTotalStatistics().FileCount;

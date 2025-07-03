@@ -24,3 +24,7 @@ It increasingly starts taking more and more RAM as the compression phase progres
 Also, it is incredibly inefficient at managing space since it involves copying every downloaded file within the ./backup/temp dir
 then duplicating it on the compressed file, only then deleting the original files once the compression phase ends.
 Maybe it would be best if it deletes each file that it already compressed from the temp folder.
+
+Separate better the logic behind each critical step of the Backup-Process
+
+Change a lot of the class APIs to return needed data in the return instead of having it stored in it's properties
