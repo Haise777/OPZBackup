@@ -94,9 +94,7 @@ public class BackupProcess : IAsyncDisposable, IDisposable
             throw;
         }
 
-        var pf = _context.PerformanceProfiler;
-
-        _logger.BackupFinished(pf.BatchTimer, pf.CompressionTimer, _batchManager.GetTimers);
+        _logger.BackupFinished(_context.PerformanceProfiler);
         await _responseHandler.SendCompletedAsync(_context, _context.BackupRegistry.Channel, _startMessage!,
             _lastMessage!);
     }

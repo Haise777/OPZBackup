@@ -107,32 +107,35 @@ public class BackupLogger : IAsyncDisposable
             _context.BatchNumber, _context.MessageCount);
     }
 
-    public void BackupFinished(TimeValue batchTimer, TimeValue compressTimer,
-        ImmutableDictionary<string, TimeValue> performanceTimers)
+    public void BackupFinished(BackupPerformanceProfiler performanceProfiler)
     {
         Log.Information("Backup {id} finished in {time}\n" +
                         " | Occupying {compressedTotal} in saved attachments",
             _context.BackupRegistry.Id,
-            batchTimer.Total.Formatted(),
+            performanceProfiler.BatchTimer.Total.Formatted(),
             _context.StatisticTracker.CompressedFilesSize.ToFormattedString()
         );
 
-        LogStatisticalPerformance(batchTimer, compressTimer, performanceTimers);
+        LogStatisticalPerformance(performanceProfiler);
     }
+
+    //TODO: Retirar o BackupContext desta classe, fazer com q ela fique independente dele
+    //Também se possível, mover a instancia deste logger para dentro da BackupContext.
     
     public void EmptyBackup()
     {
         Log.Information("Empty Backup attempt, backup was cancelled'");
     }
 
-    private void LogStatisticalPerformance(TimeValue batchTimer, TimeValue compressTimer,
-        ImmutableDictionary<string, TimeValue> performanceTimers)
+    private void LogStatisticalPerformance(BackupPerformanceProfiler performanceProfiler)
     {
         var totalStatistics = _context.StatisticTracker.GetTotalStatistics();
-        var fetchPerformance = performanceTimers[BatchManager.FetchTimerId];
-        var processPerformance = performanceTimers[BatchManager.ProcessTimerId];
-        var savePerformance = performanceTimers[BatchManager.SaveMessagesId];
-        var downloadPerformance = performanceTimers[BatchManager.DownloadTimerId];
+        var fetchPerformance = performanceProfiler.FetchTimer;
+        var processPerformance = performanceProfiler.ProcessTimer;
+        var savePerformance = performanceProfiler.SaveTimer;
+        var downloadPerformance = performanceProfiler.DownloadTimer;
+        var batchTimer = performanceProfiler.BatchTimer;
+        var compressTimer = performanceProfiler.CompressionTimer;
 
         StatisticLogger.Information(
             """
