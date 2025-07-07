@@ -12,49 +12,36 @@ namespace OPZBackup.Services.Backup;
 
 public class BatchManager
 {
-    public const string FetchTimerId = "fetch-timer";
-    public const string ProcessTimerId = "process-timer";
-    public const string SaveTimerId = "save-timer";
-    public const string DownloadTimerId = "download-timer";
-    public const string SaveMessagesId = "messages-timer";
+    // Se livrar desse monte de logica de timer, é pra ir tudo pro BackupContext.Performance...
     private readonly AttachmentDownloader _attachmentDownloader;
     private readonly BackupContext _backupContext;
-    private readonly MyDbContext _dbContext;
     private readonly BackupLogger _logger;
+    private readonly IBackupRepository _backupRepository;
 
     private readonly MessageFetcher _messageFetcher;
     private readonly MessageProcessor _messageProcessor;
-    private readonly PerformanceProfiler _performanceProfiler;
     private readonly ISocketMessageChannel _socketMessageChannel;
 
-    public BatchManager(MessageFetcher messageFetcher, MessageProcessor messageProcessor, MyDbContext dbContext,
+    private Timer SaveTimer => _backupContext.PerformanceProfiler.SaveTimer;
+    private Timer ProcessTimer => _backupContext.PerformanceProfiler.ProcessTimer;
+    private Timer SaveMessagesTimer => _backupContext.PerformanceProfiler.SaveMessagesTimer;
+    private Timer FetchTimer => _backupContext.PerformanceProfiler.FetchTimer;
+    private Timer DownloadTimer => _backupContext.PerformanceProfiler.DownloadTimer;
+
+    public int BatchNumber { get; set; }
+
+    public BatchManager(MessageFetcher messageFetcher, MessageProcessor messageProcessor,
         BackupLogger logger, AttachmentDownloader attachmentDownloader, ISocketMessageChannel socketChannel,
-        BackupContext backupContext, PerformanceProfiler performanceProfiler)
+        BackupContext backupContext, IBackupRepository backupRepository)
     {
         _messageFetcher = messageFetcher;
         _messageProcessor = messageProcessor;
-        _dbContext = dbContext;
         _logger = logger;
         _attachmentDownloader = attachmentDownloader;
         _backupContext = backupContext;
-        _performanceProfiler = performanceProfiler;
         _socketMessageChannel = socketChannel;
-
-        _performanceProfiler.Subscribe(FetchTimerId);
-        _performanceProfiler.Subscribe(ProcessTimerId);
-        _performanceProfiler.Subscribe(SaveTimerId);
-        _performanceProfiler.Subscribe(DownloadTimerId);
-        _performanceProfiler.Subscribe(SaveMessagesId);
+        _backupRepository = backupRepository;
     }
-
-    public int BatchNumber { get; set; }
-    private Timer FetchTimer => _performanceProfiler.Timers[FetchTimerId];
-    private Timer ProcessTimer => _performanceProfiler.Timers[ProcessTimerId];
-    private Timer SaveTimer => _performanceProfiler.Timers[SaveTimerId];
-    private Timer DownloadTimer => _performanceProfiler.Timers[DownloadTimerId];
-    private Timer SaveMessagesTimer => _performanceProfiler.Timers[SaveMessagesId];
-    public TimeSpan TotalElapsed => _performanceProfiler.TotalElapsed();
-    public ImmutableDictionary<string, TimeValue> GetTimers => _performanceProfiler.GetAllTimers();
 
     public async Task<BackupBatch> StartBatchingAsync(ulong startAfterMessageId, CancellationToken cancellationToken)
     {
@@ -77,6 +64,8 @@ public class BatchManager
 
     //TODO: Implement a transaction here
     //TODO: Execute in parallel the db save and download
+
+    //TODO: Separate a proper repository to abstract away this data methods
     public async Task SaveBatchAsync(BackupBatch batch, CancellationToken cancelToken)
     {
         SaveTimer.StartTimer();
@@ -85,7 +74,8 @@ public class BatchManager
         if (batch.Downloadables.Any())
             await DownloadMessageAttachments(batch.Downloadables, cancelToken);
 
-        await _dbContext.SaveChangesAsync();
+        await _backupRepository.CommitChangesAsync();
+
         _logger.BatchSaved(SaveTimer.Stop());
     }
 
@@ -154,10 +144,10 @@ public class BatchManager
     {
         SaveMessagesTimer.StartTimer();
 
-        _dbContext.Messages.AddRange(batch.ProcessedMessages);
+        _backupRepository.SaveMessages(batch.ProcessedMessages);
 
         if (batch.NewUsers.Any())
-            _dbContext.Users.AddRange(batch.NewUsers);
+            _backupRepository.SaveUsers(batch.NewUsers);
 
         _logger.MessagesSaved(SaveMessagesTimer.Stop());
     }
@@ -175,7 +165,7 @@ public class BatchManager
         var writtenAttachments = await _attachmentDownloader
             .DownloadRangeAsync(toDownload, _backupContext, cancelToken);
 
-        _dbContext.AddRange(writtenAttachments);
+        _backupRepository.SaveAttachments(writtenAttachments);
 
         _logger.FilesDownloaded(DownloadTimer.Stop());
     }

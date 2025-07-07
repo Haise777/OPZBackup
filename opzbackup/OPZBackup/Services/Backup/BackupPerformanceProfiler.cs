@@ -24,7 +24,7 @@ public class BackupPerformanceProfiler
     public Timer ProcessTimer => _performanceProfiler.Timers[nameof(ProcessTimer)];
     public Timer SaveTimer => _performanceProfiler.Timers[nameof(SaveTimer)];
     public Timer DownloadTimer => _performanceProfiler.Timers[nameof(DownloadTimer)];
-    public Timer SaveMessages => _performanceProfiler.Timers[nameof(SaveMessages)];
+    public Timer SaveMessagesTimer => _performanceProfiler.Timers[nameof(SaveMessagesTimer)];
     public Timer BatchTimer => _performanceProfiler.Timers[nameof(BatchTimer)];
     public Timer CompressionTimer => _performanceProfiler.Timers[nameof(CompressionTimer)];
 }
