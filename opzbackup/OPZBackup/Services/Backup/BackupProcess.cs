@@ -118,7 +118,7 @@ public class BackupProcess : IAsyncDisposable, IDisposable
 
         _responseHandler = responseHandler;
         _context = _contextFactory.Create(interactionContext, isUntilLast, backupRegistry);
-        _logger = _loggerFactory.Create(_context);
+        _logger = _context.BackupLogger;
         _batchManager = _batchManagerFactory.Create(_context, interactionContext.Channel, _logger);
     }
 
