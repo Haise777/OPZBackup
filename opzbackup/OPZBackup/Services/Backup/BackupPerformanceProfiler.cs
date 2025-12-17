@@ -15,7 +15,7 @@ public class BackupPerformanceProfiler
         _performanceProfiler.Subscribe("ProcessTimer");
         _performanceProfiler.Subscribe("SaveTimer");
         _performanceProfiler.Subscribe("DownloadTimer");
-        _performanceProfiler.Subscribe("SaveMessages");
+        _performanceProfiler.Subscribe("SaveMessagesTimer");
         _performanceProfiler.Subscribe("BatchTimer");
         _performanceProfiler.Subscribe("CompressionTimer");
     }

@@ -6,7 +6,7 @@ using Timer = OPZBackup.Services.Utils.Timer;
 
 namespace OPZBackup.FileManagement.FileCompressor;
 
-public class DirCompressor : IBackupCompressor
+public class DirCompressor : IDirCompressor
 {
     private readonly FileCleaner _fileCleaner;
 

@@ -14,7 +14,7 @@ namespace OPZBackup.Services.Backup;
 
 public class BackupProcess : IAsyncDisposable, IDisposable
 {
-    private readonly IBackupCompressor _backupCompressor;
+    private readonly IDirCompressor _dirCompressor;
     private readonly BatchManagerFactory _batchManagerFactory;
     private readonly CancellationToken _cancelToken;
     private readonly CancellationTokenSource _cancelTokenSource;
@@ -37,7 +37,7 @@ public class BackupProcess : IAsyncDisposable, IDisposable
         BackupLoggerFactory loggerFactory,
         BatchManagerFactory batchManagerFactory,
         Mapper mapper,
-        IBackupCompressor backupCompressor)
+        IDirCompressor dirCompressor)
     {
         _contextFactory = contextFactory;
         _dbContext = dbContext;
@@ -46,7 +46,7 @@ public class BackupProcess : IAsyncDisposable, IDisposable
         _cancelToken = _cancelTokenSource.Token;
         _batchManagerFactory = batchManagerFactory;
         _mapper = mapper;
-        _backupCompressor = backupCompressor;
+        _dirCompressor = dirCompressor;
     }
 
     #endregion
@@ -194,7 +194,7 @@ public class BackupProcess : IAsyncDisposable, IDisposable
 
         _logger.Log.Information("Compressing files");
 
-        var compressionResult = await _backupCompressor.CompressAsync(
+        var compressionResult = await _dirCompressor.CompressAsync(
             $"{App.TempPath}/{_context.BackupRegistry.ChannelId}",
             $"{App.BackupPath}");
 

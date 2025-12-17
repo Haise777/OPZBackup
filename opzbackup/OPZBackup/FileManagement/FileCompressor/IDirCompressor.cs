@@ -1,7 +1,7 @@
 namespace OPZBackup.FileManagement.FileCompressor;
 
 
-public interface IBackupCompressor
+public interface IDirCompressor
 {
     public Task<CompressionResult> CompressAsync(string dirPath, string outputPath);
 
