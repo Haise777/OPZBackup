@@ -14,17 +14,17 @@ public class BackupRepository : IBackupRepository
 
     public void SaveMessages(IEnumerable<Message> messages)
     {
-
+        _dbContext.Messages.AddRange(messages);
     }
 
     public void SaveUsers(IEnumerable<User> users)
     {
-
+        _dbContext.Users.AddRange(users);
     }
 
     public void SaveAttachments(IEnumerable<AttachmentFile> attachments)
     {
-
+        _dbContext.AttachmentFiles.AddRange(attachments);
     }
 
     public async Task CommitChangesAsync()

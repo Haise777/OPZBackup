@@ -13,17 +13,17 @@ public class BatchManagerFactory
 
     private readonly MessageFetcher _messageFetcher;
     private readonly MessageProcessor _messageProcessor;
-    private readonly PerformanceProfiler _performanceProfiler;
+    private readonly IBackupRepository _backupRepository;
 
     public BatchManagerFactory(MessageFetcher messageFetcher, MessageProcessor messageProcessor,
         AttachmentDownloader attachmentDownloader, MyDbContext dbContext,
-        PerformanceProfiler performanceProfiler)
+        PerformanceProfiler performanceProfiler, IBackupRepository backupRepository)
     {
         _messageFetcher = messageFetcher;
         _messageProcessor = messageProcessor;
         _attachmentDownloader = attachmentDownloader;
         _dbContext = dbContext;
-        _performanceProfiler = performanceProfiler;
+        _backupRepository = backupRepository;
     }
 
     public BatchManager Create(BackupContext backupContext, ISocketMessageChannel socketMessageChannel, BackupLogger backupLogger)
@@ -31,12 +31,11 @@ public class BatchManagerFactory
         return new BatchManager(
             _messageFetcher,
             _messageProcessor,
-            _dbContext,
             backupLogger,
             _attachmentDownloader,
             socketMessageChannel,
             backupContext,
-            _performanceProfiler
+            _backupRepository
         );
     }
 }

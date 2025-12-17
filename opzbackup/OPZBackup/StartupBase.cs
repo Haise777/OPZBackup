@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Http;
 using OPZBackup.Data;
 using OPZBackup.FileManagement;
+using OPZBackup.FileManagement.FileCompressor;
 using OPZBackup.Logger;
 using OPZBackup.Modules;
 using OPZBackup.ResponseHandlers.Backup;
@@ -148,6 +149,7 @@ public abstract class StartupBase
                 .AddScoped<MessageStatsProcessor>()
                 .AddScoped<ResponseHandlers.Stats.ResponseHandler>()
                 .AddScoped<ResponseHandlers.Stats.EmbedResponseFactory>()
+                .AddScoped<IBackupRepository, BackupRepository>()
                 .AddTransient<ICommonWordsAnalyzer, CommonWordsAnalyzer>()
                 .AddTransient<FileTypeStats>()
                 .AddTransient<PerformanceProfiler>()
