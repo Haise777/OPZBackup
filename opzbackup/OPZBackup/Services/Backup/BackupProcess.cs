@@ -8,7 +8,6 @@ using OPZBackup.FileManagement.FileCompressor;
 using OPZBackup.Logger;
 using OPZBackup.ResponseHandlers.Backup;
 using OPZBackup.Services.Utils;
-using Timer = OPZBackup.Services.Utils.Timer;
 
 namespace OPZBackup.Services.Backup;
 
@@ -94,7 +93,7 @@ public class BackupProcess : IAsyncDisposable, IDisposable
             throw;
         }
 
-        _logger.BackupFinished(_context.PerformanceProfiler);
+        _logger.BackupFinished();
         await _responseHandler.SendCompletedAsync(_context, _context.BackupRegistry.Channel, _startMessage!,
             _lastMessage!);
     }
@@ -124,14 +123,12 @@ public class BackupProcess : IAsyncDisposable, IDisposable
 
     private async Task BackupMessages()
     {
-        var batchTimer = _context.PerformanceProfiler.BatchTimer;
         _logger.Log.Information("Starting backup");
         ulong lastMessageId = 0;
 
         while (true)
         {
             _cancelToken.ThrowIfCancellationRequested();
-            batchTimer.StartTimer();
 
             if (_context.IsStopped)
             {
@@ -155,18 +152,16 @@ public class BackupProcess : IAsyncDisposable, IDisposable
             }
 
             await _batchManager.SaveBatchAsync(batch, _cancelToken);
-            batchTimer.Stop();
 
-            await FinishBatch(batch,batchTimer);
+            await FinishBatch(batch);
         }
     }
 
-    private async Task FinishBatch(BackupBatch batch, Timer batchTimer)
+    private async Task FinishBatch(BackupBatch batch)
     {
         _context.BatchNumber = batch.Number;
 
         //TODO: That is needed to inform the response layer so that it can send the client the mean average
-        _context.AverageBatchTime = batchTimer.Mean;
 
         if (_startMessage is null)
         {
@@ -178,7 +173,7 @@ public class BackupProcess : IAsyncDisposable, IDisposable
             .First(m => m.Id.Equals(batch.ProcessedMessages.Last().Id));
 
 
-        _logger.BatchFinished(batchTimer, batch.Number);
+        _logger.BatchFinished(batch.Number);
         await _responseHandler.SendBatchFinishedAsync(_context, _startMessage, _lastMessage);
     }
 
@@ -189,19 +184,15 @@ public class BackupProcess : IAsyncDisposable, IDisposable
         if (_context.FileCount == 0)
             return;
 
-        var compressionTimer = _context.PerformanceProfiler.CompressionTimer;
-        compressionTimer.StartTimer();
-
         _logger.Log.Information("Compressing files");
 
         var compressionResult = await _dirCompressor.CompressAsync(
             $"{App.TempPath}/{_context.BackupRegistry.ChannelId}",
             $"{App.BackupPath}");
-
-        compressionTimer.Stop();
+        
         _context.StatisticTracker.CompressedFilesSize += compressionResult.compressedSize;
 
-        _logger.Log.Information("Files compressed in {seconds}", compressionTimer.Elapsed.Formatted());
+        _logger.Log.Information("Files compressed}");
     }
 
     /// Update user statistics on the persistence layer

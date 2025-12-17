@@ -3,7 +3,6 @@ using OPZBackup.Extensions;
 using OPZBackup.Services.Backup;
 using OPZBackup.Services.Utils;
 using Serilog;
-using Timer = OPZBackup.Services.Utils.Timer;
 
 namespace OPZBackup.Logger;
 
@@ -47,52 +46,47 @@ public class BackupLogger : IAsyncDisposable
     public Serilog.Core.Logger Log { get; set; }
     public Serilog.Core.Logger StatisticLogger { get; set; }
 
-    public void BatchFinished(Timer timer, int batchNumber)
+    public void BatchFinished(int batchNumber)
     {
-        Log.Information("Batch '{n}' finished in {elapsed} | {mean}",
-            batchNumber, timer.Elapsed.Formatted(), timer.Mean.Formatted());
-        StatisticLogger.Information("Batch '{n}' finished in: {seconds} / avg: {mean} \n\n",
-            batchNumber, timer.Elapsed.TotalSeconds, timer.Mean.TotalSeconds);
+        Log.Information("Batch '{n}' finished",
+            batchNumber);
+        StatisticLogger.Information("Batch '{n}' finished \n\n",
+            batchNumber);
     }
 
-    public void FilesDownloaded(Timer timer)
+    public void FilesDownloaded()
     {
-        Log.Information("Download finished in {seconds} | {mean}", timer.Elapsed.Formatted(),
-            timer.Mean.Formatted());
-        StatisticLogger.Information("Downloading attachments took: {seconds} / avg: {mean}",
-            timer.Elapsed.TotalSeconds, timer.Mean.TotalSeconds);
+        Log.Information("Download finished");
+        StatisticLogger.Information("Downloading attachments"
+        );
     }
 
-    public void BatchSaved(Timer timer)
+    public void BatchSaved()
     {
-        Log.Verbose("Batch saved in {seconds} | {mean}", timer.Elapsed.Formatted(),
-            timer.Mean.Formatted());
-        StatisticLogger.Information("Completing batch took: {seconds} / avg: {mean}",
-            timer.Elapsed.TotalSeconds, timer.Mean.TotalSeconds);
+        Log.Verbose("Batch saved");
+        StatisticLogger.Information("Completing batch"
+        );
     }
 
-    public void MessagesSaved(Timer timer)
+    public void MessagesSaved()
     {
-        Log.Verbose("Messages saved in {seconds} | {mean}", timer.Elapsed.Formatted(),
-            timer.Mean.Formatted());
-        StatisticLogger.Information("Saving messages took: {seconds} / avg: {mean}",
-            timer.Elapsed.TotalSeconds, timer.Mean.TotalSeconds);
+        Log.Verbose("Messages saved");
+        StatisticLogger.Information("Saving messages"
+        );
     }
 
-    public void MessagesProcessed(Timer timer)
+    public void MessagesProcessed()
     {
-        Log.Verbose("Processed messages in {seconds} | {mean}", timer.Elapsed.Formatted(),
-            timer.Mean.Formatted());
-        StatisticLogger.Information("Processing messages took: {seconds} / avg: {mean}",
-            timer.Elapsed.TotalSeconds, timer.Mean.TotalSeconds);
+        Log.Verbose("Processed messages");
+        StatisticLogger.Information("Processing messages"
+        );
     }
 
-    public void MessagesFetched(Timer timer)
+    public void MessagesFetched()
     {
-        Log.Verbose("Fetched messages in {seconds} | {mean}", timer.Elapsed.Formatted(),
-            timer.Mean.Formatted());
-        StatisticLogger.Information("Fetching messages took: {seconds} / avg: {mean}",
-            timer.Elapsed.TotalSeconds, timer.Mean.TotalSeconds);
+        Log.Verbose("Fetched messages");
+        StatisticLogger.Information("Fetching messages"
+        );
     }
 
     public void BackupCancelled()
@@ -107,101 +101,34 @@ public class BackupLogger : IAsyncDisposable
             _context.BatchNumber, _context.MessageCount);
     }
 
-    public void BackupFinished(BackupPerformanceProfiler performanceProfiler)
+    public void BackupFinished()
     {
-        Log.Information("Backup {id} finished in {time}\n" +
+        Log.Information("Backup {id} finished\n" +
                         " | Occupying {compressedTotal} in saved attachments",
             _context.BackupRegistry.Id,
-            performanceProfiler.BatchTimer.Total.Formatted(),
             _context.StatisticTracker.CompressedFilesSize.ToFormattedString()
         );
 
-        LogStatisticalPerformance(performanceProfiler);
+        LogStatisticalPerformance();
     }
 
     //TODO: Retirar o BackupContext desta classe, fazer com q ela fique independente dele
     //Também se possível, mover a instancia deste logger para dentro da BackupContext.
-    
+
     public void EmptyBackup()
     {
         Log.Information("Empty Backup attempt, backup was cancelled'");
     }
 
-    private void LogStatisticalPerformance(BackupPerformanceProfiler performanceProfiler)
+    private void LogStatisticalPerformance()
     {
-        var totalStatistics = _context.StatisticTracker.GetTotalStatistics();
-        var fetchPerformance = performanceProfiler.FetchTimer;
-        var processPerformance = performanceProfiler.ProcessTimer;
-        var savePerformance = performanceProfiler.SaveTimer;
-        var downloadPerformance = performanceProfiler.DownloadTimer;
-        var batchTimer = performanceProfiler.BatchTimer;
-        var compressTimer = performanceProfiler.CompressionTimer;
 
         StatisticLogger.Information(
             """
 
 
-            ---- Backup process finished
+                        ---- Backup process finished
 
-            Channel: {channelId}
-            Total time: {totalTime}
-            Messages: {messagesCount}
-            Files: {fileCount} | {fileSize} bytes
-
-            --- Batch performance
-            N of batches: {batchNumber}
-            Total time: {batchTime} (s)
-            Mean time: {batchMean} (s)
-
-            --- Fetch performance
-            N of messages per fetch: {fetchCount}
-            Total time: {fetchTime} (s)
-            Mean time: {fetchMean} (s)
-
-            --- Process performance
-            Total time: {processTime} (s)
-            Mean time: {processMean} (s)
-
-            --- Message saving performance
-            Total time: {savingTime} (s)
-            Mean time: {savingMean} (s)
-
-            --- Download performance
-            N max allowed downloads in parallel: {maxParallelDownloads}
-            Total downloaded: {fileCount}
-            Total bytes: {fileSize} bytes
-            Total time: {downloadTime} (s)
-            Mean time: {downloadMean} (s)
-
-            --- Compression performance
-            Compressor: {compressorType}
-            Level: {strengthType}
-            Total saved: {compressedSavedSize} bytes
-            Total time: {compressionTime} (s)
-
-            """,
-            _context.BackupRegistry.ChannelId,
-            (DateTime.Now - _context.BackupRegistry.Date).Formatted(),
-            _context.MessageCount,
-            _context.FileCount, totalStatistics.ByteSize,
-            _context.BatchNumber,
-            batchTimer.Total.TotalSeconds,
-            batchTimer.Mean.TotalSeconds,
-            App.MaxMessagesPerBatch,
-            fetchPerformance.Total.TotalSeconds,
-            fetchPerformance.Mean.TotalSeconds,
-            processPerformance.Total.TotalSeconds,
-            processPerformance.Mean.TotalSeconds,
-            savePerformance.Total.TotalSeconds,
-            savePerformance.Mean.TotalSeconds,
-            50,
-            _context.FileCount, totalStatistics.ByteSize,
-            downloadPerformance.Total.TotalSeconds,
-            downloadPerformance.Mean.TotalSeconds,
-            "System.IO.Compression.ZipFile",
-            App.CompressionLevel,
-            totalStatistics.ByteSize - _context.StatisticTracker.CompressedFilesSize,
-            compressTimer.Total.TotalSeconds
-        );
+            """);
     }
 }

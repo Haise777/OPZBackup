@@ -16,8 +16,7 @@ public class BatchManagerFactory
     private readonly IBackupRepository _backupRepository;
 
     public BatchManagerFactory(MessageFetcher messageFetcher, MessageProcessor messageProcessor,
-        AttachmentDownloader attachmentDownloader, MyDbContext dbContext,
-        PerformanceProfiler performanceProfiler, IBackupRepository backupRepository)
+        AttachmentDownloader attachmentDownloader, MyDbContext dbContext, IBackupRepository backupRepository)
     {
         _messageFetcher = messageFetcher;
         _messageProcessor = messageProcessor;

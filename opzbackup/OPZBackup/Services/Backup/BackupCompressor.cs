@@ -2,7 +2,6 @@ using OPZBackup.Extensions;
 using OPZBackup.FileManagement;
 using OPZBackup.FileManagement.FileCompressor;
 using OPZBackup.Logger;
-using Timer = OPZBackup.Services.Utils.Timer;
 
 namespace OPZBackup.Services.Backup;
 
@@ -25,14 +24,13 @@ public class BackupCompressor
             return;
 
         logger.Log.Information("Compressing files");
-        PerformanceTimer.StartTimer();
 
         var compressedSize = await _dirCompressor.CompressAsync(
             $"{App.TempPath}/{context.BackupRegistry.ChannelId}",
             $"{App.BackupPath}"
         );
 
-        logger.Log.Information("Files compressed in {seconds}", PerformanceTimer.Stop().Elapsed.Formatted());
+        logger.Log.Information("Files compressed");
 
         context.StatisticTracker.CompressedFilesSize += compressedSize.compressedSize;
         await _fileCleaner.DeleteDirAsync(App.TempPath);

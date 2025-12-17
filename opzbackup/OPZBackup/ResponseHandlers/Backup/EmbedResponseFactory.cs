@@ -117,7 +117,7 @@ public class EmbedResponseFactory
             $"Decorrido: {GetElapsedTime(context.BackupRegistry.Date)}\n" +
             $"N de mensagens: {context.MessageCount}\n" +
             $"N de arquivos: {context.FileCount} [{totalFileSize.ToFormattedString()}]\n" +
-            $"Ciclos realizados: {context.BatchNumber} [{context.AverageBatchTime.Formatted()}]\n";
+            $"Ciclos realizados: {context.BatchNumber}\n";
 
         var current = "";
 

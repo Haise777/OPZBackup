@@ -6,7 +6,6 @@ using OPZBackup.Data.Dto;
 using OPZBackup.FileManagement;
 using OPZBackup.Logger;
 using OPZBackup.Services.Utils;
-using Timer = OPZBackup.Services.Utils.Timer;
 
 namespace OPZBackup.Services.Backup;
 
@@ -21,12 +20,7 @@ public class BatchManager
     private readonly MessageFetcher _messageFetcher;
     private readonly MessageProcessor _messageProcessor;
     private readonly ISocketMessageChannel _socketMessageChannel;
-
-    private Timer SaveTimer => _backupContext.PerformanceProfiler.SaveTimer;
-    private Timer ProcessTimer => _backupContext.PerformanceProfiler.ProcessTimer;
-    private Timer SaveMessagesTimer => _backupContext.PerformanceProfiler.SaveMessagesTimer;
-    private Timer FetchTimer => _backupContext.PerformanceProfiler.FetchTimer;
-    private Timer DownloadTimer => _backupContext.PerformanceProfiler.DownloadTimer;
+    
 
     public int BatchNumber { get; set; }
 
@@ -68,7 +62,6 @@ public class BatchManager
     //TODO: Separate a proper repository to abstract away this data methods
     public async Task SaveBatchAsync(BackupBatch batch, CancellationToken cancelToken)
     {
-        SaveTimer.StartTimer();
         SaveMessages(batch);
 
         if (batch.Downloadables.Any())
@@ -76,13 +69,12 @@ public class BatchManager
 
         await _backupRepository.CommitChangesAsync();
 
-        _logger.BatchSaved(SaveTimer.Stop());
+        _logger.BatchSaved();
     }
 
     private async Task<IEnumerable<IMessage>> FetchMessagesAsync(ulong startAfterMessageId)
     {
         var attempts = 0;
-        FetchTimer.StartTimer();
 
         while (true)
         {
@@ -96,7 +88,7 @@ public class BatchManager
                     _ => await _messageFetcher.FetchAsync(_socketMessageChannel, startAfterMessageId)
                 };
 
-                _logger.MessagesFetched(FetchTimer.Stop());
+                _logger.MessagesFetched();
                 return fetchedMessages;
             }
             catch (Exception e)
@@ -113,17 +105,15 @@ public class BatchManager
         CancellationToken cancellationToken)
     {
         var attempts = 0;
-        ProcessTimer.StartTimer();
 
         while (true)
         {
             try
             {
-                ProcessTimer.StartTimer();
                 var processedMessages =
                     await _messageProcessor.ProcessAsync(rawMessages, _backupContext, cancellationToken);
 
-                _logger.MessagesProcessed(ProcessTimer.Stop());
+                _logger.MessagesProcessed();
                 return processedMessages;
             }
             catch (OperationCanceledException)
@@ -142,19 +132,17 @@ public class BatchManager
 
     private void SaveMessages(BackupBatch batch)
     {
-        SaveMessagesTimer.StartTimer();
 
         _backupRepository.SaveMessages(batch.ProcessedMessages);
 
         if (batch.NewUsers.Any())
             _backupRepository.SaveUsers(batch.NewUsers);
 
-        _logger.MessagesSaved(SaveMessagesTimer.Stop());
+        _logger.MessagesSaved();
     }
 
     private async Task DownloadMessageAttachments(IEnumerable<Downloadable> toDownload, CancellationToken cancelToken)
     {
-        DownloadTimer.StartTimer();
 
         var fileCount = 0;
         foreach (var downloadable in toDownload)
@@ -167,6 +155,6 @@ public class BatchManager
 
         _backupRepository.SaveAttachments(writtenAttachments);
 
-        _logger.FilesDownloaded(DownloadTimer.Stop());
+        _logger.FilesDownloaded();
     }
 }

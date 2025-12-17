@@ -2,7 +2,6 @@ using System.IO.Compression;
 using OPZBackup.Extensions;
 using OPZBackup.FileManagement;
 using OPZBackup.Logger;
-using Timer = OPZBackup.Services.Utils.Timer;
 
 namespace OPZBackup.FileManagement.FileCompressor;
 
